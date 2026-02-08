@@ -1,0 +1,28 @@
+{% extends 'backOffice/base.html.twig' %}
+
+{% block body %}
+    <div class="app-wrapper">
+        {# Include Navbar #}
+        {% include 'backOffice/partials/navbar.html.twig' %}
+        
+        {# Include Sidebar #}
+        {% include 'backOffice/partials/sidebar.html.twig' %}
+        
+        {# Main Content Area #}
+        <main class="app-main">
+            {% block admin_content %}
+                {# Le contenu des pages sera ici #}
+            {% endblock %}
+        </main>
+
+        {# Footer #}
+        <footer class="app-footer">
+            <div class="float-end d-none d-sm-inline">Anything you want</div>
+            <strong>
+                Copyright &copy; 2014-2025&nbsp;
+                <a href="https://adminlte.io" class="text-decoration-none">AdminLTE.io</a>.
+            </strong>
+            All rights reserved.
+        </footer>
+    </div>
+{% endblock %}

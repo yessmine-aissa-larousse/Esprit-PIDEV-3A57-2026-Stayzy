@@ -1,0 +1,71 @@
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    {# Sidebar Brand #}
+    <div class="sidebar-brand">
+        <a href="{{ path('admin_dashboard') }}" class="brand-link">
+            <img src="{{ asset('backOffice/assets/img/AdminLTELogo.png') }}" 
+                 alt="AdminLTE Logo" 
+                 class="brand-image opacity-75 shadow" />
+            <span class="brand-text fw-light">Stayzy</span>
+        </a>
+    </div>
+
+    {# Sidebar Wrapper #}
+    <div class="sidebar-wrapper">
+        <nav class="mt-2">
+            <ul class="nav sidebar-menu flex-column" 
+                data-lte-toggle="treeview" 
+                role="navigation" 
+                aria-label="Main navigation">
+                
+                {# Dashboard Menu #}
+                <li class="nav-item menu-open">
+                    <a href="#" class="nav-link active">
+                        <i class="nav-icon bi bi-speedometer"></i>
+                        <p>
+                            Dashboard
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Dashboard </p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {# Widgets Menu #}
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <p>
+                            Mes Logements
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Liste des props </p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {# Tables Menu #}
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon bi bi-table"></i>
+                        <p>
+                            DM Réservations
+                            <i class="nav-arrow bi bi-chevron-right"></i>
+                        </p>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
