@@ -1,0 +1,102 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Modifier la Réservation{% endblock %}
+
+{% block admin_content %}
+
+<div class="container-fluid">
+
+    <!-- 🔹 Titre principal -->
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="fw-semibold text-secondary">
+            Modifier ma Réservation
+        </h2>
+    </div>
+
+    <!-- 🔹 Messages flash -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show small w-75 mx-auto" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show small w-75 mx-auto" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <!-- 🔹 Carte principale -->
+    <div class="card border-0 shadow-sm mx-auto" style="max-width: 900px;">
+        <div class="card-body p-4">
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+
+                    {{ form_start(form) }}
+
+                    <!-- Champ date début -->
+                    <div class="mb-3">
+                        {{ form_label(form.dateDebut, 'Date de début', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.dateDebut) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.dateDebut) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ date fin -->
+                    <div class="mb-3">
+                        {{ form_label(form.dateFin, 'Date de fin', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.dateFin) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.dateFin) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ nombre de personnes -->
+                    <div class="mb-3">
+                        {{ form_label(form.nombrePersonnes, 'Nombre de personnes', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.nombrePersonnes, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.nombrePersonnes) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.nombrePersonnes) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ message -->
+                    <div class="mb-3">
+                        {{ form_label(form.messageDemande, 'Message / demande spéciale', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.messageDemande, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                        {% if form_errors(form.messageDemande) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.messageDemande) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('front_reservation_list') }}" class="btn btn-outline-secondary">
+    Retour à la liste
+</a>
+
+                        <button class="btn btn-outline-primary fw-semibold px-4">
+                            Enregistrer
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

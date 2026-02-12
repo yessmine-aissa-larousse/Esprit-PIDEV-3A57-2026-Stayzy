@@ -1,0 +1,84 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Dashboard Propriétaire{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid my-4">
+
+    <div class="mb-4 text-center">
+        <h2 class="fw-semibold text-secondary">📊 Dashboard de mes logements</h2>
+    </div>
+
+    {# Flash messages #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show small" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# Statistiques par logement #}
+    <div class="row g-4 mb-5">
+        {% for stat in stats %}
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">{{ stat.logement }}</h5>
+                    <canvas id="doughnut-{{ loop.index }}" height="180"></canvas>
+                    <div class="mt-3">
+                        <span class="badge bg-warning text-dark me-1">En attente: {{ stat.en_attente }}</span>
+                        <span class="badge bg-success me-1">Confirmées: {{ stat.confirme }}</span>
+                        <span class="badge bg-danger">Annulées: {{ stat.annule }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="text-center text-muted py-5">Aucune donnée disponible</div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% for stat in stats %}
+const ctx{{ loop.index }} = document.getElementById('doughnut-{{ loop.index }}').getContext('2d');
+new Chart(ctx{{ loop.index }}, {
+    type: 'doughnut',
+    data: {
+        labels: ['En attente', 'Confirmées', 'Annulées'],
+        datasets: [{
+            data: [{{ stat.en_attente }}, {{ stat.confirme }}, {{ stat.annule }}],
+            backgroundColor: [
+                'rgba(255, 193, 7, 0.8)', // jaune/orange
+                'rgba(54, 162, 235, 0.8)', // bleu
+                'rgba(220, 53, 69, 0.8)'   // rouge
+            ],
+            borderColor: ['#fff','#fff','#fff'],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 13, weight: 'bold' } }
+            },
+            tooltip: {
+                enabled: true,
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 12 }
+            }
+        }
+    }
+});
+{% endfor %}
+</script>
+{% endblock %}

@@ -56,6 +56,19 @@
                     <li><a href="{{ path('app_home') }}" class="active">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
                     <li><a href="{{ path('app_properties') }}">Nos Logements</a></li>
+                
+ <li>
+ {% if logement is defined %}
+    <a href="{{ path('front_reservation_new', {'id': logement.id}) }}">Réservation</a>
+{% else %}
+    <a href="{{ path('front_reservation_new', {'id': 1}) }}">Réservation</a>
+{% endif %}
+
+</li>
+
+
+
+
                     <li><a href="#">Services</a></li>
                     <li><a href="#">Aide</a></li>
                     <li><a href="#">se connecter</a></li>
