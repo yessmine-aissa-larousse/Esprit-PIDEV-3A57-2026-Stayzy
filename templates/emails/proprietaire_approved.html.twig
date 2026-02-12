@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Compte approuvé</title>
+</head>
+<body>
+    <h2>Bonjour {{ user.prenom }} {{ user.nom }},</h2>
+    <p>Votre demande d’inscription en tant que propriétaire sur <strong>StayZy</strong> a été <span style="color: green;">approuvée</span>.</p>
+    <p>Vous pouvez dès à présent vous connecter et commencer à gérer vos propriétés.</p>
+    <p>
+        <a href="{{ url('app_login') }}" style="display: inline-block; padding: 10px 20px; background-color: #28a745; color: #fff; text-decoration: none;">
+            Se connecter
+        </a>
+    </p>
+    <p>À très bientôt sur StayZy !</p>
+</body>
+</html>

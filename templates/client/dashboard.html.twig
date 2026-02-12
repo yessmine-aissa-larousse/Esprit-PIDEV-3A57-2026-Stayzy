@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Espace Client - StayZy{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-2">
+                        <i class="bi bi-person-circle text-success"></i> 
+                        Bienvenue {{ user.prenom }} !
+                    </h1>
+                    <p class="text-muted">Tableau de bord client</p>
+                </div>
+                <div>
+                    <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages flash -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <!-- Cartes principales -->
+    <div class="row g-4">
+        <!-- Profil -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="card-title">Mon Profil</h5>
+                    <p class="card-text text-muted">
+                        Gérez vos informations personnelles
+                    </p>
+                    <a href="{{ path('app_client_profile') }}" class="btn btn-success">
+                        <i class="bi bi-pencil"></i> Modifier mon profil
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Réservations -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-calendar-check text-primary" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="card-title">Mes Réservations</h5>
+                    <p class="card-text text-muted">
+                        Consultez vos réservations en cours
+                    </p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-list-ul"></i> Voir mes réservations
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recherche -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-search text-info" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="card-title">Rechercher</h5>
+                    <p class="card-text text-muted">
+                        Trouvez votre logement idéal
+                    </p>
+                    <a href="#" class="btn btn-info text-white">
+                        <i class="bi bi-search"></i> Rechercher un logement
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations utilisateur -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Vos informations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Email :</strong> {{ user.email }}</p>
+                            <p><strong>Nom :</strong> {{ user.nom }}</p>
+                            <p><strong>Prénom :</strong> {{ user.prenom }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Téléphone :</strong> {{ user.tel ?? 'Non renseigné' }}</p>
+                            <p><strong>Adresse :</strong> {{ user.adresse ?? 'Non renseignée' }}</p>
+                            <p><strong>Membre depuis :</strong> {{ user.createdAt|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

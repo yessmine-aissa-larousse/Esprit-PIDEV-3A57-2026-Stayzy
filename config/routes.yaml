@@ -1,5 +1,108 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
+    methods: GET
+
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login
+    methods: [GET, POST]
+
+app_logout:
+    path: /logout
+    controller: App\Controller\SecurityController::logout
+    methods: GET
+
+app_user_index:
+    path: /user
+    controller: App\Controller\UserController::index
+    methods: GET
+
+app_user_pending:
+    path: /user/pending
+    controller: App\Controller\UserController::pending
+    methods: GET
+
+app_user_new:
+    path: /user/new
+    controller: App\Controller\UserController::new
+    methods: [GET, POST]
+
+app_user_show:
+    path: /user/{id}
+    controller: App\Controller\UserController::show
+    methods: GET
+    requirements:
+        id: '\d+'
+
+app_user_edit:
+    path: /user/{id}/edit
+    controller: App\Controller\UserController::edit
+    methods: [GET, POST]
+    requirements:
+        id: '\d+'
+
+app_user_delete:
+    path: /user/{id}/delete
+    controller: App\Controller\UserController::delete
+    methods: POST
+    requirements:
+        id: '\d+'
+
+app_user_toggle_status:
+    path: /user/{id}/toggle-status
+    controller: App\Controller\UserController::toggleStatus
+    methods: POST
+    requirements:
+        id: '\d+'
+
+app_user_approve:
+    path: /user/{id}/approve
+    controller: App\Controller\UserController::approve
+    methods: POST
+    requirements:
+        id: '\d+'
+
+app_user_reject:
+    path: /user/{id}/reject
+    controller: App\Controller\UserController::reject
+    methods: POST
+    requirements:
+        id: '\d+'
+
+app_user_export_csv:
+    path: /user/export/csv
+    controller: App\Controller\UserController::exportCsv
+    methods: GET
+
+app_create_admin:
+    path: /user/create-admin
+    controller: App\Controller\UserController::createAdmin
+    methods: GET
+
+app_client_portal:
+    path: /client
+    controller: App\Controller\ClientPortalController::index
+    methods: GET
+
+app_proprietaire_portal:
+    path: /proprietaire
+    controller: App\Controller\ProprietairePortalController::index
+    methods: GET
+
+app_register:
+    path: /register/{role}
+    controller: App\Controller\RegisterController::register
+    methods: [GET, POST]
+    requirements:
+        role: 'client|proprietaire'
+
+app_client_dashboard:
+    path: /client/dashboard
+    controller: App\Controller\ClientPortalController::dashboard
+    methods: GET
+
+app_client_profile:
+    path: /client/profile
+    controller: App\Controller\ClientPortalController::profile
+    methods: [GET, POST]

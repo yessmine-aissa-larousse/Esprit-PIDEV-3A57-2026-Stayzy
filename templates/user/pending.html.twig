@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes propriétaires en attente{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0"><i class="bi bi-clock-history"></i> Demandes d’inscription propriétaires</h1>
+        <a href="{{ path('app_user_index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Retour à la liste des utilisateurs
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {% if users|length == 0 %}
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle" style="font-size: 4rem; color: #28a745;"></i>
+                    </div>
+                    <h4>Aucune demande en attente</h4>
+                    <p class="text-muted">Toutes les demandes ont été traitées.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom complet</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Date d’inscription</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.prenom }} {{ user.nom }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.tel ?? '-' }}</td>
+                                    <td>{{ user.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-2">
+                                            <form action="{{ path('app_user_approve', {'id': user.id}) }}" method="post">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ user.id) }}">
+                                                <button type="submit" class="btn btn-success btn-sm w-100">
+                                                    <i class="bi bi-check-circle"></i> Approuver
+                                                </button>
+                                            </form>
+                                            <form action="{{ path('app_user_reject', {'id': user.id}) }}" method="post">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ user.id) }}">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" name="rejection_reason" class="form-control" placeholder="Motif (optionnel)">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="bi bi-x-circle"></i> Rejeter
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

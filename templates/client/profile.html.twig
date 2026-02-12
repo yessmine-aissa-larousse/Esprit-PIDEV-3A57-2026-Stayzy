@@ -1,0 +1,275 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Mon Profil - Stayzy{% endblock %}
+
+{% block admin_content %}
+    {# ── App Content Header ── #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>Mon Profil
+                    </h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item">
+                            <a href="{{ path('admin_dashboard') }}">Tableau de bord</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Mon Profil
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── App Content ── #}
+    <div class="app-content">
+        <div class="container-fluid">
+
+            {# Messages flash #}
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i><strong>Succès !</strong> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="bi bi-x-circle-fill me-2"></i><strong>Erreur !</strong> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <div class="row g-4">
+                {# ── COLONNE GAUCHE : Avatar & infos rapides ── #}
+                <div class="col-md-4 col-lg-3">
+                    <div class="card shadow-sm text-center">
+                        <div class="card-body pt-4 pb-3">
+                            <div class="position-relative d-inline-block mb-3">
+                                <img src="{{ app.user.imageUrl ?: asset('backOffice/assets/img/user2-160x160.jpg') }}"
+                                     alt="Photo de profil"
+                                     class="rounded-circle shadow border border-3 border-primary"
+                                     style="width:110px; height:110px; object-fit:cover;">
+                                <span class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white"
+                                      style="width:16px; height:16px;" title="En ligne"></span>
+                            </div>
+                            <h5 class="mb-0 fw-bold">{{ app.user.prenom }} {{ app.user.nom }}</h5>
+                            <p class="text-muted small mb-2">{{ app.user.email }}</p>
+                            <span class="badge text-bg-info">
+                                <i class="bi bi-person-fill me-1"></i>
+                                {% if 'ROLE_ADMIN' in app.user.roles %}
+                                    Administrateur
+                                {% else %}
+                                    Utilisateur
+                                {% endif %}
+                            </span>
+                            <hr class="my-3">
+                            <ul class="list-unstyled text-start small text-muted mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-telephone-fill me-2 text-primary"></i>
+                                    {{ app.user.tel ?: '<em class="text-muted">Non renseigné</em>'|raw }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                    {{ app.user.adresse ?: '<em class="text-muted">Non renseignée</em>'|raw }}
+                                </li>
+                                <li>
+                                    <i class="bi bi-calendar-event-fill me-2 text-primary"></i>
+                                    Membre depuis {{ app.user.createdAt ? app.user.createdAt|date('M. Y') : 'N/A' }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header py-2">
+                            <h6 class="mb-0"><i class="bi bi-shield-check me-2 text-success"></i>Compte</h6>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center justify-content-between py-1">
+                                <span class="small text-muted">Statut</span>
+                                {% if app.user.isActive %}
+                                    <span class="badge text-bg-success">Actif</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">Inactif</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ── COLONNE DROITE : Formulaire (2 onglets) ── #}
+                <div class="col-md-8 col-lg-9">
+                    <div class="card shadow-sm">
+                        <div class="card-header p-0 border-bottom-0">
+                            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active px-4 py-3"
+                                            id="info-tab" data-bs-toggle="tab"
+                                            data-bs-target="#info-pane"
+                                            type="button" role="tab">
+                                        <i class="bi bi-person me-2"></i>Informations personnelles
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link px-4 py-3"
+                                            id="security-tab" data-bs-toggle="tab"
+                                            data-bs-target="#security-pane"
+                                            type="button" role="tab">
+                                        <i class="bi bi-lock me-2"></i>Sécurité
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-body p-4">
+                            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                            <div class="tab-content" id="profileTabsContent">
+                                {# ---- ONGLET 1 : Infos personnelles ---- #}
+                                <div class="tab-pane fade show active" id="info-pane" role="tabpanel">
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-3 border-bottom pb-2">
+                                        <i class="bi bi-person-lines-fill me-1"></i> Coordonnées
+                                    </h6>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-12">
+                                            {{ form_row(form.email, {
+                                                'attr': {'class': 'form-control'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form_row(form.nom, {
+                                                'attr': {'class': 'form-control'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form_row(form.prenom, {
+                                                'attr': {'class': 'form-control'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form_row(form.tel, {
+                                                'attr': {'class': 'form-control', 'placeholder': '+216 XX XXX XXX'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form_row(form.adresse, {
+                                                'attr': {'class': 'form-control', 'placeholder': 'Votre adresse...'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                        <div class="col-12">
+                                            {{ form_row(form.imageUrl, {
+                                                'attr': {'class': 'form-control', 'placeholder': 'https://exemple.com/avatar.jpg'},
+                                                'label_attr': {'class': 'form-label fw-semibold'}
+                                            }) }}
+                                        </div>
+                                    </div>
+                                    {# Champs cachés : rôles et statut actif #}
+                                    <div style="display:none;">
+                                        {{ form_row(form.roles) }}
+                                        {{ form_row(form.isActive) }}
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 pt-2">
+                                        <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-lg me-1"></i>Annuler
+                                        </a>
+                                        <button type="submit" class="btn btn-primary px-4">
+                                            <i class="bi bi-save me-1"></i>Enregistrer
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {# ---- ONGLET 2 : Sécurité (mot de passe) ---- #}
+                                <div class="tab-pane fade" id="security-pane" role="tabpanel">
+                                    <h6 class="text-uppercase text-muted small fw-bold mb-3 border-bottom pb-2">
+                                        <i class="bi bi-lock-fill me-1"></i> Changer le mot de passe
+                                    </h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            {{ form_row(form.password, {
+                                                'attr': {
+                                                    'class': 'form-control',
+                                                    'placeholder': 'Laisser vide pour ne pas changer',
+                                                    'id': 'passwordField'
+                                                },
+                                                'label_attr': {'class': 'form-label fw-semibold'},
+                                                'required': false
+                                            }) }}
+                                            <div class="form-text">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                Laissez ce champ vide si vous ne souhaitez pas modifier votre mot de passe.
+                                            </div>
+                                        </div>
+                                        {# Indicateur de force du mot de passe #}
+                                        <div class="col-md-8 mt-1">
+                                            <div class="d-flex gap-1" id="strengthBars">
+                                                <div class="flex-fill rounded" style="height:5px; background:#dee2e6;" id="bar1"></div>
+                                                <div class="flex-fill rounded" style="height:5px; background:#dee2e6;" id="bar2"></div>
+                                                <div class="flex-fill rounded" style="height:5px; background:#dee2e6;" id="bar3"></div>
+                                                <div class="flex-fill rounded" style="height:5px; background:#dee2e6;" id="bar4"></div>
+                                            </div>
+                                            <small class="text-muted" id="strengthLabel"></small>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info mt-4 d-flex align-items-start gap-2">
+                                        <i class="bi bi-shield-lock-fill fs-5 flex-shrink-0 mt-1"></i>
+                                        <div class="small">
+                                            <strong>Conseils de sécurité :</strong>
+                                            utilisez au moins 8 caractères, combinez majuscules, minuscules, chiffres et symboles.
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 pt-2">
+                                        <button type="submit" class="btn btn-warning px-4">
+                                            <i class="bi bi-shield-check me-1"></i>Mettre à jour le mot de passe
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>{# /tab-content #}
+                            {{ form_end(form) }}
+                        </div>{# /card-body #}
+                    </div>{# /card #}
+                </div>{# /col #}
+            </div>{# /row #}
+        </div>{# /container-fluid #}
+    </div>{# /app-content #}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        (function() {
+            const passwordField = document.getElementById('passwordField');
+            if (!passwordField) return;
+            const bars = [
+                document.getElementById('bar1'),
+                document.getElementById('bar2'),
+                document.getElementById('bar3'),
+                document.getElementById('bar4')
+            ];
+            const strengthLabel = document.getElementById('strengthLabel');
+            passwordField.addEventListener('input', function() {
+                const val = this.value;
+                let score = 0;
+                if (val.length >= 8) score++;
+                if (/[A-Z]/.test(val)) score++;
+                if (/[0-9]/.test(val)) score++;
+                if (/[^A-Za-z0-9]/.test(val)) score++;
+                const colors = ['#dc3545', '#fd7e14', '#ffc107', '#198754'];
+                const labels = ['Faible', 'Moyen', 'Bien', 'Fort'];
+                bars.forEach((bar, i) => {
+                    bar.style.background = i < score ? colors[score - 1] : '#dee2e6';
+                });
+                strengthLabel.textContent = val.length ? labels[score - 1] ?? '' : '';
+                strengthLabel.style.color = score > 0 ? colors[score - 1] : '';
+            });
+        })();
+    </script>
+{% endblock %}

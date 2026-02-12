@@ -1,0 +1,28 @@
+echo "{% extends 'base.html.twig' %}
+
+{% block title %}Détails utilisateur - StayZy{% endblock %}
+
+{% block body %}
+    <h2>👤 Détails de l'utilisateur</h2>
+    
+    <div class=\"user-card\">
+        <h3>{{ user.prenom }} {{ user.nom }}</h3>
+        <p><strong>ID:</strong> {{ user.id }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Nom complet:</strong> {{ user.nom }} {{ user.prenom }}</p>
+        <p><strong>Téléphone:</strong> {{ user.tel }}</p>
+        <p><strong>Adresse:</strong> {{ user.adresse }}</p>
+        <p><strong>Rôles:</strong> {{ user.roles|join(', ') }}</p>
+    </div>
+    
+    <div style=\"margin-top: 20px;\">
+        <a href=\"{{ path('app_user_edit', {'id': user.id}) }}\" class=\"btn btn-success\">✏️ Modifier</a>
+        <a href=\"{{ path('app_user_index') }}\" class=\"btn\">↩️ Retour à la liste</a>
+        
+        <form action=\"{{ path('app_user_delete', {'id': user.id}) }}\" method=\"post\" style=\"display: inline;\"
+              onsubmit=\"return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');\">
+            <button type=\"submit\" class=\"btn btn-danger\">🗑️ Supprimer</button>
+        </form>
+    </div>
+{% endblock %}
+" > templates/user/show.html.twig
