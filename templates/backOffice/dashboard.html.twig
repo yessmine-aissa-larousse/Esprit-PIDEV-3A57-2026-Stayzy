@@ -3,66 +3,111 @@
 {% block title %}Dashboard - BackOffice{% endblock %}
 
 {% block admin_content %}
-    {# App Content Header #}
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-6">
-                    <h3 class="mb-0">Dashboard </h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard </li>
-                    </ol>
-                </div>
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">Dashboard</h3>
             </div>
         </div>
     </div>
+</div>
 
-    {# App Content #}
-    <div class="app-content">
-        <div class="container-fluid">
-            {# Info boxes #}
-            <div class="row">
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box">
-                        <span class="info-box-icon text-bg-primary shadow-sm">
-                            <i class="bi bi-gear-fill"></i>
+<div class="app-content">
+    <div class="container-fluid">
+
+        <!-- Info Boxes -->
+        <div class="row">
+
+            <!-- Total -->
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="info-box shadow-sm">
+                    <span class="info-box-icon text-bg-primary">
+                        <i class="bi bi-list-ul"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Réclamations</span>
+                        <span class="info-box-number">
+                            {{ total }}
                         </span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">CPU Traffic</span>
-                            <span class="info-box-number">10 <small>%</small></span>
-                        </div>
                     </div>
                 </div>
-                
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box">
-                        <span class="info-box-icon text-bg-danger shadow-sm">
-                            <i class="bi bi-hand-thumbs-up-fill"></i>
-                        </span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Likes</span>
-                            <span class="info-box-number">41,410</span>
-                        </div>
-                    </div>
-                </div>
-
-                {# ... Ajoutez les autres info-boxes ici ... #}
             </div>
 
-            {# Vous pouvez copier le reste du contenu du dashboard ici #}
+            <!-- En attente -->
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="info-box shadow-sm">
+                    <span class="info-box-icon text-bg-warning">
+                        <i class="bi bi-clock-history"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">En attente</span>
+                        <span class="info-box-number">
+                            {{ enAttente }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traitées -->
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="info-box shadow-sm">
+                    <span class="info-box-icon text-bg-success">
+                        <i class="bi bi-check-circle"></i>
+                    </span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Traitées</span>
+                        <span class="info-box-number">
+                            {{ traitee }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <!-- Chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center">
+                        <h4 class="mb-0">Statistiques Réclamations</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="reclamationChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+
     </div>
+</div>
+
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    
-    {# Charts Scripts - Uniquement pour la page dashboard #}
+
     <script>
-        // Scripts ApexCharts pour les graphiques
-        // (Copiez les scripts des charts ici si nécessaire)
+        document.addEventListener("DOMContentLoaded", function() {
+            var options = {
+                series: [{{ enAttente }}, {{ traitee }}],
+                chart: {
+                    type: 'pie',
+                    height: 300
+                },
+                labels: ['En attente', 'Traitée'],
+                colors: ['#ffc107', '#28a745'],
+                legend: {
+                    position: 'bottom'
+                }
+            };
+
+            var chart = new ApexCharts(document.querySelector("#reclamationChart"), options);
+            chart.render();
+        });
     </script>
 {% endblock %}

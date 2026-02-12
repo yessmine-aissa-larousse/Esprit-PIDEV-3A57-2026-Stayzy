@@ -1,0 +1,49 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Modifier Réponse{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Modifier la Réponse #{{ reponse.id }}</h3>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Modification</h3>
+            </div>
+
+            <div class="card-body">
+
+                {{ form_start(form) }}
+
+                <div class="mb-3">
+                    {{ form_label(form.contenu) }}
+                    {{ form_widget(form.contenu) }}
+                    <div class="text-danger">
+                        {{ form_errors(form.contenu) }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Modifier
+                </button>
+
+                <a href="{{ path('reponse_index') }}" class="btn btn-secondary">
+                    Retour
+                </a>
+
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

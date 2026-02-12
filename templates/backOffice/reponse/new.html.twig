@@ -1,0 +1,62 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Ajouter Réponse{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h4 class="mb-4">Ajouter une Réponse</h4>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <div class="card shadow border-0">
+
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            Réclamation {{ reclamation.id }}
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                        <div class="mb-3">
+                            {{ form_label(form.contenu) }}
+                            {{ form_widget(form.contenu) }}
+                            <div class="text-danger small">
+                                {{ form_errors(form.contenu) }}
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="{{ path('reclamation_show', {'id': reclamation.id}) }}"
+                               class="btn btn-outline-secondary btn-sm me-2">
+                                Annuler
+                            </a>
+
+                            <button type="submit" class="btn btn-success btn-sm">
+                                Enregistrer
+                            </button>
+                        </div>
+
+                        {{ form_end(form) }}
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

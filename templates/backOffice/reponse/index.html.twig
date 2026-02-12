@@ -1,0 +1,109 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Liste des Réponses{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Liste des Réponses</h3>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+
+        <!--  Recherche -->
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <form method="get" class="row g-2 align-items-center">
+
+                    <div class="col-md-4">
+                        <input type="number"
+                               name="reclamation_id"
+                               class="form-control"
+                               placeholder="Rechercher par ID Réclamation"
+                               value="{{ app.request.get('reclamation_id') }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Rechercher
+                        </button>
+                    </div>
+
+                    <div class="col-md-2">
+                        <a href="{{ path('reponse_index') }}"
+                           class="btn btn-secondary w-100">
+                            Réinitialiser
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <!-- 📋 Tableau -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title">Toutes les réponses</h3>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Contenu</th>
+                            <th>Date</th>
+                            <th>ID Réclamation</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reponse in reponses %}
+                            <tr>
+                                <td>{{ reponse.id }}</td>
+                                <td>{{ reponse.contenu|slice(0,50) }}{% if reponse.contenu|length > 50 %}...{% endif %}</td>
+                                <td>{{ reponse.dateReponse|date('d/m/Y H:i') }}</td>
+                                <td>{{ reponse.reclamation.id }}</td>
+                                <td>
+
+                                    <a href="{{ path('reponse_edit', {'id': reponse.id}) }}"
+                                       class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
+                                    <form method="post"
+                                          action="{{ path('reponse_delete', {'id': reponse.id}) }}"
+                                          style="display:inline-block"
+                                          onsubmit="return confirm('Supprimer cette réponse ?');">
+
+                                        <input type="hidden"
+                                               name="_token"
+                                               value="{{ csrf_token('delete' ~ reponse.id) }}">
+
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+
+                                    </form>
+
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    Aucune réponse trouvée.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
