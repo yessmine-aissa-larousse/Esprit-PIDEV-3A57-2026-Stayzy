@@ -36,7 +36,7 @@
                     </ul>
                 </li>
 
-                {# Widgets Menu #}
+                {# Mes Logements Menu #}
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
@@ -47,23 +47,43 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                            <a href="{{ path('admin_logement_list') }}" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Liste des props </p>
+                                <p>Liste des logements</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('admin_logement_add') }}" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Ajouter un logement</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                {# Tables Menu #}
+                {# Les catégorie Menu #}
                 <li class="nav-item">
                     <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-table"></i>
+                        <i class="nav-icon bi bi-box-seam-fill"></i>
                         <p>
-                            DM Réservations
+                            Les Catégories
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{{ path('admin_categorie_list') }}" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Liste des Catégories</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('admin_categorie_add') }}" class="nav-link">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Ajouter une catégorie</p>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </nav>

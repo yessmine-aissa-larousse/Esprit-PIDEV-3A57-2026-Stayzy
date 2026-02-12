@@ -1,0 +1,352 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}{{ logement.titre }} - Stayzy{% endblock %}
+
+{% block body %}
+
+    <!-- Page Title -->
+    <div class="page-title light-background">
+        <div class="container d-lg-flex justify-content-between align-items-center">
+            <h1 class="mb-2 mb-lg-0">Détails du logement</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('app_properties') }}">Logements</a></li>
+                    <li class="current">{{ logement.titre }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div><!-- End Page Title -->
+
+    <!-- Property Details Section -->
+    <section id="property-details" class="property-details section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+            <div class="row">
+                <div class="col-lg-8">
+
+                    <!-- Property Hero Section - Galerie photos -->
+                    <div class="property-hero mb-5" data-aos="fade-up" data-aos-delay="200">
+                        <div class="hero-image-container">
+                            {% if logement.photoPrincipale or logement.photos %}
+                                <div class="property-gallery-slider swiper init-swiper">
+                                    <script type="application/json" class="swiper-config">
+                                    {
+                                      "loop": true,
+                                      "speed": 600,
+                                      "autoplay": {
+                                        "delay": 5000
+                                      },
+                                      "navigation": {
+                                        "nextEl": ".swiper-button-next",
+                                        "prevEl": ".swiper-button-prev"
+                                      }
+                                    }
+                                    </script>
+                                    <div class="swiper-wrapper">
+                                        {# Photo principale #}
+                                        {% if logement.photoPrincipale %}
+                                            <div class="swiper-slide">
+                                                <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                                                     class="img-fluid hero-image" 
+                                                     alt="{{ logement.titre }}">
+                                                <div class="hero-overlay">
+                                                    <div class="property-badge">
+                                                        <span class="status-badge for-rent">Disponible</span>
+                                                        {% if logement.categorie %}
+                                                            <span class="featured-badge">{{ logement.categorie.nom }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {# Photos supplémentaires #}
+                                        {% if logement.photos %}
+                                            {% for photo in logement.photos %}
+                                                <div class="swiper-slide">
+                                                    <img src="{{ asset('uploads/logements/' ~ photo) }}" 
+                                                         class="img-fluid hero-image" 
+                                                         alt="{{ logement.titre }} - Photo {{ loop.index }}">
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="swiper-button-next"></div>
+                                    <div class="swiper-button-prev"></div>
+                                </div>
+                            {% else %}
+                                <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" 
+                                     class="img-fluid" 
+                                     alt="{{ logement.titre }}">
+                            {% endif %}
+                        </div>
+                    </div><!-- End Property Hero -->
+
+                    <!-- Property Information -->
+                    <div class="property-info mb-5" data-aos="fade-up" data-aos-delay="300">
+                        <div class="property-header">
+                            <h1 class="property-title">{{ logement.titre }}</h1>
+                            <div class="property-meta">
+                                <span class="address">
+                                    <i class="bi bi-geo-alt"></i> 
+                                    {% if logement.adresse %}
+                                        {{ logement.adresse.rue|default('') }}, 
+                                        {{ logement.adresse.ville|default('') }} 
+                                        {{ logement.adresse.codePostal|default('') }}, 
+                                        {{ logement.adresse.pays|default('') }}
+                                    {% else %}
+                                        Adresse non renseignée
+                                    {% endif %}
+                                </span>
+                                <span class="listing-id">ID: #{{ logement.id }}</span>
+                            </div>
+                        </div>
+
+                        <div class="pricing-section">
+                            <div class="main-price">{{ logement.prix }}€<span class="period">/nuit</span></div>
+                            <div class="price-breakdown">
+                                <span class="available">
+                                    Disponible depuis le {{ logement.createdAt|date('d/m/Y') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="quick-stats">
+                            <div class="stat-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-house"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number">{{ logement.nombreChambres }}</span>
+                                        <span class="stat-label">Chambre{{ logement.nombreChambres > 1 ? 's' : '' }}</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-droplet"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number">{{ logement.nombreSalleDeBain }}</span>
+                                        <span class="stat-label">Salle{{ logement.nombreSalleDeBain > 1 ? 's' : '' }} de bain</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-arrows-angle-expand"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number">{{ logement.superficie }}</span>
+                                        <span class="stat-label">m²</span>
+                                    </div>
+                                </div>
+                                {% if logement.categorie %}
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <div class="stat-content">
+                                            <span class="stat-number">{{ logement.categorie.nom }}</span>
+                                            <span class="stat-label">Type</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div><!-- End Property Information -->
+
+                    <!-- Description & Features -->
+                    <div class="property-details mb-5" data-aos="fade-up" data-aos-delay="400">
+                        <h3>Description du logement</h3>
+                        {% if logement.description %}
+                            <p>{{ logement.description|nl2br }}</p>
+                        {% else %}
+                            <p class="text-muted">Aucune description disponible pour ce logement.</p>
+                        {% endif %}
+
+                        {% if logement.amenites and logement.amenites|length > 0 %}
+                            <div class="features-grid mt-4">
+                                <h5>Équipements et aménités</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="feature-list">
+                                            {% for amenite in logement.amenites %}
+                                                {% if loop.index <= (logement.amenites|length / 2)|round(0, 'ceil') %}
+                                                    <li>
+                                                        <i class="bi bi-check2"></i> 
+                                                        {{ amenite|replace({'_': ' '})|title }}
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="feature-list">
+                                            {% for amenite in logement.amenites %}
+                                                {% if loop.index > (logement.amenites|length / 2)|round(0, 'ceil') %}
+                                                    <li>
+                                                        <i class="bi bi-check2"></i> 
+                                                        {{ amenite|replace({'_': ' '})|title }}
+                                                    </li>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div><!-- End Description & Features -->
+
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <div class="sticky-sidebar">
+
+                        <!-- Quick Actions -->
+                        <div class="actions-card mb-4" data-aos="fade-up" data-aos-delay="250">
+                            <div class="action-buttons">
+                                <a href="#contact-form" class="btn btn-primary btn-lg w-100 mb-3">
+                                    <i class="bi bi-calendar-check"></i>
+                                    Réserver maintenant
+                                </a>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-heart"></i>
+                                            Favoris
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-primary w-100">
+                                            <i class="bi bi-share"></i>
+                                            Partager
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- End Quick Actions -->
+
+                        <!-- Agent/Owner Card -->
+                        {% if logement.proprietaire %}
+                            <div class="agent-card mb-4" data-aos="fade-up" data-aos-delay="350">
+                                <div class="agent-header">
+                                    <div class="agent-avatar">
+                                        {% if logement.proprietaire.imageUrl %}
+                                            <img src="{{ logement.proprietaire.imageUrl }}" 
+                                                 class="img-fluid" 
+                                                 alt="{{ logement.proprietaire.fullName }}">
+                                        {% else %}
+                                            <img src="{{ asset('frontOffice/img/real-estate/agent-2.webp') }}" 
+                                                 class="img-fluid" 
+                                                 alt="Propriétaire">
+                                        {% endif %}
+                                        <div class="online-status"></div>
+                                    </div>
+                                    <div class="agent-info">
+                                        <h4>{{ logement.proprietaire.fullName }}</h4>
+                                        <p class="agent-role">Propriétaire</p>
+                                    </div>
+                                </div>
+
+                                <div class="agent-contact">
+                                    {% if logement.proprietaire.tel %}
+                                        <div class="contact-item">
+                                            <i class="bi bi-telephone"></i>
+                                            <span>{{ logement.proprietaire.tel }}</span>
+                                        </div>
+                                    {% endif %}
+                                    {% if logement.proprietaire.email %}
+                                        <div class="contact-item">
+                                            <i class="bi bi-envelope"></i>
+                                            <span>{{ logement.proprietaire.email }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="agent-actions mt-3">
+                                    {% if logement.proprietaire.tel %}
+                                        <a href="tel:{{ logement.proprietaire.tel }}" class="btn btn-success w-100 mb-2">
+                                            <i class="bi bi-telephone"></i>
+                                            Appeler
+                                        </a>
+                                    {% endif %}
+                                    <button class="btn btn-outline w-100">
+                                        <i class="bi bi-chat-dots"></i>
+                                        Envoyer un message
+                                    </button>
+                                </div>
+                            </div><!-- End Agent Card -->
+                        {% endif %}
+
+                        <!-- Contact Form -->
+                        <div class="contact-form-card mb-4" id="contact-form" data-aos="fade-up" data-aos-delay="450">
+                            <h4>Demande d'information</h4>
+                            <form method="post" class="php-email-form">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <input type="text" name="name" class="form-control" placeholder="Nom complet" required>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <input type="tel" name="phone" class="form-control" placeholder="Téléphone">
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <select name="subject" class="form-select" required>
+                                            <option value="">Je suis intéressé par...</option>
+                                            <option value="Réservation">Faire une réservation</option>
+                                            <option value="Information">Plus d'informations</option>
+                                            <option value="Visite">Organiser une visite</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <textarea name="message" class="form-control" rows="4" 
+                                                  placeholder="Votre message ou questions..."></textarea>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">Envoyer</button>
+                            </form>
+                        </div><!-- End Contact Form -->
+
+                        <!-- Similar Properties -->
+                        {% if logementsSimilaires|length > 0 %}
+                            <div class="similar-properties" data-aos="fade-up" data-aos-delay="550">
+                                <h4>Logements similaires</h4>
+                                {% for similaire in logementsSimilaires %}
+                                    <a href="{{ path('app_property_details', {id: similaire.id}) }}" class="similar-property-item">
+                                        {% if similaire.photoPrincipale %}
+                                            <img src="{{ asset('uploads/logements/' ~ similaire.photoPrincipale) }}" 
+                                                 class="img-fluid" 
+                                                 alt="{{ similaire.titre }}">
+                                        {% else %}
+                                            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-4.webp') }}" 
+                                                 class="img-fluid" 
+                                                 alt="{{ similaire.titre }}">
+                                        {% endif %}
+                                        <div class="similar-info">
+                                            <h6>{{ similaire.titre|slice(0, 30) }}{{ similaire.titre|length > 30 ? '...' : '' }}</h6>
+                                            <p class="similar-price">{{ similaire.prix }}€/nuit</p>
+                                            <p class="similar-specs">
+                                                {{ similaire.nombreChambres }} ch • 
+                                                {{ similaire.nombreSalleDeBain }} sdb • 
+                                                {{ similaire.superficie }} m²
+                                            </p>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div><!-- End Similar Properties -->
+                        {% endif %}
+
+                    </div>
+                </div><!-- End Sidebar -->
+
+            </div>
+
+        </div>
+    </section><!-- /Property Details Section -->
+
+{% endblock %}

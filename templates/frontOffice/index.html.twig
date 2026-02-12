@@ -1,14 +1,12 @@
 {% extends 'frontOffice/base.html.twig' %}
 
-{% block title %}HomeSpace - Accueil{% endblock %}
+{% block title %}Stayzy - Trouvez votre logement idéal{% endblock %}
 
 {% block body %}
 
     <!-- Hero Section -->
     <section id="hero" class="hero section">
-
       <div class="container" data-aos="fade-up" data-aos-delay="100">
-
         <div class="hero-wrapper">
           <div class="row g-4">
 
@@ -17,61 +15,67 @@
                 <div class="content-header">
                   <span class="hero-label">
                     <i class="bi bi-house-heart"></i>
-                    Dream Homes Await
+                    Votre prochain logement vous attend
                   </span>
-                  <h1>Find Your Ideal Property with Expert Guidance</h1>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Connect with verified real estate professionals.</p>
+                  <h1>Trouvez le logement parfait pour votre séjour</h1>
+                  <p>Découvrez notre sélection de logements vérifiés et réservez en toute confiance. Des appartements cosy aux villas de luxe, trouvez l'endroit idéal pour votre prochain séjour.</p>
                 </div>
 
+                {# BARRE DE RECHERCHE FONCTIONNELLE #}
                 <div class="search-container" data-aos="fade-up" data-aos-delay="300">
                   <div class="search-header">
-                    <h3>Start Your Property Search</h3>
-                    <p>Discover thousands of verified listings</p>
+                    <h3>Commencez votre recherche</h3>
+                    <p>Des centaines de logements disponibles</p>
                   </div>
 
-                  <form action="" class="property-search-form">
+                  <form action="{{ path('app_properties') }}" method="GET" class="property-search-form">
                     <div class="search-grid">
+                      
+                      {# Localisation #}
                       <div class="search-field">
-                        <label for="search-location" class="field-label">Location</label>
-                        <input type="text" id="search-location" name="location" placeholder="Enter city or neighborhood" required="">
+                        <label for="search-location" class="field-label">Localisation</label>
+                        <input type="text" 
+                               id="search-location" 
+                               name="ville" 
+                               placeholder="Ville ou code postal">
                         <i class="bi bi-geo-alt field-icon"></i>
                       </div>
 
+                      {# Type de logement #}
                       <div class="search-field">
-                        <label for="search-type" class="field-label">Property Type</label>
-                        <select id="search-type" name="property_type" required="">
-                          <option value="">All Types</option>
-                          <option value="house">Single House</option>
-                          <option value="apartment">Apartment</option>
-                          <option value="condo">Condominium</option>
-                          <option value="villa">Villa</option>
-                          <option value="commercial">Commercial</option>
+                        <label for="search-type" class="field-label">Type de logement</label>
+                        <select id="search-type" name="categorie">
+                          <option value="">Tous types</option>
+                          {% for categorie in categories %}
+                            <option value="{{ categorie.id }}">{{ categorie.nom }}</option>
+                          {% endfor %}
                         </select>
                         <i class="bi bi-building field-icon"></i>
                       </div>
 
+                      {# Budget #}
                       <div class="search-field">
-                        <label for="search-budget" class="field-label">Budget Range</label>
-                        <select id="search-budget" name="price_range" required="">
-                          <option value="">Any Price</option>
-                          <option value="0-300000">Under $300K</option>
-                          <option value="300000-600000">$300K - $600K</option>
-                          <option value="600000-900000">$600K - $900K</option>
-                          <option value="900000-1500000">$900K - $1.5M</option>
-                          <option value="1500000+">Above $1.5M</option>
+                        <label for="search-budget" class="field-label">Budget par nuit</label>
+                        <select id="search-budget" name="prix_max">
+                          <option value="">Tout budget</option>
+                          <option value="50">≤ 50€</option>
+                          <option value="100">≤ 100€</option>
+                          <option value="150">≤ 150€</option>
+                          <option value="200">≤ 200€</option>
+                          <option value="300">≤ 300€</option>
                         </select>
-                        <i class="bi bi-currency-dollar field-icon"></i>
+                        <i class="bi bi-currency-euro field-icon"></i>
                       </div>
 
+                      {# Chambres #}
                       <div class="search-field">
-                        <label for="search-rooms" class="field-label">Bedrooms</label>
-                        <select id="search-rooms" name="bedrooms">
-                          <option value="">Any</option>
-                          <option value="1">1 Room</option>
-                          <option value="2">2 Rooms</option>
-                          <option value="3">3 Rooms</option>
-                          <option value="4">4 Rooms</option>
-                          <option value="5+">5+ Rooms</option>
+                        <label for="search-rooms" class="field-label">Chambres</label>
+                        <select id="search-rooms" name="chambres">
+                          <option value="any">Toutes</option>
+                          <option value="1">1+</option>
+                          <option value="2">2+</option>
+                          <option value="3">3+</option>
+                          <option value="4">4+</option>
                         </select>
                         <i class="bi bi-door-open field-icon"></i>
                       </div>
@@ -79,29 +83,39 @@
 
                     <button type="submit" class="search-btn">
                       <i class="bi bi-search"></i>
-                      <span>Find Properties</span>
+                      <span>Rechercher</span>
                     </button>
                   </form>
                 </div>
 
+                {# Stats dynamiques #}
                 <div class="achievement-grid" data-aos="fade-up" data-aos-delay="400">
                   <div class="achievement-item">
                     <div class="achievement-number">
-                      <span data-purecounter-start="0" data-purecounter-end="1250" data-purecounter-duration="1" class="purecounter"></span>+
+                      <span data-purecounter-start="0" 
+                            data-purecounter-end="{{ logementsFeatured|length }}" 
+                            data-purecounter-duration="1" 
+                            class="purecounter"></span>+
                     </div>
-                    <span class="achievement-text">Active Listings</span>
+                    <span class="achievement-text">Logements disponibles</span>
                   </div>
                   <div class="achievement-item">
                     <div class="achievement-number">
-                      <span data-purecounter-start="0" data-purecounter-end="89" data-purecounter-duration="1" class="purecounter"></span>+
+                      <span data-purecounter-start="0" 
+                            data-purecounter-end="{{ categories|length }}" 
+                            data-purecounter-duration="1" 
+                            class="purecounter"></span>
                     </div>
-                    <span class="achievement-text">Expert Agents</span>
+                    <span class="achievement-text">Types de logements</span>
                   </div>
                   <div class="achievement-item">
                     <div class="achievement-number">
-                      <span data-purecounter-start="0" data-purecounter-end="96" data-purecounter-duration="1" class="purecounter"></span>%
+                      <span data-purecounter-start="0" 
+                            data-purecounter-end="100" 
+                            data-purecounter-duration="1" 
+                            class="purecounter"></span>%
                     </div>
-                    <span class="achievement-text">Success Rate</span>
+                    <span class="achievement-text">Satisfaction client</span>
                   </div>
                 </div>
               </div>
@@ -110,64 +124,181 @@
             <div class="col-lg-5">
               <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
                 <div class="visual-container">
-                  <div class="featured-property">
-                    <img src="{{ asset('frontOffice/img/real-estate/property-exterior-8.webp') }}" alt="Featured Property" class="img-fluid">
-                    <div class="property-info">
-                      <div class="property-price">$925,000</div>
-                      <div class="property-details">
-                        <span><i class="bi bi-geo-alt"></i> Downtown District</span>
-                        <span><i class="bi bi-house"></i> 4 Bed, 3 Bath</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="overlay-images">
-                    <div class="overlay-img overlay-1">
-                      <img src="{{ asset('frontOffice/img/real-estate/property-interior-4.webp') }}" alt="Interior View" class="img-fluid">
-                    </div>
-                    <div class="overlay-img overlay-2">
-                      <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" alt="Exterior View" class="img-fluid">
-                    </div>
-                  </div>
-
-                  <div class="agent-card">
-                    <div class="agent-profile">
-                      <img src="{{ asset('frontOffice/img/real-estate/agent-7.webp') }}" alt="Agent Profile" class="agent-photo">
-                      <div class="agent-info">
-                        <h4>Michael Chen</h4>
-                        <p>Senior Property Advisor</p>
-                        <div class="agent-rating">
-                          <div class="stars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
+                  
+                  {# Logement vedette (le plus récent) #}
+                  {% if logementsFeatured|length > 0 %}
+                    {% set firstLogement = logementsFeatured[0] %}
+                    <div class="featured-property">
+                      <a href="{{ path('app_property_details', {id: firstLogement.id}) }}">
+                        {% if firstLogement.photoPrincipale %}
+                          <img src="{{ asset('uploads/logements/' ~ firstLogement.photoPrincipale) }}" 
+                               alt="{{ firstLogement.titre }}" 
+                               class="img-fluid">
+                        {% else %}
+                          <img src="{{ asset('frontOffice/img/real-estate/property-exterior-8.webp') }}" 
+                               alt="Featured Property" 
+                               class="img-fluid">
+                        {% endif %}
+                        <div class="property-info">
+                          <div class="property-price">{{ firstLogement.prix }}€ <small>/nuit</small></div>
+                          <div class="property-details">
+                            <span>
+                              <i class="bi bi-geo-alt"></i> 
+                              {{ firstLogement.adresse.ville|default('') }}
+                            </span>
+                            <span>
+                              <i class="bi bi-house"></i> 
+                              {{ firstLogement.nombreChambres }} ch, {{ firstLogement.nombreSalleDeBain }} sdb
+                            </span>
                           </div>
-                          <span class="rating-text">5.0 (94 reviews)</span>
                         </div>
-                      </div>
+                      </a>
                     </div>
-                    <button class="contact-agent-btn">
-                      <i class="bi bi-chat-dots"></i>
-                    </button>
-                  </div>
+
+                    {# Images superposées (2e et 3e logements) #}
+                    <div class="overlay-images">
+                      {% if logementsFeatured|length > 1 %}
+                        <div class="overlay-img overlay-1">
+                          {% if logementsFeatured[1].photoPrincipale %}
+                            <img src="{{ asset('uploads/logements/' ~ logementsFeatured[1].photoPrincipale) }}" 
+                                 alt="{{ logementsFeatured[1].titre }}" 
+                                 class="img-fluid">
+                          {% else %}
+                            <img src="{{ asset('frontOffice/img/real-estate/property-interior-4.webp') }}" 
+                                 alt="Interior View" 
+                                 class="img-fluid">
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                      
+                      {% if logementsFeatured|length > 2 %}
+                        <div class="overlay-img overlay-2">
+                          {% if logementsFeatured[2].photoPrincipale %}
+                            <img src="{{ asset('uploads/logements/' ~ logementsFeatured[2].photoPrincipale) }}" 
+                                 alt="{{ logementsFeatured[2].titre }}" 
+                                 class="img-fluid">
+                          {% else %}
+                            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" 
+                                 alt="Exterior View" 
+                                 class="img-fluid">
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    {# Fallback si aucun logement #}
+                    <div class="featured-property">
+                      <img src="{{ asset('frontOffice/img/real-estate/property-exterior-8.webp') }}" 
+                           alt="Featured Property" 
+                           class="img-fluid">
+                    </div>
+                  {% endif %}
+
                 </div>
               </div>
             </div><!-- End Hero Visual -->
 
           </div>
         </div>
+      </div>
+    </section><!-- /Hero Section -->
+
+    <!-- Featured Properties Section -->
+    <section id="featured-properties" class="properties section light-background">
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        
+        <div class="section-title text-center mb-5">
+          <span class="section-label">Nos logements</span>
+          <h2>Logements récemment ajoutés</h2>
+          <p>Découvrez notre sélection de logements de qualité</p>
+        </div>
+
+        {% if logementsFeatured|length > 0 %}
+          <div class="row g-4">
+            {% for logement in logementsFeatured|slice(0, 6) %}
+              <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ 100 + (loop.index * 50) }}">
+                <div class="property-item">
+                  <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                    <div class="property-image-wrapper">
+                      {% if logement.photoPrincipale %}
+                        <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                             alt="{{ logement.titre }}" 
+                             class="img-fluid">
+                      {% else %}
+                        <img src="{{ asset('frontOffice/img/real-estate/property-exterior-' ~ (loop.index % 9 + 1) ~ '.webp') }}" 
+                             alt="{{ logement.titre }}" 
+                             class="img-fluid">
+                      {% endif %}
+                      
+                      <div class="property-status">
+                        <span class="status-badge sale">Disponible</span>
+                        {% if logement.categorie %}
+                          <span class="status-badge featured">{{ logement.categorie.nom }}</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </a>
+                  
+                  <div class="property-details">
+                    <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                      <div class="property-header">
+                        <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
+                        {% if logement.categorie %}
+                          <div class="property-type">{{ logement.categorie.nom }}</div>
+                        {% endif %}
+                      </div>
+                      
+                      <h4 class="property-title">{{ logement.titre }}</h4>
+                      
+                      <p class="property-address">
+                        <i class="bi bi-geo-alt"></i>
+                        {% if logement.adresse %}
+                          {{ logement.adresse.ville|default('') }}, {{ logement.adresse.pays|default('') }}
+                        {% else %}
+                          Localisation non renseignée
+                        {% endif %}
+                      </p>
+                      
+                      <div class="property-specs">
+                        <div class="spec-item">
+                          <i class="bi bi-house-door"></i>
+                          <span>{{ logement.nombreChambres }} ch</span>
+                        </div>
+                        <div class="spec-item">
+                          <i class="bi bi-droplet"></i>
+                          <span>{{ logement.nombreSalleDeBain }} sdb</span>
+                        </div>
+                        <div class="spec-item">
+                          <i class="bi bi-arrows-angle-expand"></i>
+                          <span>{{ logement.superficie }} m²</span>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{{ path('app_properties') }}" class="btn btn-primary btn-lg">
+              Voir tous les logements
+              <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+          </div>
+        {% else %}
+          <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i>
+            Aucun logement disponible pour le moment.
+          </div>
+        {% endif %}
 
       </div>
-
-    </section><!-- /Hero Section -->
+    </section><!-- /Featured Properties Section -->
 
     <!-- Home About Section -->
     <section id="home-about" class="home-about section">
-
       <div class="container" data-aos="fade-up" data-aos-delay="100">
-
         <div class="row gy-5">
 
           <div class="col-lg-5" data-aos="zoom-in" data-aos-delay="200">
@@ -176,8 +307,8 @@
                 <img src="{{ asset('frontOffice/img/real-estate/property-exterior-1.webp') }}" alt="Modern Property" class="img-fluid">
                 <div class="experience-badge">
                   <div class="badge-content">
-                    <div class="number"><span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1" class="purecounter"></span>+</div>
-                    <div class="text">Years<br>Experience</div>
+                    <div class="number"><span data-purecounter-start="0" data-purecounter-end="5" data-purecounter-duration="1" class="purecounter"></span>+</div>
+                    <div class="text">Années<br>d'expérience</div>
                   </div>
                 </div>
               </div>
@@ -190,11 +321,11 @@
           <div class="col-lg-7" data-aos="fade-left" data-aos-delay="300">
             <div class="content">
               <div class="section-header">
-                <span class="section-label">About Our Company</span>
-                <h2>Building Dreams, Creating Homes Since 2008</h2>
+                <span class="section-label">À propos de Stayzy</span>
+                <h2>Votre partenaire de confiance pour trouver le logement idéal</h2>
               </div>
 
-              <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+              <p>Depuis notre création, nous nous engageons à faciliter la recherche de logements pour nos clients. Notre plateforme offre une expérience simplifiée et sécurisée pour trouver votre prochain chez-vous.</p>
 
               <div class="achievements-list">
                 <div class="achievement-item">
@@ -202,8 +333,8 @@
                     <i class="bi bi-house-door"></i>
                   </div>
                   <div class="achievement-content">
-                    <h4><span data-purecounter-start="0" data-purecounter-end="3200" data-purecounter-duration="2" class="purecounter"></span>+ Properties Sold</h4>
-                    <p>Successfully completed transactions</p>
+                    <h4><span data-purecounter-start="0" data-purecounter-end="{{ logementsFeatured|length }}" data-purecounter-duration="2" class="purecounter"></span>+ Logements</h4>
+                    <p>Disponibles sur notre plateforme</p>
                   </div>
                 </div>
                 <div class="achievement-item">
@@ -211,37 +342,23 @@
                     <i class="bi bi-people"></i>
                   </div>
                   <div class="achievement-content">
-                    <h4><span data-purecounter-start="0" data-purecounter-end="98" data-purecounter-duration="1" class="purecounter"></span>% Client Satisfaction</h4>
-                    <p>Happy customers recommend us</p>
+                    <h4><span data-purecounter-start="0" data-purecounter-end="100" data-purecounter-duration="1" class="purecounter"></span>% Satisfaction</h4>
+                    <p>Nos clients nous recommandent</p>
                   </div>
                 </div>
               </div>
 
               <div class="action-section">
-                <a href="#" class="btn-cta">
-                  <span>Discover Our Story</span>
+                <a href="{{ path('app_properties') }}" class="btn-cta">
+                  <span>Découvrir nos logements</span>
                   <i class="bi bi-arrow-right"></i>
                 </a>
-                <div class="contact-info">
-                  <div class="contact-icon">
-                    <i class="bi bi-telephone"></i>
-                  </div>
-                  <div class="contact-details">
-                    <span>Call us today</span>
-                    <strong>+1 (555) 123-4567</strong>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
         </div>
-
       </div>
-
     </section><!-- /Home About Section -->
-
-    {# Vous pouvez copier le reste des sections ici si vous voulez #}
-    {# Pour l'instant, on teste avec juste ces 2 sections #}
 
 {% endblock %}

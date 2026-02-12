@@ -1,0 +1,332 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Détails du logement - {{ logement.titre }}{% endblock %}
+
+{% block admin_content %}
+    {# Header #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Détails du logement</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('admin_logement_list') }}">Logements</a></li>
+                        <li class="breadcrumb-item active">Détails</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Content #}
+    <div class="app-content">
+        <div class="container-fluid">
+            
+            {# Boutons d'action en haut #}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <a href="{{ path('admin_logement_list') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour à la liste
+                    </a>
+                    <a href="{{ path('admin_logement_edit', {id: logement.id}) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <a href="{{ path('admin_logement_delete', {id: logement.id}) }}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce logement ?')">
+                        <i class="bi bi-trash"></i> Supprimer
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                {# Colonne gauche - Photos et galerie #}
+                <div class="col-lg-8">
+                    
+                    {# Carte Photos #}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-images"></i> Galerie photos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {# Photo principale #}
+                            {% if logement.photoPrincipale %}
+                                <div class="mb-3">
+                                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                                         alt="{{ logement.titre }}" 
+                                         class="img-fluid rounded"
+                                         style="width: 100%; max-height: 500px; object-fit: cover;">
+                                    <p class="text-muted text-center mt-2 mb-0">
+                                        <small><i class="bi bi-star-fill text-warning"></i> Photo principale</small>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {# Photos supplémentaires #}
+                            {% if logement.photos is not empty %}
+                                <div class="row g-2">
+                                    {% for photo in logement.photos %}
+                                        <div class="col-md-4 col-6">
+                                            <img src="{{ asset('uploads/logements/' ~ photo) }}" 
+                                                 alt="Photo {{ loop.index }}" 
+                                                 class="img-thumbnail"
+                                                 style="width: 100%; height: 150px; object-fit: cover; cursor: pointer;"
+                                                 data-bs-toggle="modal" 
+                                                 data-bs-target="#photoModal{{ loop.index }}">
+                                        </div>
+
+                                        {# Modal pour chaque photo #}
+                                        <div class="modal fade" id="photoModal{{ loop.index }}" tabindex="-1">
+                                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Photo {{ loop.index }}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <img src="{{ asset('uploads/logements/' ~ photo) }}" 
+                                                             class="img-fluid" 
+                                                             alt="Photo {{ loop.index }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> Aucune photo supplémentaire
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Carte Description #}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-file-text"></i> Description
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if logement.description %}
+                                <p class="text-justify">{{ logement.description }}</p>
+                            {% else %}
+                                <p class="text-muted">Aucune description disponible</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Carte Aménités #}
+                    {% if logement.amenites is not empty %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-grid"></i> Aménités
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% set amenitesLabels = {
+                                'wifi': 'WiFi',
+                                'parking': 'Parking',
+                                'climatisation': 'Climatisation',
+                                'piscine': 'Piscine',
+                                'cuisine': 'Cuisine équipée',
+                                'lave_linge': 'Lave-linge',
+                                'balcon': 'Balcon/Terrasse',
+                                'jardin': 'Jardin'
+                            } %}
+                            
+                            <div class="row">
+                                {% for amenite in logement.amenites %}
+                                    <div class="col-md-6 col-12 mb-2">
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                        <strong>{{ amenitesLabels[amenite] ?? amenite }}</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                {# Colonne droite - Informations #}
+                <div class="col-lg-4">
+                    
+                    {# Carte Informations principales #}
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-info-circle"></i> Informations principales
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h4 class="mb-1">{{ logement.titre }}</h4>
+                                <span class="badge text-bg-info">
+                                    {{ logement.categorie ? logement.categorie.nom : 'Sans catégorie' }}
+                                </span>
+                            </div>
+
+                            <hr>
+
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">
+                                        <i class="bi bi-cash-coin"></i> Prix par nuit
+                                    </span>
+                                    <strong class="text-success fs-5">
+                                        {{ logement.prix|number_format(2, ',', ' ') }} €
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">
+                                        <i class="bi bi-door-closed"></i> Chambres
+                                    </span>
+                                    <strong>{{ logement.nombreChambres }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">
+                                        <i class="bi bi-droplet"></i> Salles de bain
+                                    </span>
+                                    <strong>{{ logement.nombreSalleDeBain }}</strong>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">
+                                        <i class="bi bi-arrows-angle-expand"></i> Superficie
+                                    </span>
+                                    <strong>{{ logement.superficie }} m²</strong>
+                                </div>
+                            </div>
+
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">
+                                        <i class="bi bi-toggle-on"></i> Disponibilité
+                                    </span>
+                                    {% if logement.disponible %}
+                                        <span class="badge text-bg-success">
+                                            <i class="bi bi-check-circle"></i> Disponible
+                                        </span>
+                                    {% else %}
+                                        <span class="badge text-bg-danger">
+                                            <i class="bi bi-x-circle"></i> Indisponible
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if logement.noteMoyenne %}
+                            <div class="info-item mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">
+                                        <i class="bi bi-star-fill text-warning"></i> Note moyenne
+                                    </span>
+                                    <strong>{{ logement.noteMoyenne|number_format(1, ',') }} / 5</strong>
+                                </div>
+                                {% if logement.totalAvis %}
+                                <small class="text-muted">({{ logement.totalAvis }} avis)</small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Carte Adresse #}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-geo-alt"></i> Localisation
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if logement.adresse %}
+                                <p class="mb-2">
+                                    <i class="bi bi-house-door"></i>
+                                    <strong>{{ logement.adresse.rue }}</strong>
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-mailbox"></i>
+                                    {{ logement.adresse.codePostal }} {{ logement.adresse.ville }}
+                                </p>
+                                <p class="mb-0">
+                                    <i class="bi bi-globe"></i>
+                                    {{ logement.adresse.pays }}
+                                </p>
+                            {% else %}
+                                <p class="text-muted mb-0">Adresse non renseignée</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Carte Statistiques photos #}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-image"></i> Photos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Photo principale</span>
+                                {% if logement.photoPrincipale %}
+                                    <span class="badge text-bg-success">
+                                        <i class="bi bi-check-circle"></i> Oui
+                                    </span>
+                                {% else %}
+                                    <span class="badge text-bg-warning">
+                                        <i class="bi bi-x-circle"></i> Non
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Photos supplémentaires</span>
+                                <strong>{{ logement.photos ? logement.photos|length : 0 }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {# CSS personnalisé #}
+    <style>
+        .info-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .img-thumbnail:hover {
+            opacity: 0.8;
+            transition: opacity 0.3s;
+            transform: scale(1.02);
+            transition: transform 0.3s;
+        }
+
+        .text-justify {
+            text-align: justify;
+        }
+    </style>
+{% endblock %}
