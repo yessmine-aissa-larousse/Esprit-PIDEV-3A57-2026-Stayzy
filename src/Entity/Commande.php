@@ -38,11 +38,14 @@ class Commande
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateTransaction = null;
 
-    #[ORM\ManyToOne(inversedBy: 'commandes')]
-    private ?Reservation $Reservation = null;
+    #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Reservation $reservation = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     private ?User $user = null;
+
+    // ===== Getters & Setters =====
 
     public function getId(): ?int
     {
@@ -57,7 +60,6 @@ class Commande
     public function setDateDebut(\DateTime $dateDebut): static
     {
         $this->dateDebut = $dateDebut;
-
         return $this;
     }
 
@@ -69,7 +71,6 @@ class Commande
     public function setDateFin(\DateTime $dateFin): static
     {
         $this->dateFin = $dateFin;
-
         return $this;
     }
 
@@ -81,7 +82,6 @@ class Commande
     public function setPrixTotal(float $prixTotal): static
     {
         $this->prixTotal = $prixTotal;
-
         return $this;
     }
 
@@ -93,7 +93,6 @@ class Commande
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -105,7 +104,6 @@ class Commande
     public function setPaymentMethode(?string $paymentMethode): static
     {
         $this->paymentMethode = $paymentMethode;
-
         return $this;
     }
 
@@ -117,7 +115,6 @@ class Commande
     public function setPaymentStatus(?string $paymentStatus): static
     {
         $this->paymentStatus = $paymentStatus;
-
         return $this;
     }
 
@@ -129,7 +126,6 @@ class Commande
     public function setTransactionId(?string $transactionId): static
     {
         $this->transactionId = $transactionId;
-
         return $this;
     }
 
@@ -141,19 +137,17 @@ class Commande
     public function setDateTransaction(?\DateTime $dateTransaction): static
     {
         $this->dateTransaction = $dateTransaction;
-
         return $this;
     }
 
     public function getReservation(): ?Reservation
     {
-        return $this->Reservation;
+        return $this->reservation;
     }
 
-    public function setReservation(?Reservation $Reservation): static
+    public function setReservation(?Reservation $reservation): static
     {
-        $this->Reservation = $Reservation;
-
+        $this->reservation = $reservation;
         return $this;
     }
 
@@ -165,7 +159,6 @@ class Commande
     public function setUser(?User $user): static
     {
         $this->user = $user;
-
         return $this;
     }
 }

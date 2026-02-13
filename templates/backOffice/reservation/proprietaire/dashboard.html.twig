@@ -6,7 +6,7 @@
 <div class="container-fluid my-4">
 
     <div class="mb-4 text-center">
-        <h2 class="fw-semibold text-secondary">📊 Dashboard de mes logements</h2>
+        <h2 class="fw-bold text-primary">📊 Dashboard Réservations</h2>
     </div>
 
     {# Flash messages #}
@@ -17,8 +17,38 @@
         </div>
     {% endfor %}
 
-    {# Statistiques par logement #}
-    <div class="row g-4 mb-5">
+    {# Tableau des stats globales #}
+    <div class="card shadow-sm mb-5">
+        <div class="card-body p-3">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-dark text-white">
+                    <tr>
+                        <th>Logement</th>
+                        <th>En attente</th>
+                        <th>Confirmées</th>
+                        <th>Annulées</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats %}
+                        <tr>
+                            <td>{{ stat.logement }}</td>
+                            <td><span class="badge bg-warning text-dark">{{ stat.en_attente }}</span></td>
+                            <td><span class="badge bg-primary">{{ stat.confirme }}</span></td>
+                            <td><span class="badge bg-danger">{{ stat.annule }}</span></td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Aucune donnée disponible</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Doughnut charts par logement #}
+    <div class="row g-4">
         {% for stat in stats %}
         <div class="col-md-4">
             <div class="card shadow-sm h-100">
@@ -27,15 +57,11 @@
                     <canvas id="doughnut-{{ loop.index }}" height="180"></canvas>
                     <div class="mt-3">
                         <span class="badge bg-warning text-dark me-1">En attente: {{ stat.en_attente }}</span>
-                        <span class="badge bg-success me-1">Confirmées: {{ stat.confirme }}</span>
+                        <span class="badge bg-primary me-1">Confirmées: {{ stat.confirme }}</span>
                         <span class="badge bg-danger">Annulées: {{ stat.annule }}</span>
                     </div>
                 </div>
             </div>
-        </div>
-        {% else %}
-        <div class="col-12">
-            <div class="text-center text-muted py-5">Aucune donnée disponible</div>
         </div>
         {% endfor %}
     </div>
@@ -55,9 +81,9 @@ new Chart(ctx{{ loop.index }}, {
         datasets: [{
             data: [{{ stat.en_attente }}, {{ stat.confirme }}, {{ stat.annule }}],
             backgroundColor: [
-                'rgba(255, 193, 7, 0.8)', // jaune/orange
-                'rgba(54, 162, 235, 0.8)', // bleu
-                'rgba(220, 53, 69, 0.8)'   // rouge
+                'rgba(255, 193, 7, 0.8)',  // jaune
+                'rgba(54, 162, 235, 0.8)',  // bleu
+                'rgba(220, 53, 69, 0.8)'    // rouge
             ],
             borderColor: ['#fff','#fff','#fff'],
             borderWidth: 2
@@ -66,10 +92,7 @@ new Chart(ctx{{ loop.index }}, {
     options: {
         responsive: true,
         plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { font: { size: 13, weight: 'bold' } }
-            },
+            legend: { position: 'bottom', labels: { font: { size: 13, weight: 'bold' } } },
             tooltip: {
                 enabled: true,
                 backgroundColor: 'rgba(0,0,0,0.8)',

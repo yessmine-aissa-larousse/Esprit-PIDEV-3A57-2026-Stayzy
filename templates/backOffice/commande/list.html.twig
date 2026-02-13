@@ -1,0 +1,78 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid my-4">
+
+    <div class="mb-4 text-center">
+        <h2 class="fw-semibold text-secondary"> Mes Commandes</h2>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted small">
+                    <tr>
+                        <th>#</th>
+                        <th>Réservation</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Paiement</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    {% for commande in commandes %}
+                        <tr>
+                            <td class="fw-medium">#{{ commande.id }}</td>
+                            <td>#{{ commande.reservation.id }}</td>
+                            <td>{{ commande.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ commande.dateFin|date('d/m/Y') }}</td>
+                            <td>{{ commande.prixTotal }} DT</td>
+
+                            <td>
+                                {% if commande.status == 'EN_COURS' %}
+                                    <span class="badge bg-info bg-opacity-25 text-info fw-normal">En cours</span>
+                                {% elseif commande.status == 'TERMINÉE' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success fw-normal">Terminée</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger fw-normal">Annulée</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if commande.paymentStatus == 'EN_ATTENTE' %}
+                                    <span class="badge bg-warning text-dark">En attente</span>
+                                {% elseif commande.paymentStatus == 'PAYÉ' %}
+                                    <span class="badge bg-success">Payé</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Échoué</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Détails
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                Aucune commande enregistrée.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

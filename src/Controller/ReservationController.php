@@ -164,6 +164,12 @@ class ReservationController extends AbstractController
                 $res->setStatus('ANNULÉE');
             }
         }
+        // Après $em->flush(); juste avant le flash message :
+if ($status === 'CONFIRMÉE') {
+    $commandeController = new \App\Controller\CommandeController();
+    $commandeController->createFromReservation($reservation, $em);
+}
+
 
         $em->flush();
         $this->addFlash('success', "Statut de la réservation mis à jour !");

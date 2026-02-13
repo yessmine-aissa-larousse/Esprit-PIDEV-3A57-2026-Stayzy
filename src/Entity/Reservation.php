@@ -19,12 +19,10 @@ class Reservation
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
-    #[Assert\Type(\DateTimeInterface::class, message: "Veuillez entrer une date valide.")]
     private ?\DateTime $dateDebut = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de fin est obligatoire.")]
-    #[Assert\Type(\DateTimeInterface::class, message: "Veuillez entrer une date valide.")]
     #[Assert\Expression(
         "this.getDateFin() > this.getDateDebut()",
         message: "La date de fin doit être postérieure à la date de début."
@@ -32,8 +30,8 @@ class Reservation
     private ?\DateTime $dateFin = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Veuillez indiquer le nombre de personnes.")]
-    #[Assert\Positive(message: "Le nombre de personnes doit être positif.")]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $nombrePersonnes = null;
 
     #[ORM\Column]
@@ -43,35 +41,26 @@ class Reservation
     private ?string $status = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Assert\Length(
-        max: 500,
-        maxMessage: "Le message ne peut pas dépasser {{ limit }} caractères."
-    )]
+    #[Assert\Length(max: 500)]
     private ?string $messageDemande = null;
 
-    /**
-     * @var Collection<int, Commande>
-     */
-    #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'reservation')]
+    #[ORM\OneToMany(mappedBy: 'reservation', targetEntity: Commande::class, cascade: ['persist', 'remove'])]
     private Collection $commandes;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: Logement::class, inversedBy: 'reservations')]
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Logement $logement = null;
-
-
-
 
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
     }
 
-    // ===== GETTERS & SETTERS =====
+    // ===== Getters & Setters =====
 
     public function getId(): ?int
     {
@@ -144,9 +133,6 @@ class Reservation
         return $this;
     }
 
-    /**
-     * @return Collection<int, Commande>
-     */
     public function getCommandes(): Collection
     {
         return $this->commandes;

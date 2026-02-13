@@ -17,10 +17,12 @@
                 role="navigation" 
                 aria-label="Main navigation">
                 
+
                 
-<li class="nav-item">
+                {# Widgets Menu #}
+                <li class="nav-item">
                     <a href="{{ path('front_reservation_proprietaire_dashboard') }}" class="nav-link">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
+                        <i class="bi bi-speedometer2"></i>
                         <p>
                             Dashboard
                         </p>
@@ -30,13 +32,21 @@
                 {# Widgets Menu #}
                 <li class="nav-item">
                     <a href="{{ path('front_reservation_list') }}" class="nav-link">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
-                        <p>
+                    <i class="bi bi-calendar-plus"></i>                        <p>
                             Mes Réservations
                         </p>
                     </a>
 
                 </li>
+{# Widgets Menu #}
+               
+                <li class="nav-item">
+    <a href="{{ path('commande_list') }}" class="nav-link">
+        <i class="nav-icon bi bi-box-seam-fill"></i>
+        <p>Commandes</p>
+    </a>
+</li>
+
 
             </ul>
         </nav>
