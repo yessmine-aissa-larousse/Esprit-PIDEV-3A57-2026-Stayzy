@@ -8,7 +8,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_root', methods: ['GET'])]
+    #[Route('/home', name: 'app_home', methods: ['GET'])]
     public function index(): Response
     {
         return $this->render('frontOffice/index.html.twig', [

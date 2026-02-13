@@ -1,0 +1,84 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Forum - Blog{% endblock %}
+
+{% block body %}
+    <!-- Blog Hero Section -->
+    <section class="blog-hero section">
+        <div class="container" data-aos="fade-up">
+            <div class="section-header text-center">
+                <span class="section-label">Forum</span>
+                <h2>Derniers articles et discussions</h2>
+                <p>Découvrez nos articles et participez aux échanges</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Posts Section - HomeSpace style -->
+    <section class="blog-posts section">
+        <div class="container" data-aos="fade-up">
+            <div class="row g-4">
+                {% for post in posts %}
+                    <div class="col-lg-4 col-md-6">
+                        <article>
+                            <div class="post-img">
+                                <a href="{{ path('forum_post_show', {id: post.id}) }}">
+                                    <img src="{{ asset('frontOffice/img/blog/blog-post-1.jpg') }}" alt="{{ post.title }}" class="img-fluid" onerror="this.src='https://placehold.co/600x400/e8e8e8/999?text=Blog'" />
+                                </a>
+                            </div>
+                            <div class="post-category">Par {{ post.author }}</div>
+                            <h3 class="title">
+                                <a href="{{ path('forum_post_show', {id: post.id}) }}">{{ post.title }}</a>
+                            </h3>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ asset('frontOffice/img/blog/author.jpg') }}" alt="{{ post.author }}" class="post-author-img me-3" onerror="this.style.display='none'" />
+                                <div>
+                                    <p class="post-author mb-0">{{ post.author }}</p>
+                                    <p class="post-date">{{ post.createdAt|date('d M Y') }}</p>
+                                </div>
+                            </div>
+                            {% if post.excerpt %}
+                                <p class="mt-2">{{ post.excerpt|length > 120 ? post.excerpt|slice(0, 120) ~ '...' : post.excerpt }}</p>
+                            {% endif %}
+                            <a href="{{ path('forum_post_show', {id: post.id}) }}" class="read-more mt-2 d-inline-block">
+                                Lire la suite <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </article>
+                    </div>
+                {% else %}
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted">Aucun article pour le moment.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if total_pages > 1 %}
+                <div class="pagination-2 mt-5">
+                    <nav>
+                        <ul>
+                            <li class="{{ current_page <= 1 ? 'disabled' : '' }}">
+                                {% if current_page > 1 %}
+                                    <a href="{{ path('forum_index', {page: current_page - 1}) }}"><i class="bi bi-chevron-left"></i></a>
+                                {% else %}
+                                    <span><i class="bi bi-chevron-left"></i></span>
+                                {% endif %}
+                            </li>
+                            {% for p in 1..min(total_pages, 10) %}
+                                <li class="{{ p == current_page ? 'active' : '' }}">
+                                    <a href="{{ path('forum_index', {page: p}) }}">{{ p }}</a>
+                                </li>
+                            {% endfor %}
+                            <li class="{{ current_page >= total_pages ? 'disabled' : '' }}">
+                                {% if current_page < total_pages %}
+                                    <a href="{{ path('forum_index', {page: current_page + 1}) }}"><i class="bi bi-chevron-right"></i></a>
+                                {% else %}
+                                    <span><i class="bi bi-chevron-right"></i></span>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
