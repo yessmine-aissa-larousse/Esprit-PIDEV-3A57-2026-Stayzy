@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Reponse;
+use App\Entity\User;
+
 use App\Entity\Reclamation;
 use App\Form\ReponseType;
 use App\Repository\ReponseRepository;
@@ -15,85 +17,51 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/reponse')]
 class ReponseController extends AbstractController
 {
-    // 🔹 LISTE
-    #[Route('/', name: 'reponse_index', methods: ['GET'])]
-public function index(Request $request, ReponseRepository $repository): Response
-{
-    $reclamationId = $request->query->get('reclamation_id');
 
-    $qb = $repository->createQueryBuilder('r')
-                     ->leftJoin('r.reclamation', 'rec')
-                     ->addSelect('rec');
+    /* =========================================================
+     * ===== PROPRIETAIRE + ADMIN AJOUTER REPONSE (MAX 1) ======
+     * ========================================================= */
 
-    if ($reclamationId) {
-        $qb->andWhere('rec.id = :rid')
-           ->setParameter('rid', $reclamationId);
-    }
+    #[Route('/new/{id}', name: 'reponse_new')]
+    public function new(Reclamation $reclamation, Request $request, EntityManagerInterface $em): Response
+    {
+        // max 1 réponse
+        if (!$reclamation->getReponses()->isEmpty()) {
+            return $this->redirectToRoute('prop_reclamations');
+        }
 
-    $reponses = $qb->orderBy('r.id', 'DESC')
-                   ->getQuery()
-                   ->getResult();
+        $reponse = new Reponse();
+        $reponse->setReclamation($reclamation);
 
-    return $this->render('backOffice/reponse/index.html.twig', [
-        'reponses' => $reponses,
-    ]);
-}
+        $form = $this->createForm(ReponseType::class, $reponse);
+        $form->handleRequest($request);
 
-    // 🔹 AJOUT
- #[Route('/new/{id}', name: 'reponse_new')]
-public function new(
-    Reclamation $reclamation,
-    Request $request,
-    EntityManagerInterface $em
-): Response {
+        if ($form->isSubmitted() && $form->isValid()) {
 
-    // 🚫 منع double réponse
-    if (!$reclamation->getReponses()->isEmpty()) {
-        $this->addFlash('warning', 'Cette réclamation est déjà traitée.');
+            // update statut
+            $reclamation->setStatut('TRAITEE');
 
-        return $this->redirectToRoute('reclamation_show', [
-            'id' => $reclamation->getId()
+            $em->persist($reponse);
+            $em->flush();
+
+            return $this->redirectToRoute('prop_reclamations');
+        }
+
+        // ⚠️ template path corrigé
+        return $this->render('backOffice/reponse/proprietaire/new.html.twig', [
+            'form' => $form->createView(),
+            'reclamation' => $reclamation
         ]);
     }
 
-    $reponse = new Reponse();
-    $reponse->setDateReponse(new \DateTime());
-    $reponse->setReclamation($reclamation); // 🔥 مهم
 
-    $form = $this->createForm(ReponseType::class, $reponse);
-    $form->handleRequest($request);
+    /* =========================================================
+     * ================== EDIT REPONSE =========================
+     * ========================================================= */
 
-    if ($form->isSubmitted() && $form->isValid()) {
-
-        // 🔥 تغيير statut
-        $reclamation->setStatut('TRAITEE');
-
-        // 🔥 persist صحيح
-        $em->persist($reponse);
-        $em->flush();
-
-        $this->addFlash('success', 'Réponse ajoutée avec succès.');
-
-        return $this->redirectToRoute('reclamation_show', [
-            'id' => $reclamation->getId()
-        ]);
-    }
-
-    return $this->render('backOffice/reponse/new.html.twig', [
-        'form' => $form->createView(),
-        'reclamation' => $reclamation
-    ]);
-}
-
-
-    // 🔹 EDIT
-    #[Route('/{id}/edit', name: 'reponse_edit', methods: ['GET','POST'])]
-    public function edit(
-        Request $request,
-        Reponse $reponse,
-        EntityManagerInterface $em
-    ): Response {
-
+    #[Route('/edit/{id}', name: 'reponse_edit')]
+    public function edit(Request $request, Reponse $reponse, EntityManagerInterface $em): Response
+    {
         $form = $this->createForm(ReponseType::class, $reponse);
         $form->handleRequest($request);
 
@@ -101,28 +69,52 @@ public function new(
 
             $em->flush();
 
-            return $this->redirectToRoute('reponse_index');
+            return $this->redirectToRoute('prop_reclamations');
         }
 
-        return $this->render('backOffice/reponse/edit.html.twig', [
+        // ⚠️ لازم نبعث reponse للـ twig
+        return $this->render('backOffice/reponse/proprietaire/edit.html.twig', [
             'form' => $form->createView(),
             'reponse' => $reponse
         ]);
     }
 
-    // 🔹 DELETE
-    #[Route('/{id}', name: 'reponse_delete', methods: ['POST'])]
-    public function delete(
-        Request $request,
-        Reponse $reponse,
-        EntityManagerInterface $em
-    ): Response {
 
-        if ($this->isCsrfTokenValid('delete'.$reponse->getId(), $request->request->get('_token'))) {
-            $em->remove($reponse);
-            $em->flush();
-        }
+    /* =========================================================
+     * ================= DELETE REPONSE ========================
+     * ========================================================= */
 
-        return $this->redirectToRoute('reponse_index');
+    #[Route('/delete/{id}', name: 'reponse_delete')]
+    public function delete(Reponse $reponse, EntityManagerInterface $em): Response
+    {
+        $em->remove($reponse);
+        $em->flush();
+
+        return $this->redirectToRoute('prop_reclamations');
     }
+
+
+    /* =========================================================
+     * ================= LISTE REPONSES ========================
+     * ========================================================= */
+
+#[Route('/liste', name: 'prop_reponses')]
+public function reponsesProprietaire(Request $request, ReponseRepository $repo): Response
+{
+    $idReclamation = $request->query->get('id_reclamation');
+
+    if ($idReclamation) {
+        $reponses = $repo->findBy(['reclamation' => $idReclamation]);
+    } else {
+        $reponses = $repo->findAll();
+    }
+
+    return $this->render('backOffice/reponse/proprietaire/liste.html.twig', [
+        'reponses' => $reponses
+    ]);
+}
+
+
+
+
 }

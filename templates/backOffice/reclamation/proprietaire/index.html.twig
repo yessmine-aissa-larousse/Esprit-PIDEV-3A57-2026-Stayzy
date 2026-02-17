@@ -1,0 +1,190 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Réclamations reçues{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Réclamations reçues</h3>
+    </div>
+</div>
+
+<div class="app-content">
+<div class="container-fluid">
+
+    <!-- ===== OUTILS ===== -->
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body row g-3 align-items-center">
+
+            <!-- Recherche -->
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control"
+                       placeholder="🔎 Rechercher sujet ou réponse...">
+            </div>
+
+            <!-- Filtre statut -->
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="EN_ATTENTE">En attente</option>
+                    <option value="TRAITEE">Traitée</option>
+                </select>
+            </div>
+
+            <!-- Reset -->
+            <div class="col-md-2">
+                <button id="resetBtn" class="btn btn-outline-secondary w-100">
+                    Reset
+                </button>
+            </div>
+
+            <div class="col-md-3 text-end">
+                <span id="counter" class="text-muted"></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== TABLE ===== -->
+    <div class="card shadow-sm">
+    <div class="card-body table-responsive">
+
+    <table class="table table-bordered table-hover align-middle" id="reclamationTable">
+        <thead class="table-dark">
+            <tr>
+                <th class="sortable">#</th>
+                <th class="sortable">Sujet</th>
+                <th class="sortable">Date</th>
+                <th class="sortable">Statut</th>
+                <th>Réponse</th>
+                <th width="180">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for rec in reclamations %}
+            <tr data-statut="{{ rec.statut }}">
+                <td>{{ rec.id }}</td>
+                <td class="sujet">{{ rec.sujet }}</td>
+
+                <td data-date="{{ rec.dateReclamation|date('U') }}">
+                    {{ rec.dateReclamation|date('d/m/Y H:i') }}
+                </td>
+
+                <td>
+                    {% if rec.statut == 'EN_ATTENTE' %}
+                        <span class="badge bg-warning text-dark">En attente</span>
+                    {% else %}
+                        <span class="badge bg-success">Traitée</span>
+                    {% endif %}
+                </td>
+
+                <td class="reponse">
+                    {% if rec.reponses|length > 0 %}
+                        {{ rec.reponses[0].contenu|slice(0,60) }}...
+                    {% else %}
+                        <span class="text-muted">Aucune réponse</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if rec.reponses|length == 0 %}
+                        <a href="{{ path('reponse_new', {'id': rec.id}) }}"
+                           class="btn btn-sm btn-success">
+                           Répondre
+                        </a>
+                    {% else %}
+                        <a href="{{ path('reponse_edit', {'id': rec.reponses[0].id}) }}"
+                           class="btn btn-sm btn-primary">
+                           Modifier
+                        </a>
+
+                        <a href="{{ path('reponse_delete', {'id': rec.reponses[0].id}) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Supprimer la réponse ?')">
+                           Supprimer
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    Aucune réclamation trouvée
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    </div>
+    </div>
+
+</div>
+</div>
+
+<!-- ================= JS FILTER + TRI ================= -->
+<script>
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const rows = document.querySelectorAll("#reclamationTable tbody tr");
+const counter = document.getElementById("counter");
+
+function filterTable() {
+    let visible = 0;
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const search = searchInput.value.toLowerCase();
+        const statut = row.dataset.statut;
+
+        let show = true;
+
+        if (search && !text.includes(search)) show = false;
+        if (statusFilter.value && statut !== statusFilter.value) show = false;
+
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+    });
+
+    counter.innerText = visible + " résultat(s)";
+}
+
+searchInput.addEventListener("keyup", filterTable);
+statusFilter.addEventListener("change", filterTable);
+
+document.getElementById("resetBtn").onclick = () => {
+    searchInput.value="";
+    statusFilter.value="";
+    filterTable();
+};
+
+filterTable();
+
+// ===== TRI =====
+document.querySelectorAll(".sortable").forEach((header, index) => {
+    header.addEventListener("click", () => {
+        const tbody = document.querySelector("#reclamationTable tbody");
+        const rowsArray = Array.from(tbody.querySelectorAll("tr"));
+        const asc = header.classList.toggle("asc");
+
+        rowsArray.sort((a, b) => {
+            let A = a.children[index].innerText.trim();
+            let B = b.children[index].innerText.trim();
+
+            if(!isNaN(A) && !isNaN(B)) return asc ? A-B : B-A;
+            return asc ? A.localeCompare(B) : B.localeCompare(A);
+        });
+
+        tbody.append(...rowsArray);
+    });
+});
+</script>
+
+<style>
+.sortable { cursor:pointer }
+.sortable:hover { background:#2c3034 }
+</style>
+
+{% endblock %}

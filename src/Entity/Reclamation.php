@@ -18,7 +18,7 @@ class Reclamation
     #[ORM\Column]
     private ?int $id = null;
 
-    // ✅ Sujet obligatoire + min longueur
+    //  Sujet obligatoire + min longueur
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le sujet est obligatoire.")]
     #[Assert\Length(
@@ -27,7 +27,7 @@ class Reclamation
     )]
     private ?string $sujet = null;
 
-    // ✅ Description obligatoire + min longueur
+    //  Description obligatoire + min longueur
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "La description est obligatoire.")]
     #[Assert\Length(
@@ -36,22 +36,22 @@ class Reclamation
     )]
     private ?string $description = null;
 
-    // ✅ Date automatique
+    //  Date automatique
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
     private ?\DateTimeImmutable $dateReclamation = null;
 
-    // ✅ Statut par défaut
+    //  Statut par défaut
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank]
     private ?string $statut = null;
 
-    // ✅ Relation obligatoire avec User
+    //  Relation obligatoire avec User
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    // ✅ Relation avec Reponse (OneToMany)
+    //  Relation avec Reponse (OneToMany)
     #[ORM\OneToMany(mappedBy: 'reclamation', targetEntity: Reponse::class, orphanRemoval: true)]
     private Collection $reponses;
 
@@ -136,7 +136,7 @@ class Reclamation
         $this->reponses->add($reponse);
         $reponse->setReclamation($this);
 
-        // 🔥 تغيير statut automatiquement
+        //   statut automatiquement
         $this->statut = "TRAITEE";
     }
 
@@ -150,7 +150,7 @@ public function removeReponse(Reponse $reponse): self
             $reponse->setReclamation(null);
         }
 
-        // 🔥 إذا ما عادش فما réponses
+        //  réponses
         if ($this->reponses->isEmpty()) {
             $this->statut = "EN_ATTENTE";
         }

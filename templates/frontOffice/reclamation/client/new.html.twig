@@ -1,0 +1,66 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Ajouter Réclamation{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+  <div class="container">
+    <h1>Nouvelle réclamation</h1>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+
+    <div class="card shadow p-4">
+
+      <div class="alert alert-primary text-center mb-4">
+        <h4>Envoyer une réclamation</h4>
+      </div>
+
+      {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+      <!-- Sujet -->
+      <div class="mb-4">
+        <strong>Sujet :</strong>
+        <div class="border rounded p-2 bg-light">
+          {{ form_widget(form.sujet, {'attr': {'class': 'form-control border-0 bg-light'}}) }}
+        </div>
+        <div class="text-danger small mt-1">
+          {{ form_errors(form.sujet) }}
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <strong>Description :</strong>
+        <div class="border rounded p-2 bg-light">
+          {{ form_widget(form.description, {'attr': {'class': 'form-control border-0 bg-light', 'rows': 5}}) }}
+        </div>
+        <div class="text-danger small mt-1">
+          {{ form_errors(form.description) }}
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="btn btn-success px-4">
+          <i class="bi bi-send"></i> Envoyer
+        </button>
+      </div>
+
+      {{ form_end(form) }}
+
+    </div>
+
+  </div>
+</div>
+
+
+  </div>
+</section>
+
+{% endblock %}

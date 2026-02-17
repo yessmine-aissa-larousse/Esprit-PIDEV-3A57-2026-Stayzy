@@ -15,116 +15,143 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/reclamation')]
 class ReclamationController extends AbstractController
 {
-  #[Route('/', name: 'reclamation_index')]
-public function index(Request $request, ReclamationRepository $repo): Response
-{
-    $search = $request->query->get('search');
-    $statut = $request->query->get('statut');
 
-    $reclamations = $repo->createQueryBuilder('r');
+    /* =========================================================
+     * ==================== CLIENT FRONT =======================
+     * ========================================================= */
 
-    if ($search) {
-        $reclamations->andWhere('r.sujet LIKE :search')
-                     ->setParameter('search', '%' . $search . '%');
-    }
-
-    if ($statut) {
-        $reclamations->andWhere('r.statut = :statut')
-                     ->setParameter('statut', $statut);
-    }
-
-    $reclamations = $reclamations
-        ->orderBy('r.id', 'DESC')
-        ->getQuery()
-        ->getResult();
-
-    return $this->render('backOffice/reclamation/index.html.twig', [
-        'reclamations' => $reclamations,
-    ]);
-}
-
-
-
-    #[Route('/new', name: 'reclamation_new', methods: ['GET','POST'])]
+    // ➜ Ajouter réclamation
+    #[Route('/client/new', name: 'client_reclamation_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
         $reclamation = new Reclamation();
+
+        // client id = 1
+        $client = $em->getRepository(User::class)->find(1);
+        $reclamation->setUser($client);
+        $reclamation->setStatut('EN_ATTENTE');
+
         $form = $this->createForm(ReclamationType::class, $reclamation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            //  USER TEST ID = 1
-            $user = $em->getRepository(User::class)->find(1);
-            $reclamation->setUser($user);
 
             $em->persist($reclamation);
             $em->flush();
 
-            return $this->redirectToRoute('reclamation_index');
-        }
+            return $this->render('frontOffice/reclamation/client/show.html.twig', [
+            'reclamation' => $reclamation
+        ]);
+    }
+    
 
-        return $this->render('frontOffice/reclamation/new.html.twig', [
+        return $this->render('frontOffice/reclamation/client/new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
- #[Route('/show/{id}', name: 'reclamation_show', methods: ['GET'])]
-public function show(Reclamation $reclamation): Response
-{
-    return $this->render('backOffice/reclamation/show.html.twig', [
-        'reclamation' => $reclamation,
-    ]);
-}
+    // ➜ Mes réclamations + réponses
+    #[Route('/client/mes-reclamations', name: 'client_mes_reclamations')]
+    public function mesReclamations(ReclamationRepository $repo): Response
+    {
+        $reclamations = $repo->createQueryBuilder('r')
+            ->leftJoin('r.reponses', 'rep')->addSelect('rep')
+            ->where('r.user = 1')
+            ->orderBy('r.id', 'DESC')
+            ->getQuery()->getResult();
 
+        return $this->render('frontOffice/reclamation/client/mes_reclamations.html.twig', [
+            'reclamations' => $reclamations
+        ]);
+    }
 
-
-
-    #[Route('/edit/{id}', name: 'reclamation_edit', methods: ['GET','POST'])]
+    // ➜ Modifier (si EN_ATTENTE)
+    #[Route('/client/edit/{id}', name: 'client_reclamation_edit')]
     public function edit(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
     {
+        if ($reclamation->getStatut() !== 'EN_ATTENTE')
+            return $this->redirectToRoute('client_mes_reclamations');
+
         $form = $this->createForm(ReclamationType::class, $reclamation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $em->flush();
-
-            return $this->redirectToRoute('reclamation_index');
+            return $this->redirectToRoute('client_mes_reclamations');
         }
 
-        return $this->render('backOffice/reclamation/edit.html.twig', [
+        return $this->render('frontOffice/reclamation/client/edit.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
-    #[Route('/delete/{id}', name: 'reclamation_delete', methods: ['POST'])]
-    public function delete(Request $request, Reclamation $reclamation, EntityManagerInterface $em): Response
+    // ➜ Delete (si EN_ATTENTE)
+    #[Route('/client/delete/{id}', name: 'client_reclamation_delete')]
+    public function delete(Reclamation $reclamation, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$reclamation->getId(), $request->request->get('_token'))) {
-
+        if ($reclamation->getStatut() === 'EN_ATTENTE') {
             $em->remove($reclamation);
             $em->flush();
         }
 
-        return $this->redirectToRoute('reclamation_index');
+        return $this->redirectToRoute('client_mes_reclamations');
     }
 
-   #[Route('/mes-reclamations', name: 'mes_reclamations')]
-public function mesReclamations(ReclamationRepository $repo): Response
-{
-    $reclamations = $repo->createQueryBuilder('r')
-        ->leftJoin('r.reponses', 'rep')
-        ->addSelect('rep')
-        ->orderBy('r.id', 'DESC')
-        ->getQuery()
-        ->getResult();
 
-    return $this->render('backOffice/reclamation/mes_reclamations.html.twig', [
-        'reclamations' => $reclamations,
+    /* =========================================================
+     * ================= PROPRIETAIRE BACK =====================
+     * ========================================================= */
+
+    // ➜ Réclamations reçues
+    #[Route('/proprietaire', name: 'prop_reclamations')]
+    public function reclamationsProprietaire(ReclamationRepository $repo): Response
+    {
+        $reclamations = $repo->createQueryBuilder('r')
+            ->leftJoin('r.reponses', 'rep')->addSelect('rep')
+            ->orderBy('r.id', 'DESC')
+            ->getQuery()->getResult();
+
+        return $this->render('backOffice/reclamation/proprietaire/index.html.twig', [
+            'reclamations' => $reclamations
+        ]);
+    }
+
+
+    /* =========================================================
+     * ====================== ADMIN =============================
+     * ========================================================= */
+
+    // ➜ Supervision globale
+   #[Route('/admin', name: 'admin_reclamations')]
+public function admin(Request $request, ReclamationRepository $repo): Response
+{
+    $sujet = $request->query->get('sujet');
+    $statut = $request->query->get('statut');
+    $tri = $request->query->get('tri', 'DESC');
+
+    $qb = $repo->createQueryBuilder('r')
+        ->leftJoin('r.reponses', 'rep')->addSelect('rep');
+
+    // 🔎 recherche sujet
+    if ($sujet) {
+        $qb->andWhere('r.sujet LIKE :sujet')
+           ->setParameter('sujet', '%'.$sujet.'%');
+    }
+
+    // 🎯 filtre statut
+    if ($statut) {
+        $qb->andWhere('r.statut = :statut')
+           ->setParameter('statut', $statut);
+    }
+
+    // 🔼🔽 tri
+    $qb->orderBy('r.id', $tri);
+
+    $reclamations = $qb->getQuery()->getResult();
+
+    return $this->render('backOffice/reclamation/admin/index.html.twig', [
+        'reclamations' => $reclamations
     ]);
 }
 
-
 }
-

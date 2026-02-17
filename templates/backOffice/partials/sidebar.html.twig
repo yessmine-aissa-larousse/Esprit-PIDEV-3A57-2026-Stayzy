@@ -1,72 +1,71 @@
+{% set current = app.request.attributes.get('_route') %}
+{% set isAdmin = current starts with 'admin_' %}
+{% set isProp  = current starts with 'prop_' %}
+
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
-    {# Sidebar Brand #}
+
     <div class="sidebar-brand">
-        <a href="{{ path('admin_dashboard') }}" class="brand-link">
-            <img src="{{ asset('backOffice/assets/img/AdminLTELogo.png') }}" 
-                 alt="AdminLTE Logo" 
+        <a href="{{ isAdmin ? path('admin_reclamations') : path('prop_reclamations') }}" class="brand-link">
+            <img src="{{ asset('backOffice/assets/img/AdminLTELogo.png') }}"
                  class="brand-image opacity-75 shadow" />
             <span class="brand-text fw-light">Stayzy</span>
         </a>
     </div>
 
-    {# Sidebar Wrapper #}
     <div class="sidebar-wrapper">
         <nav class="mt-2">
-            <ul class="nav sidebar-menu flex-column" 
-                data-lte-toggle="treeview" 
-                role="navigation" 
-                aria-label="Main navigation">
-                
+            <ul class="nav sidebar-menu flex-column">
 
-                {# Dashboard Menu #}
-                 {# ===== dashboard ===== #}
-                <li class="nav-item">
-    <a href="{{ path('admin_dashboard') }}" class="nav-link">
-        <i class="nav-icon bi bi-bar-chart-line-fill"></i>
-        <p>Les Statistiques</p>
-    </a>
-</li>
+                {# ================= ADMIN ================= #}
+                {% if isAdmin %}
+                    <li class="nav-header text-uppercase text-muted small px-3 mt-2">
+                        Administration
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('admin_dashboard') }}"
+                           class="nav-link {{ current == 'admin_dashboard' ? 'active' }}">
+                            <i class="nav-icon bi bi-speedometer2"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
 
-               {# ===== Réclamations ===== #}
-<li class="nav-item has-treeview">
-    <a href="#" class="nav-link">
-        <i class="nav-icon bi bi-table"></i>
-        <p>
-            Les Réclamations
-            <i class="nav-arrow bi bi-chevron-right"></i>
-        </p>
-    </a>
+                    <li class="nav-item">
+                        <a href="{{ path('admin_reclamations') }}"
+                           class="nav-link {{ current == 'admin_reclamations' ? 'active' }}">
+                            <i class="nav-icon bi bi-bar-chart-line-fill"></i>
+                            <p>Toutes les réclamations</p>
+                        </a>
+                    </li>
 
-    <ul class="nav nav-treeview">
-        
-        {# Toutes les réclamations #}
-        <li class="nav-item">
-            <a href="{{ path('reclamation_index') }}" class="nav-link">
-                <i class="bi bi-list-ul nav-icon"></i>
-                <p>Toutes les réclamations</p>
-            </a>
-        </li>
-
-        {# Mes réclamations #}
-        <li class="nav-item">
-            <a href="{{ path('mes_reclamations') }}" class="nav-link">
-                <i class="bi bi-person-lines-fill nav-icon"></i>
-                <p>Mes réclamations</p>
-            </a>
-        </li>
-
-    </ul>
-</li>
+                    
+                {% endif %}
 
 
-                 {# ===== Réponses ===== #}
-                <li class="nav-item">
-                    <a href="{{ path('reponse_index') }}" class="nav-link">
-                        <i class="nav-icon bi bi-reply"></i>
-                        <p>Les Réponses</p>
-                    </a>
-                </li>
+                {# ================= PROPRIETAIRE ================= #}
+                {% if isProp %}
+                    <li class="nav-header text-uppercase text-muted small px-3 mt-2">
+                        Propriétaire
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('prop_reclamations') }}"
+                           class="nav-link {{ current == 'prop_reclamations' ? 'active' }}">
+                            <i class="nav-icon bi bi-exclamation-circle"></i>
+                            <p>Réclamations reçues</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('prop_reponses') }}"
+                           class="nav-link {{ current == 'prop_reponses' ? 'active' }}">
+                            <i class="nav-icon bi bi-chat-left-text"></i>
+                            <p>Mes réponses</p>
+                        </a>
+                    </li>
+                {% endif %}
+
             </ul>
         </nav>
     </div>
+
 </aside>

@@ -1,0 +1,130 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+{% block title %}Supervision Réclamations{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Supervision Réclamations</h3>
+    </div>
+</div>
+
+<div class="app-content">
+<div class="container-fluid">
+
+    <!-- ===== FILTRES ===== -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2">
+
+                <!-- Recherche sujet -->
+                <div class="col-md-4">
+                    <input type="text" name="sujet"
+                           value="{{ app.request.get('sujet') }}"
+                           class="form-control"
+                           placeholder="Rechercher par sujet...">
+                </div>
+
+                <!-- Filtre statut -->
+                <div class="col-md-3">
+                    <select name="statut" class="form-select">
+                        <option value="">Tous les statuts</option>
+
+                        <option value="EN_ATTENTE"
+                            {{ app.request.get('statut') == 'EN_ATTENTE' ? 'selected' }}>
+                            En attente
+                        </option>
+
+                        <option value="TRAITEE"
+                            {{ app.request.get('statut') == 'TRAITEE' ? 'selected' }}>
+                            Traitée
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Tri -->
+                <div class="col-md-3">
+                    <select name="tri" class="form-select">
+                        <option value="DESC"
+                            {{ app.request.get('tri') != 'ASC' ? 'selected' }}>
+                            Plus récentes
+                        </option>
+
+                        <option value="ASC"
+                            {{ app.request.get('tri') == 'ASC' ? 'selected' }}>
+                            Plus anciennes
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-grid">
+                    <button class="btn btn-primary">
+                        Filtrer
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ===== TABLE ===== -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h3 class="card-title">Liste des réclamations</h3>
+        </div>
+
+        <div class="card-body table-responsive p-0">
+
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Client</th>
+                        <th>Sujet</th>
+                        <th>Statut</th>
+                        <th>Réponse</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for rec in reclamations %}
+                    <tr>
+                        <td>#{{ rec.id }}</td>
+                        <td>{{ rec.user.id }}</td>
+                        <td>{{ rec.sujet }}</td>
+
+                        <td>
+                            {% if rec.statut == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-success">Traitée</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if rec.reponses|length > 0 %}
+                                {{ rec.reponses[0].contenu|slice(0,50) }}...
+                            {% else %}
+                                <span class="text-muted">Pas encore répondu</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted p-4">
+                            Aucun résultat
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

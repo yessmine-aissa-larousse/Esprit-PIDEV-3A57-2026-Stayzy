@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class AdminController extends AbstractController
 {
-   #[Route('/admin', name: 'admin_dashboard')]
+   #[Route('/admin/dashboard', name: 'admin_dashboard')]
 public function dashboard(ReclamationRepository $repo): Response
 {
     $total = $repo->count([]);
