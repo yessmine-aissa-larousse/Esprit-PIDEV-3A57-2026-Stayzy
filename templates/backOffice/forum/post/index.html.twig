@@ -65,7 +65,9 @@
                                                 <span class="badge bg-secondary">Brouillon</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ post.commentsCount }}</td>
+                                        <td>
+                                            <a href="{{ path('admin_comment_index', {post: post.id}) }}" title="Voir les commentaires de ce post">{{ post.commentsCount }}</a>
+                                        </td>
                                         <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">

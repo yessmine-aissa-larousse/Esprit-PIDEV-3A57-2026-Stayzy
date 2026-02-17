@@ -48,18 +48,22 @@ class PostType extends AbstractType
                     new NotBlank(['message' => 'L\'auteur est obligatoire']),
                     new Length(['max' => 180]),
                 ],
-            ])
-            ->add('isPublished', CheckboxType::class, [
+            ]);
+        if (!($options['frontend'] ?? false)) {
+            $builder->add('isPublished', CheckboxType::class, [
                 'label' => 'Publier',
                 'required' => false,
                 'attr' => ['class' => 'form-check-input'],
             ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Post::class,
+            'frontend' => false,
         ]);
+        $resolver->setAllowedTypes('frontend', 'bool');
     }
 }

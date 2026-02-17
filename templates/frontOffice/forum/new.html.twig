@@ -1,0 +1,37 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Nouvel article - Forum{% endblock %}
+
+{% block body %}
+    <section class="blog-details section">
+        <div class="container" data-aos="fade-up">
+            <div class="section-header text-center mb-4">
+                <span class="section-label">Forum</span>
+                <h2>Publier un nouvel article</h2>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            {% for message in app.flashes('success') %}
+                                <div class="alert alert-success">{{ message }}</div>
+                            {% endfor %}
+
+                            {{ form_start(form) }}
+                            {{ form_row(form.title) }}
+                            {{ form_row(form.excerpt) }}
+                            {{ form_row(form.content) }}
+                            {{ form_row(form.author) }}
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="submit" class="btn btn-primary">Publier l'article</button>
+                                <a href="{{ path('forum_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                            </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

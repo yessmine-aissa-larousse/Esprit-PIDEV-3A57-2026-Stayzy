@@ -29,4 +29,29 @@ class CommentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Comment[]
+     */
+    public function findByPostPaginated(Post $post, int $limit, int $offset): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.post = :post')
+            ->setParameter('post', $post)
+            ->orderBy('c.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByPost(Post $post): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->andWhere('c.post = :post')
+            ->setParameter('post', $post)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

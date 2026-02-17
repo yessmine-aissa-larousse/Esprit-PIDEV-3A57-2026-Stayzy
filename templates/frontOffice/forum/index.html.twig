@@ -6,10 +6,15 @@
     <!-- Blog Hero Section -->
     <section class="blog-hero section">
         <div class="container" data-aos="fade-up">
-            <div class="section-header text-center">
-                <span class="section-label">Forum</span>
-                <h2>Derniers articles et discussions</h2>
-                <p>Découvrez nos articles et participez aux échanges</p>
+            <div class="section-header text-center d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="section-label">Forum</span>
+                    <h2>Derniers articles et discussions</h2>
+                    <p class="mb-0">Découvrez nos articles et participez aux échanges</p>
+                </div>
+                <a href="{{ path('forum_post_new') }}" class="btn btn-primary align-self-center">
+                    <i class="bi bi-plus-lg"></i> Nouvel article
+                </a>
             </div>
         </div>
     </section>

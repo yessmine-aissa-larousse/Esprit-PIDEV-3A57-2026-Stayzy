@@ -1,0 +1,32 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier le commentaire - Forum{% endblock %}
+
+{% block body %}
+    <section class="blog-details section">
+        <div class="container" data-aos="fade-up">
+            <div class="section-header text-center mb-4">
+                <span class="section-label">Forum</span>
+                <h2>Modifier votre commentaire</h2>
+                <p><a href="{{ path('forum_post_show', {id: post.id}) }}">Retour à « {{ post.title }} »</a></p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4">
+                            {{ form_start(form) }}
+                            {{ form_row(form.author) }}
+                            {{ form_row(form.content) }}
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                <a href="{{ path('forum_post_show', {id: post.id}) }}" class="btn btn-outline-secondary">Annuler</a>
+                            </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -96,6 +96,13 @@
                                         <div class="comment-body">
                                             <p>{{ comment.content|nl2br }}</p>
                                         </div>
+                                        <div class="comment-actions mt-2">
+                                            <a href="{{ path('forum_comment_edit', {postId: post.id, id: comment.id}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                            <form method="post" action="{{ path('forum_comment_delete', {postId: post.id, id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

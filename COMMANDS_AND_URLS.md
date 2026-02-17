@@ -73,10 +73,13 @@ docker compose exec php php bin/console about
 | Nos Logements | http://localhost:8080/properties | GET |
 | Forum (liste des posts) | http://localhost:8080/forum | GET |
 | Forum (page 2) | http://localhost:8080/forum?page=2 | GET |
+| **Nouvel article** | http://localhost:8080/forum/post/new | GET, POST |
 | Forum /post (redirige) | http://localhost:8080/forum/post | GET |
 | Détail d’un post + commentaires | http://localhost:8080/forum/post/1 | GET, POST |
+| Modifier un commentaire | http://localhost:8080/forum/post/1/comment/2/edit | GET, POST |
+| Supprimer un commentaire | http://localhost:8080/forum/post/1/comment/2/delete | POST |
 
-*(Remplace 1 par l’ID du post)*
+*(Remplace 1 par l’ID du post, 2 par l’ID du commentaire)*
 
 ---
 
@@ -103,6 +106,7 @@ docker compose exec php php bin/console about
 | Action | URL | Méthode |
 |--------|-----|---------|
 | Liste des commentaires | http://localhost:8080/admin/forum/comment | GET |
+| Commentaires d’un post (via link) | http://localhost:8080/admin/forum/comment?post=1 | GET |
 | Liste (page 2) | http://localhost:8080/admin/forum/comment?page=2 | GET |
 | Modifier commentaire | http://localhost:8080/admin/forum/comment/1/edit | GET, POST |
 | Supprimer commentaire | http://localhost:8080/admin/forum/comment/1/delete | POST |

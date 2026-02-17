@@ -7,7 +7,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Gestion des commentaires</h3>
+                    <h3 class="mb-0">Gestion des commentaires{% if filter_post %} – Post « {{ filter_post.title|length > 40 ? filter_post.title|slice(0, 40) ~ '...' : filter_post.title }} »{% endif %} ({{ total }})</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
@@ -28,6 +28,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
+
+            {% if filter_post %}
+                <div class="alert alert-info mb-3">
+                    <a href="{{ path('admin_comment_index') }}" class="alert-link">← Voir tous les commentaires</a>
+                </div>
+            {% endif %}
 
             <div class="card">
                 <div class="card-header">
@@ -58,11 +64,12 @@
                                         <td>{{ comment.createdAt|date('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ path('admin_comment_edit', {id: comment.id}) }}" class="btn btn-outline-warning" title="Modifier">
+                                                <a href="{{ path('admin_comment_edit', {id: comment.id}) }}{% if filter_post %}?post={{ filter_post.id }}{% endif %}" class="btn btn-outline-warning" title="Modifier">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form method="post" action="{{ path('admin_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
+                                                    {% if filter_post %}<input type="hidden" name="filter_post" value="{{ filter_post.id }}">{% endif %}
                                                     <button type="submit" class="btn btn-outline-danger" title="Supprimer">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
@@ -83,16 +90,17 @@
                 <div class="card-footer">
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-center">
+                            {% set pagination_params = filter_post ? {post: filter_post.id} : {} %}
                             <li class="page-item {{ current_page <= 1 ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', {page: current_page - 1}) }}">«</a>
+                                <a class="page-link" href="{{ path('admin_comment_index', pagination_params|merge({page: current_page - 1})) }}">«</a>
                             </li>
                             {% for p in 1..total_pages %}
                                 <li class="page-item {{ p == current_page ? 'active' : '' }}">
-                                    <a class="page-link" href="{{ path('admin_comment_index', {page: p}) }}">{{ p }}</a>
+                                    <a class="page-link" href="{{ path('admin_comment_index', pagination_params|merge({page: p})) }}">{{ p }}</a>
                                 </li>
                             {% endfor %}
                             <li class="page-item {{ current_page >= total_pages ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', {page: current_page + 1}) }}">»</a>
+                                <a class="page-link" href="{{ path('admin_comment_index', pagination_params|merge({page: current_page + 1})) }}">»</a>
                             </li>
                         </ul>
                     </nav>

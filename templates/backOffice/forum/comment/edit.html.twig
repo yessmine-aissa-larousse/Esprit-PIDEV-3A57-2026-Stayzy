@@ -12,7 +12,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="{{ path('admin_comment_index') }}">Commentaires</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('admin_comment_index', filter_post_id ? {post: filter_post_id} : {}) }}">Commentaires</a></li>
                         <li class="breadcrumb-item active">Modifier</li>
                     </ol>
                 </div>
@@ -30,7 +30,7 @@
                     {{ form_row(form.content) }}
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
-                        <a href="{{ path('admin_comment_index') }}" class="btn btn-secondary">Annuler</a>
+                        <a href="{{ path('admin_comment_index', filter_post_id ? {post: filter_post_id} : {}) }}" class="btn btn-secondary">Annuler</a>
                     </div>
                     {{ form_end(form) }}
                 </div>

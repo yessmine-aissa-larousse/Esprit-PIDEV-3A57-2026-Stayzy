@@ -3,8 +3,10 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Comment;
+use App\Entity\Post;
 use App\Form\CommentType;
 use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +20,7 @@ final class CommentCrudController extends AbstractController
 
     public function __construct(
         private readonly CommentRepository $commentRepository,
+        private readonly PostRepository $postRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -27,13 +30,28 @@ final class CommentCrudController extends AbstractController
     {
         $page = max(1, (int) $request->query->get('page', 1));
         $offset = ($page - 1) * self::PER_PAGE;
-        $comments = $this->commentRepository->findBy(
-            [],
-            ['createdAt' => 'DESC'],
-            self::PER_PAGE,
-            $offset
-        );
-        $total = $this->commentRepository->count([]);
+        $postFilter = $request->query->getInt('post', 0);
+        $post = null;
+
+        if ($postFilter > 0) {
+            $post = $this->postRepository->find($postFilter);
+            if ($post) {
+                $comments = $this->commentRepository->findByPostPaginated($post, self::PER_PAGE, $offset);
+                $total = $this->commentRepository->countByPost($post);
+            } else {
+                $comments = [];
+                $total = 0;
+            }
+        } else {
+            $comments = $this->commentRepository->findBy(
+                [],
+                ['createdAt' => 'DESC'],
+                self::PER_PAGE,
+                $offset
+            );
+            $total = $this->commentRepository->count([]);
+        }
+
         $totalPages = (int) ceil($total / self::PER_PAGE);
 
         return $this->render('backOffice/forum/comment/index.html.twig', [
@@ -41,6 +59,7 @@ final class CommentCrudController extends AbstractController
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total' => $total,
+            'filter_post' => $post,
         ]);
     }
 
@@ -53,12 +72,17 @@ final class CommentCrudController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->flush();
             $this->addFlash('success', 'Le commentaire a été modifié.');
-            return $this->redirectToRoute('admin_comment_index');
+            $redirectParams = [];
+            if ($request->query->getInt('post')) {
+                $redirectParams['post'] = $comment->getPost()->getId();
+            }
+            return $this->redirectToRoute('admin_comment_index', $redirectParams);
         }
 
         return $this->render('backOffice/forum/comment/edit.html.twig', [
             'comment' => $comment,
             'form' => $form,
+            'filter_post_id' => $request->query->getInt('post'),
         ]);
     }
 
@@ -70,6 +94,10 @@ final class CommentCrudController extends AbstractController
             $this->entityManager->flush();
             $this->addFlash('success', 'Le commentaire a été supprimé.');
         }
-        return $this->redirectToRoute('admin_comment_index');
+        $redirectParams = [];
+        if ($request->request->getInt('filter_post')) {
+            $redirectParams['post'] = $request->request->getInt('filter_post');
+        }
+        return $this->redirectToRoute('admin_comment_index', $redirectParams);
     }
 }
