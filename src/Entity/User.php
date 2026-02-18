@@ -76,12 +76,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         orphanRemoval: true
     )]
     private Collection $reclamations;
-
+/*
     /**
      * @var Collection<int, Visite>
      */
-    #[ORM\OneToMany(targetEntity: Visite::class, mappedBy: 'user')]
-    private Collection $visites;
+   /* #[ORM\OneToMany(targetEntity: Visite::class, mappedBy: 'user')]
+    private Collection $visites;*/
 
     
    
@@ -93,7 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isVerified = false;
         $this->createdAt = new \DateTimeImmutable();
         $this->reclamations = new ArrayCollection();
-        $this->visites = new ArrayCollection();
+       /* $this->visites = new ArrayCollection();*/
     }
 
     #[ORM\PrePersist]
@@ -276,11 +276,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->getFullName();
     }
-
+/*
     /**
      * @return Collection<int, Visite>
      */
-    public function getVisites(): Collection
+   /* public function getVisites(): Collection
     {
         return $this->visites;
     }
@@ -306,7 +306,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
-
+*/
     
     
 }
