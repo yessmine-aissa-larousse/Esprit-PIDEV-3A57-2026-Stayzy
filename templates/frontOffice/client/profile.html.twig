@@ -1,0 +1,99 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mon Profil - StayZy{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- En-tête -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-person-circle text-success"></i> Mon Profil</h1>
+                <a href="{{ path('app_client_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+                </a>
+            </div>
+
+            <!-- Messages flash -->
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <!-- Formulaire -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-pencil"></i> Modifier mes informations</h5>
+                </div>
+                <div class="card-body p-4">
+                    {{ form_start(form) }}
+                    
+                    <div class="row g-3">
+                        <!-- Email -->
+                        <div class="col-12">
+                            {{ form_row(form.email, {
+                                'label': 'Email',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+
+                        <!-- Nom & Prénom -->
+                        <div class="col-md-6">
+                            {{ form_row(form.nom, {
+                                'label': 'Nom',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.prenom, {
+                                'label': 'Prénom',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+
+                        <!-- Téléphone -->
+                        <div class="col-12">
+                            {{ form_row(form.tel, {
+                                'label': 'Téléphone',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+
+                        <!-- Adresse -->
+                        <div class="col-12">
+                            {{ form_row(form.adresse, {
+                                'label': 'Adresse',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+
+                        <!-- Mot de passe -->
+                        <div class="col-12">
+                            {{ form_row(form.password, {
+                                'label': 'Nouveau mot de passe (laisser vide pour ne pas changer)',
+                                'attr': {'class': 'form-control', 'placeholder': 'Laisser vide si pas de changement'}
+                            }) }}
+                        </div>
+
+                        <!-- Champs cachés -->
+                        {{ form_row(form.roles, {'attr': {'style': 'display:none'}}) }}
+                        {{ form_row(form.isActive, {'attr': {'style': 'display:none'}}) }}
+                        {{ form_row(form.imageUrl, {'attr': {'style': 'display:none'}}) }}
+
+                        <!-- Bouton -->
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-save"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

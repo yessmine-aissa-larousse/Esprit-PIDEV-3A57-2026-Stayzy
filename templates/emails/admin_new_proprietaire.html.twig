@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle demande propriétaire</title>
+</head>
+<body>
+    <h2>Nouvelle demande d’inscription propriétaire</h2>
+    <p><strong>Nom complet :</strong> {{ user.prenom }} {{ user.nom }}</p>
+    <p><strong>Email :</strong> {{ user.email }}</p>
+    <p><strong>Téléphone :</strong> {{ user.tel ?? 'Non renseigné' }}</p>
+    <p><strong>Adresse :</strong> {{ user.adresse ?? 'Non renseignée' }}</p>
+    <p><strong>Date de la demande :</strong> {{ user.createdAt|date('d/m/Y H:i') }}</p>
+    <p>
+        <a href="{{ url('app_user_pending') }}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none;">
+            Traiter la demande
+        </a>
+    </p>
+    <p>Ou copiez ce lien : {{ url('app_user_pending') }}</p>
+</body>
+</html>

@@ -1,0 +1,153 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Accéder à mon espace - Stayzy{% endblock %}
+
+{% block body %}
+<main class="main">
+<section style="padding: 80px 0; background: #f8f9fa; min-height: 80vh;">
+    <div class="container">
+
+        {% if type == 'login' %}
+        {# ===== PAGE SE CONNECTER ===== #}
+        <div class="text-center mb-5">
+            <h2 style="font-weight: 700; color: #1a1a1a;">Choisissez votre espace</h2>
+            <p class="text-muted">Sélectionnez votre profil pour vous connecter</p>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            {# Admin #}
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ path('app_login') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow text-center h-100" style="border-radius: 16px; transition: transform 0.3s; cursor: pointer;"
+                         onmouseover="this.style.transform='translateY(-8px)'"
+                         onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body p-4">
+                            <div style="background: #e3f2fd; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <i class="bi bi-shield-lock" style="font-size: 2rem; color: #1565c0;"></i>
+                            </div>
+                            <h5 style="font-weight: 700; color: #1565c0;">Administrateur</h5>
+                            <p class="text-muted small">Gérer la plateforme</p>
+                            <span class="btn btn-sm mt-2" style="background: #1565c0; color: white; border-radius: 8px;">
+                                Se connecter
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {# Client #}
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ path('app_login') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow text-center h-100" style="border-radius: 16px; transition: transform 0.3s; cursor: pointer;"
+                         onmouseover="this.style.transform='translateY(-8px)'"
+                         onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body p-4">
+                            <div style="background: #e8f5e9; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <i class="bi bi-person-circle" style="font-size: 2rem; color: #2e7d32;"></i>
+                            </div>
+                            <h5 style="font-weight: 700; color: #2e7d32;">Client</h5>
+                            <p class="text-muted small">Trouver un logement</p>
+                            <span class="btn btn-sm mt-2" style="background: #2e7d32; color: white; border-radius: 8px;">
+                                Se connecter
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {# Propriétaire #}
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ path('app_login') }}" class="text-decoration-none">
+                    <div class="card border-0 shadow text-center h-100" style="border-radius: 16px; transition: transform 0.3s; cursor: pointer;"
+                         onmouseover="this.style.transform='translateY(-8px)'"
+                         onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body p-4">
+                            <div style="background: #fff8e1; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <i class="bi bi-building" style="font-size: 2rem; color: #f57f17;"></i>
+                            </div>
+                            <h5 style="font-weight: 700; color: #f57f17;">Propriétaire</h5>
+                            <p class="text-muted small">Gérer vos biens</p>
+                            <span class="btn btn-sm mt-2" style="background: #f57f17; color: white; border-radius: 8px;">
+                                Se connecter
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <p class="text-muted">Pas encore de compte?
+                <a href="{{ path('app_portal', {type: 'register'}) }}" style="color: #2e7d32; font-weight: 600;">S'inscrire</a>
+            </p>
+        </div>
+
+        {% else %}
+        {# ===== PAGE S'INSCRIRE ===== #}
+        <div class="text-center mb-5">
+            <h2 style="font-weight: 700; color: #1a1a1a;">Créer un compte</h2>
+            <p class="text-muted">Choisissez votre type de compte</p>
+        </div>
+
+        <div class="row justify-content-center g-4">
+            {# Client #}
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ path('app_register', {role: 'client'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow text-center h-100" style="border-radius: 16px; transition: transform 0.3s;"
+                         onmouseover="this.style.transform='translateY(-8px)'"
+                         onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body p-5">
+                            <div style="background: #e8f5e9; width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <i class="bi bi-person-plus" style="font-size: 2.5rem; color: #2e7d32;"></i>
+                            </div>
+                            <h4 style="font-weight: 700; color: #2e7d32;">Je suis Client</h4>
+                            <p class="text-muted">Je cherche un logement à louer</p>
+                            <ul class="text-start text-muted small mt-3 mb-4">
+                                <li>Rechercher des propriétés</li>
+                                <li>Faire des réservations</li>
+                                <li>Gérer mes séjours</li>
+                            </ul>
+                            <span class="btn btn-lg w-100" style="background: #2e7d32; color: white; border-radius: 10px;">
+                                <i class="bi bi-person-plus me-2"></i> S'inscrire comme Client
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            {# Propriétaire #}
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ path('app_register', {role: 'proprietaire'}) }}" class="text-decoration-none">
+                    <div class="card border-0 shadow text-center h-100" style="border-radius: 16px; transition: transform 0.3s;"
+                         onmouseover="this.style.transform='translateY(-8px)'"
+                         onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body p-5">
+                            <div style="background: #fff8e1; width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <i class="bi bi-building-add" style="font-size: 2.5rem; color: #f57f17;"></i>
+                            </div>
+                            <h4 style="font-weight: 700; color: #f57f17;">Je suis Propriétaire</h4>
+                            <p class="text-muted">Je veux louer mes biens</p>
+                            <ul class="text-start text-muted small mt-3 mb-4">
+                                <li>Publier mes propriétés</li>
+                                <li>Gérer les réservations</li>
+                                <li>Optimiser mes revenus</li>
+                            </ul>
+                            <span class="btn btn-lg w-100" style="background: #f57f17; color: white; border-radius: 10px;">
+                                <i class="bi bi-building-add me-2"></i> S'inscrire comme Propriétaire
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <p class="text-muted">Déjà un compte?
+                <a href="{{ path('app_portal', {type: 'login'}) }}" style="color: #2e7d32; font-weight: 600;">Se connecter</a>
+            </p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+</main>
+{% endblock %}

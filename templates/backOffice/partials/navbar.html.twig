@@ -8,10 +8,10 @@
                 </a>
             </li>
             <li class="nav-item d-none d-md-block">
-                <a href="#" class="nav-link">Home</a>
+                <a href="{{ path('app_home') }}" class="nav-link" target="_blank">Voir le site</a>
             </li>
             <li class="nav-item d-none d-md-block">
-                <a href="#" class="nav-link">Contact</a>
+                <a href="{{ path('admin_dashboard') }}" class="nav-link">Dashboard</a>
             </li>
         </ul>
 
@@ -40,10 +40,10 @@
                             </div>
                             <div class="flex-grow-1">
                                 <h3 class="dropdown-item-title">
-                                    Brad Diesel
+                                    Message exemple
                                     <span class="float-end fs-7 text-danger"><i class="bi bi-star-fill"></i></span>
                                 </h3>
-                                <p class="fs-7">Call me whenever you can...</p>
+                                <p class="fs-7">Nouveau message...</p>
                                 <p class="fs-7 text-secondary">
                                     <i class="bi bi-clock-fill me-1"></i> 4 Hours Ago
                                 </p>
@@ -84,32 +84,46 @@
             {# User Menu Dropdown #}
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
-                         class="user-image rounded-circle shadow" 
-                         alt="User Image" />
-                    <span class="d-none d-md-inline">Yessmine</span>
+                    {% if app.user and app.user.imageUrl %}
+                        <img src="{{ app.user.imageUrl }}" 
+                             class="user-image rounded-circle shadow" 
+                             alt="{{ app.user.fullName }}" />
+                    {% else %}
+                        <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
+                             class="user-image rounded-circle shadow" 
+                             alt="User Image" />
+                    {% endif %}
+                    <span class="d-none d-md-inline">{{ app.user ? app.user.prenom : 'Admin' }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-                    <li class="user-header text-bg-primary">
-                        <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
-                             class="rounded-circle shadow" 
-                             alt="User Image" />
-                        <p>
-                            Larousse Yessmine - Web Developer
-                            <small>Member since Nov. 2023</small>
-                        </p>
-                    </li>
-                    <li class="user-body">
-                        <div class="row">
-                            <div class="col-4 text-center"><a href="#">Followers</a></div>
-                            <div class="col-4 text-center"><a href="#">Sales</a></div>
-                            <div class="col-4 text-center"><a href="#">Friends</a></div>
-                        </div>
-                    </li>
-                    <li class="user-footer">
-                        <a href="#" class="btn btn-outline-secondary">Profile</a>
-                        <a href="#" class="btn btn-outline-danger float-end">Sign out</a>
-                    </li>
+                    {% if app.user %}
+                        <li class="user-header text-bg-primary">
+                            {% if app.user.imageUrl %}
+                                <img src="{{ app.user.imageUrl }}" 
+                                     class="rounded-circle shadow" 
+                                     alt="{{ app.user.fullName }}" />
+                            {% else %}
+                                <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
+                                     class="rounded-circle shadow" 
+                                     alt="User Image" />
+                            {% endif %}
+                            <p>
+                                {{ app.user.fullName }} - Administrateur
+                                <small>Membre depuis {{ app.user.createdAt|date('M Y') }}</small>
+                            </p>
+                        </li>
+                        <li class="user-body">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <small>{{ app.user.email }}</small>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="user-footer">
+                            <a href="#" class="btn btn-outline-secondary">Profile</a>
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger float-end">Déconnexion</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </li>
         </ul>

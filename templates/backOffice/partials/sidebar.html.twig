@@ -18,25 +18,55 @@
                 aria-label="Main navigation">
                 
                 {# Dashboard Menu #}
-                <li class="nav-item menu-open">
-                    <a href="#" class="nav-link active">
+                <li class="nav-item">
+                    <a href="{{ path('admin_dashboard') }}" 
+                       class="nav-link {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
                         <i class="nav-icon bi bi-speedometer"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+
+                {# 🔴 GESTION UTILISATEURS #}
+                <li class="nav-item {{ app.request.get('_route') starts with 'app_user' ? 'menu-open' : '' }}">
+                    <a href="#" class="nav-link {{ app.request.get('_route') starts with 'app_user' ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-people-fill"></i>
                         <p>
-                            Dashboard
+                            Utilisateurs
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                            <a href="{{ path('app_user_index') }}" 
+                               class="nav-link {{ app.request.get('_route') == 'app_user_index' ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Dashboard </p>
+                                <p>Liste utilisateurs</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('app_user_pending') }}" 
+                               class="nav-link {{ app.request.get('_route') == 'app_user_pending' ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-clock-history"></i>
+                                <p>Demandes en attente</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('app_user_new') }}" 
+                               class="nav-link {{ app.request.get('_route') == 'app_user_new' ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-plus-circle"></i>
+                                <p>Ajouter utilisateur</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('app_user_export_csv') }}" class="nav-link">
+                                <i class="nav-icon bi bi-download"></i>
+                                <p>Exporter CSV</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                {# Widgets Menu #}
+                {# Propriétés Menu #}
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-box-seam-fill"></i>
@@ -47,15 +77,15 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                            <a href="#" class="nav-link">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Liste des props </p>
+                                <p>Liste des propriétés</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                {# Tables Menu #}
+                {# Réservations Menu #}
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="nav-icon bi bi-table"></i>
@@ -63,6 +93,17 @@
                             DM Réservations
                             <i class="nav-arrow bi bi-chevron-right"></i>
                         </p>
+                    </a>
+                </li>
+
+                {# Divider #}
+                <li class="nav-header">SYSTÈME</li>
+
+                {# Voir le site #}
+                <li class="nav-item">
+                    <a href="{{ path('app_home') }}" target="_blank" class="nav-link">
+                        <i class="nav-icon bi bi-globe"></i>
+                        <p>Voir le site</p>
                     </a>
                 </li>
             </ul>

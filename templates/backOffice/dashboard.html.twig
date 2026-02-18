@@ -1,68 +1,347 @@
-{% extends 'backOffice/base_admin.html.twig' %}
+{% extends 'backOffice/base.html.twig' %}
 
-{% block title %}Dashboard - BackOffice{% endblock %}
+{% block title %}Dashboard Admin - Stayzy{% endblock %}
 
-{% block admin_content %}
-    {# App Content Header #}
-    <div class="app-content-header">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-6">
-                    <h3 class="mb-0">Dashboard </h3>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard </li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# App Content #}
-    <div class="app-content">
-        <div class="container-fluid">
-            {# Info boxes #}
-            <div class="row">
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box">
-                        <span class="info-box-icon text-bg-primary shadow-sm">
-                            <i class="bi bi-gear-fill"></i>
-                        </span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">CPU Traffic</span>
-                            <span class="info-box-number">10 <small>%</small></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box">
-                        <span class="info-box-icon text-bg-danger shadow-sm">
-                            <i class="bi bi-hand-thumbs-up-fill"></i>
-                        </span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Likes</span>
-                            <span class="info-box-number">41,410</span>
-                        </div>
-                    </div>
-                </div>
-
-                {# ... Ajoutez les autres info-boxes ici ... #}
-            </div>
-
-            {# Vous pouvez copier le reste du contenu du dashboard ici #}
-        </div>
-    </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
+{% block body %}
+<div class="container-fluid py-4">
     
-    {# Charts Scripts - Uniquement pour la page dashboard #}
-    <script>
-        // Scripts ApexCharts pour les graphiques
-        // (Copiez les scripts des charts ici si nécessaire)
-    </script>
+    {# En-tête #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 style="font-weight: 700; color: #1a1a1a;">
+                <i class="bi bi-speedometer2 me-2" style="color: #2e7d32;"></i>
+                Tableau de bord
+            </h2>
+            <p class="text-muted">Vue d'ensemble de votre plateforme Stayzy</p>
+        </div>
+    </div>
+
+    {# CARTES STATISTIQUES #}
+    <div class="row g-3 mb-4">
+        
+        {# Total Utilisateurs #}
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #2e7d32; border-radius: 12px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1" style="font-size: 13px; text-transform: uppercase;">Total Utilisateurs</h6>
+                            <h2 style="font-weight: 700; color: #2e7d32; margin: 0;">{{ total_users }}</h2>
+                        </div>
+                        <div style="background: #e8f5e9; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-people-fill" style="font-size: 28px; color: #2e7d32;"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge" style="background: #e8f5e9; color: #2e7d32;">
+                            <i class="bi bi-graph-up me-1"></i> Actifs: {{ active_users }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Clients #}
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #1565c0; border-radius: 12px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items: center">
+                        <div>
+                            <h6 class="text-muted mb-1" style="font-size: 13px; text-transform: uppercase;">Clients</h6>
+                            <h2 style="font-weight: 700; color: #1565c0; margin: 0;">{{ client_count }}</h2>
+                        </div>
+                        <div style="background: #e3f2fd; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-person-circle" style="font-size: 28px; color: #1565c0;"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            {{ ((client_count / total_users) * 100)|number_format(1) }}% du total
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Propriétaires #}
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #f57f17; border-radius: 12px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1" style="font-size: 13px; text-transform: uppercase;">Propriétaires</h6>
+                            <h2 style="font-weight: 700; color: #f57f17; margin: 0;">{{ proprietaire_count }}</h2>
+                        </div>
+                        <div style="background: #fff8e1; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-building" style="font-size: 28px; color: #f57f17;"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge" style="background: #fff3e0; color: #f57f17;">
+                            <i class="bi bi-clock me-1"></i> En attente: {{ pending_count }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Demandes en attente #}
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm" style="border-left: 4px solid #c62828; border-radius: 12px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1" style="font-size: 13px; text-transform: uppercase;">En Attente</h6>
+                            <h2 style="font-weight: 700; color: #c62828; margin: 0;">{{ pending_count }}</h2>
+                        </div>
+                        <div style="background: #ffebee; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-hourglass-split" style="font-size: 28px; color: #c62828;"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ path('app_user_pending') }}" class="btn btn-sm btn-outline-danger" style="border-radius: 8px;">
+                            <i class="bi bi-eye me-1"></i> Voir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# GRAPHIQUES #}
+    <div class="row g-3 mb-4">
+        
+        {# Graphique inscriptions par mois #}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-white" style="border-bottom: 2px solid #f0f0f0; padding: 20px;">
+                    <h5 style="font-weight: 600; margin: 0;">
+                        <i class="bi bi-graph-up me-2" style="color: #2e7d32;"></i>
+                        Inscriptions par mois
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 30px;">
+                    <canvas id="monthlyChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Graphique répartition par rôle #}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-white" style="border-bottom: 2px solid #f0f0f0; padding: 20px;">
+                    <h5 style="font-weight: 600; margin: 0;">
+                        <i class="bi bi-pie-chart me-2" style="color: #2e7d32;"></i>
+                        Répartition par rôle
+                    </h5>
+                </div>
+                <div class="card-body" style="padding: 30px;">
+                    <canvas id="roleChart"></canvas>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="bi bi-circle-fill me-2" style="color: #2e7d32; font-size: 10px;"></i> Clients</span>
+                            <strong>{{ client_count }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="bi bi-circle-fill me-2" style="color: #f57f17; font-size: 10px;"></i> Propriétaires</span>
+                            <strong>{{ proprietaire_count }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="bi bi-circle-fill me-2" style="color: #1565c0; font-size: 10px;"></i> Admins</span>
+                            <strong>{{ admin_count }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# TABLEAUX #}
+    <div class="row g-3">
+        
+        {# Utilisateurs récents #}
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-white" style="border-bottom: 2px solid #f0f0f0; padding: 20px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 style="font-weight: 600; margin: 0;">
+                            <i class="bi bi-person-plus me-2" style="color: #2e7d32;"></i>
+                            Utilisateurs récents
+                        </h5>
+                        <a href="{{ path('app_user_index') }}" class="btn btn-sm btn-outline-success" style="border-radius: 8px;">
+                            Voir tout
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead style="background: #f8f9fa;">
+                                <tr>
+                                    <th style="border: none; padding: 15px;">Utilisateur</th>
+                                    <th style="border: none; padding: 15px;">Rôle</th>
+                                    <th style="border: none; padding: 15px;">Date</th>
+                                    <th style="border: none; padding: 15px;">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td style="padding: 15px;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if user.profilePicture %}
+                                                <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" 
+                                                     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                            {% else %}
+                                                <div style="width: 40px; height: 40px; border-radius: 50%; background: #2e7d32; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                                    {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ user.prenom }} {{ user.nom }}</strong>
+                                                <br><small class="text-muted">{{ user.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="padding: 15px;">
+                                        {% if user.isProprietaire %}
+                                            <span class="badge" style="background: #fff8e1; color: #f57f17;">Propriétaire</span>
+                                        {% elseif user.isClient %}
+                                            <span class="badge" style="background: #e8f5e9; color: #2e7d32;">Client</span>
+                                        {% else %}
+                                            <span class="badge" style="background: #e3f2fd; color: #1565c0;">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 15px;">
+                                        <small class="text-muted">{{ user.createdAt|date('d/m/Y') }}</small>
+                                    </td>
+                                    <td style="padding: 15px;">
+                                        {% if user.isActive %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Demandes en attente #}
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-white" style="border-bottom: 2px solid #f0f0f0; padding: 20px;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 style="font-weight: 600; margin: 0;">
+                            <i class="bi bi-clock-history me-2" style="color: #f57f17;"></i>
+                            Demandes en attente
+                        </h5>
+                        <a href="{{ path('app_user_pending') }}" class="btn btn-sm btn-outline-warning" style="border-radius: 8px;">
+                            Voir tout
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if pending_proprietaires|length > 0 %}
+                        {% for user in pending_proprietaires %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3" style="border-bottom: 1px solid #f0f0f0;">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 35px; height: 35px; border-radius: 50%; background: #fff8e1; display: flex; align-items: center; justify-content: center; color: #f57f17; font-weight: 600; font-size: 14px;">
+                                    {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
+                                </div>
+                                <div>
+                                    <strong style="font-size: 14px;">{{ user.prenom }} {{ user.nom }}</strong>
+                                    <br><small class="text-muted">{{ user.email }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{{ path('app_user_show', {id: user.id}) }}" class="btn btn-sm btn-outline-primary" style="border-radius: 6px;">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-check-circle" style="font-size: 50px; color: #2e7d32;"></i>
+                            <p class="text-muted mt-3 mb-0">Aucune demande en attente</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# Chart.js #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Graphique inscriptions mensuelles
+const monthlyCtx = document.getElementById('monthlyChart');
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: {{ monthly_stats.labels|json_encode|raw }},
+        datasets: [{
+            label: 'Inscriptions',
+            data: {{ monthly_stats.data|json_encode|raw }},
+            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+            borderColor: '#2e7d32',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#2e7d32',
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+
+// Graphique répartition par rôle
+const roleCtx = document.getElementById('roleChart');
+new Chart(roleCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Clients', 'Propriétaires', 'Admins'],
+        datasets: [{
+            data: [{{ client_count }}, {{ proprietaire_count }}, {{ admin_count }}],
+            backgroundColor: ['#2e7d32', '#f57f17', '#1565c0'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

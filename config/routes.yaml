@@ -1,5 +1,101 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+# ========== FRONT OFFICE ==========
+app_home:
+    path: /
+    controller: App\Controller\HomeController::index
+
+app_properties:
+    path: /properties
+    controller: App\Controller\HomeController::properties  
+
+# ========== ADMIN DASHBOARD ==========
+admin_dashboard:
+    path: /admin/dashboard
+    controller: App\Controller\Admin\DashboardController::index
+
+# ========== ADMIN USER MANAGEMENT ==========
+app_user_index:
+    path: /admin/user
+    controller: App\Controller\Admin\UserController::index
+
+app_user_pending:
+    path: /admin/user/pending
+    controller: App\Controller\Admin\UserController::pending
+
+app_user_new:
+    path: /admin/user/new
+    controller: App\Controller\Admin\UserController::new
+
+app_user_show:
+    path: /admin/user/{id}
+    controller: App\Controller\Admin\UserController::show
+    requirements:
+        id: '\d+'
+
+app_user_edit:
+    path: /admin/user/{id}/edit
+    controller: App\Controller\Admin\UserController::edit
+
+app_user_delete:
+    path: /admin/user/{id}/delete
+    controller: App\Controller\Admin\UserController::delete
+    methods: POST
+
+app_user_toggle_status:
+    path: /admin/user/{id}/toggle-status
+    controller: App\Controller\Admin\UserController::toggleStatus
+    methods: POST
+
+app_user_approve:
+    path: /admin/user/{id}/approve
+    controller: App\Controller\Admin\UserController::approve
+    methods: POST
+
+app_user_reject:
+    path: /admin/user/{id}/reject
+    controller: App\Controller\Admin\UserController::reject
+    methods: POST
+
+app_user_export_csv:
+    path: /admin/user/export/csv
+    controller: App\Controller\Admin\UserController::exportCsv
+
+app_create_admin:
+    path: /create-admin
+    controller: App\Controller\SetupController::createAdmin  # ← CHANGÉ
+# ========== AUTHENTICATION ==========
+app_login:
+    path: /login
+    controller: App\Controller\SecurityController::login
+
+app_logout:
+    path: /logout
+    controller: App\Controller\SecurityController::logout
+
+# ========== CLIENT/PROPRIETAIRE PORTALS ==========
+app_client_dashboard:
+    path: /client/dashboard
+    controller: App\Controller\ClientPortalController::dashboard
+
+app_client_profile:
+    path: /client/profile
+    controller: App\Controller\ClientPortalController::profile
+
+app_proprietaire_portal:
+    path: /proprietaire
+    controller: App\Controller\ProprietairePortalController::index
+
+app_proprietaire_profile:
+    path: /proprietaire/profile
+    controller: App\Controller\ProprietairePortalController::profile
+
+# ========== REGISTRATION ==========
+app_register:
+    path: /register/{role}
+    controller: App\Controller\RegisterController::register
+    requirements:
+        role: 'client|proprietaire'
+app_portal:
+    path: /portal/{type}
+    controller: App\Controller\HomeController::portal
+    requirements:
+        type: 'login|register'

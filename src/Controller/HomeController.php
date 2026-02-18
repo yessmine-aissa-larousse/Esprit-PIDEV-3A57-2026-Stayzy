@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_home')]
     public function index(): Response
     {
         return $this->render('frontOffice/index.html.twig', [
@@ -20,5 +20,13 @@ final class HomeController extends AbstractController
     public function properties(): Response
     {
         return $this->render('frontOffice/properties.html.twig');
+    }
+
+    #[Route('/portal/{type}', name: 'app_portal', requirements: ['type' => 'login|register'])]
+    public function portal(string $type): Response  // ← AJOUTER
+    {
+        return $this->render('frontOffice/portal.html.twig', [
+            'type' => $type,
+        ]);
     }
 }
