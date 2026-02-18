@@ -12,9 +12,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Routing\Attribute\Route;
 
 class RegisterController extends AbstractController
 {
+    #[Route('/register/{role}', name: 'app_register', requirements: ['role' => 'client|proprietaire'])]
     public function register(
         Request $request,
         string $role,
@@ -57,7 +59,7 @@ class RegisterController extends AbstractController
                     ->from('no-reply@stayzy.com')
                     ->to($adminEmail)
                     ->subject('Nouvelle demande inscription propriétaire')
-                    ->html($this->renderView('emails/admin_new_proprietaire.html.twig', [ // ← CHANGÉ
+                    ->html($this->renderView('emails/admin_new_proprietaire.html.twig', [
                         'user' => $user
                     ]));
                 $mailer->send($email);
@@ -67,7 +69,7 @@ class RegisterController extends AbstractController
             }
         }
 
-        return $this->render('frontOffice/register.html.twig', [  // ← CHANGÉ
+        return $this->render('frontOffice/register.html.twig', [
             'form' => $form,
             'role' => $role,
         ]);
