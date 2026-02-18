@@ -51,14 +51,21 @@
                 <h1 class="sitename">Stayzy</h1>
             </a>
 
+            {# ⭐ NAVIGATION MODIFIÉE AVEC FAVORIS #}
             <nav id="navmenu" class="navmenu">
                 <ul>
                     <li><a href="{{ path('app_home') }}" class="active">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
                     <li><a href="{{ path('app_properties') }}">Nos Logements</a></li>
                     <li><a href="#">Services</a></li>
+                    <li>
+                        <a href="{{ path('mes_favoris') }}">
+                            ❤️ Mes Favoris
+                            <span class="badge bg-danger favori-count-badge" style="display:none; font-size: 0.7em; margin-left: 5px;">0</span>
+                        </a>
+                    </li>
                     <li><a href="#">Aide</a></li>
-                    <li><a href="#">se connecter</a></li>
+                    <li><a href="{{ path('admin_logement_list') }}">se connecter</a></li>
                     <li><a href="#">s'inscrire</a></li>
                     <li><a href="#">Contact</a></li>
                 </ul>
@@ -81,9 +88,9 @@
             <div class="row gy-4">
                 <div class="col-lg-5 col-md-12 footer-about">
                     <a href="{{ path('app_home') }}" class="logo d-flex align-items-center">
-                        <span class="sitename">HomeSpace</span>
+                        <span class="sitename">Stayzy</span>
                     </a>
-                    <p>Cras fermentum odio eu feugiat lide par naso tierra. Justo eget nada terra videa magna derita valies darta donna mare fermentum iaculis eu non diam phasellus.</p>
+                    <p>Votre prochain logement vous attend</p>
                     <div class="social-links d-flex mt-4">
                         <a href=""><i class="bi bi-twitter-x"></i></a>
                         <a href=""><i class="bi bi-facebook"></i></a>
@@ -93,44 +100,36 @@
                 </div>
 
                 <div class="col-lg-2 col-6 footer-links">
-                    <h4>Useful Links</h4>
+                    <h4>liens utils</h4>
                     <ul>
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">About us</a></li>
+                        <li><a href="#">Accueil</a></li>
+                        <li><a href="#">qui somme-nous</a></li>
                         <li><a href="#">Services</a></li>
-                        <li><a href="#">Terms of service</a></li>
-                        <li><a href="#">Privacy policy</a></li>
+                        
                     </ul>
                 </div>
 
                 <div class="col-lg-2 col-6 footer-links">
-                    <h4>Our Services</h4>
+                    <h4>Nos Services</h4>
                     <ul>
-                        <li><a href="#">Web Design</a></li>
-                        <li><a href="#">Web Development</a></li>
-                        <li><a href="#">Product Management</a></li>
-                        <li><a href="#">Marketing</a></li>
-                        <li><a href="#">Graphic Design</a></li>
+                        <li><a href="#">Annonces logement</a></li>
+                        <li><a href="#">Aide client</a></li>
+                        <li><a href="#">facilité de trouver votre prichain maison</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
                     <h4>Contact Us</h4>
-                    <p>A108 Adam Street</p>
-                    <p>New York, NY 535022</p>
-                    <p>United States</p>
-                    <p class="mt-4"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-                    <p><strong>Email:</strong> <span>info@example.com</span></p>
+                    <p>Rue Yamen  8011</p>
+                    <p>Dar chaabene</p>
+                    <p>Nabeul</p>
+                    <p class="mt-4"><strong>Phone:</strong> <span>+216 56 150 403</span></p>
+                    <p><strong>Email:</strong> <span>lemonde@gmail.com</span></p>
                 </div>
             </div>
         </div>
 
-        <div class="container copyright text-center mt-4">
-            <p>© <span>Copyright</span> <strong class="px-1 sitename">HomeSpace</strong> <span>All Rights Reserved</span></p>
-            <div class="credits">
-                Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>
-            </div>
-        </div>
+        
     </footer>
     <!-- End Footer -->
 
@@ -152,6 +151,9 @@
 
         <!-- Main JS File -->
         <script src="{{ asset('frontOffice/js/main.js') }}"></script>
+        
+        {# ⭐ NOUVEAU : Script Favoris #}
+        <script src="{{ asset('frontOffice/js/favoris.js') }}"></script>
     {% endblock %}
 
 </body>

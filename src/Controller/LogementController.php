@@ -203,16 +203,63 @@ final class LogementController extends AbstractController
         ]);
     }
 
-    // =========================================================================
-    // LISTER LES LOGEMENTS
-    // =========================================================================
     #[Route('/admin/logement/list', name: 'admin_logement_list')]
-    public function listLogement(EntityManagerInterface $em): Response
+    public function listLogement(Request $request, EntityManagerInterface $em): Response
     {
-        $logements = $em->getRepository(Logement::class)->findAll();
+        // Récupérer les paramètres de filtrage
+        $search = $request->query->get('search', '');
+        $categorieId = $request->query->get('categorie', '');
+        $prixMin = $request->query->get('prix_min', '');
+        $prixMax = $request->query->get('prix_max', '');
+        $disponible = $request->query->get('disponible', '');
+
+        // Construction de la requête avec QueryBuilder
+        $qb = $em->getRepository(Logement::class)->createQueryBuilder('l')
+            ->leftJoin('l.categorie', 'c')
+            ->addSelect('c');
+
+        // Filtre par recherche (titre ou description)
+        if (!empty($search)) {
+            $qb->andWhere('l.titre LIKE :search OR l.description LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Filtre par catégorie
+        if (!empty($categorieId)) {
+            $qb->andWhere('c.id = :categorieId')
+               ->setParameter('categorieId', $categorieId);
+        }
+
+        // Filtre par prix minimum
+        if (!empty($prixMin) && is_numeric($prixMin)) {
+            $qb->andWhere('l.prix >= :prixMin')
+               ->setParameter('prixMin', (float) $prixMin);
+        }
+
+        // Filtre par prix maximum
+        if (!empty($prixMax) && is_numeric($prixMax)) {
+            $qb->andWhere('l.prix <= :prixMax')
+               ->setParameter('prixMax', (float) $prixMax);
+        }
+
+        // Filtre par disponibilité
+        if ($disponible !== '') {
+            $qb->andWhere('l.disponible = :disponible')
+               ->setParameter('disponible', (bool) $disponible);
+        }
+
+        // Tri par date de création (plus récent en premier)
+        $qb->orderBy('l.createdAt', 'DESC');
+
+        // Exécuter la requête
+        $logements = $qb->getQuery()->getResult();
+
+        // Récupérer toutes les catégories pour le select
+        $categories = $em->getRepository(Categorie::class)->findAll();
 
         return $this->render('backOffice/logement/list.html.twig', [
             'logements' => $logements,
+            'categories' => $categories,
         ]);
     }
 

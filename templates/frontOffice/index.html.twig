@@ -236,6 +236,14 @@
                           <span class="status-badge featured">{{ logement.categorie.nom }}</span>
                         {% endif %}
                       </div>
+                      
+                      <div class="property-actions">
+                          <button class="action-btn favorite-btn" 
+                              data-logement-id="{{ logement.id }}"
+                              title="Ajouter aux favoris">
+                              <i class="bi bi-heart"></i>
+                          </button>
+                      </div>
                     </div>
                   </a>
                   
@@ -278,13 +286,6 @@
                 </div>
               </div>
             {% endfor %}
-          </div>
-
-          <div class="text-center mt-5" data-aos="fade-up">
-            <a href="{{ path('app_properties') }}" class="btn btn-primary btn-lg">
-              Voir tous les logements
-              <i class="bi bi-arrow-right ms-2"></i>
-            </a>
           </div>
         {% else %}
           <div class="alert alert-info text-center">

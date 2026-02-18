@@ -65,12 +65,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    // ⭐ NOUVEAU : Collection des logements du propriétaire
     /**
      * @var Collection<int, Logement>
      */
     #[ORM\OneToMany(targetEntity: Logement::class, mappedBy: 'proprietaire', orphanRemoval: true)]
     private Collection $logements;
+
+    // ⭐ NOUVEAU : Favoris (ManyToMany bidirectionnel)
+    /**
+     * @var Collection<int, Logement>
+     */
+    #[ORM\ManyToMany(targetEntity: Logement::class, inversedBy: 'utilisateursFavoris')]
+    #[ORM\JoinTable(name: 'user_favoris')]
+    private Collection $favoris;
 
     public function __construct()
     {
@@ -78,7 +85,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = ['ROLE_USER'];
         $this->isVerified = false;
         $this->isActive = true;
-        $this->logements = new ArrayCollection(); // ⭐ NOUVEAU
+        $this->logements = new ArrayCollection();
+        $this->favoris = new ArrayCollection(); // ⭐ NOUVEAU
     }
 
     #[ORM\PrePersist]
@@ -87,7 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    // ========== Tous vos getters/setters existants (inchangés) ==========
+    // ========== Getters/Setters existants ==========
 
     public function getId(): ?int
     {
@@ -247,7 +255,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // ========== NOUVEAUX : Gestion des logements ==========
+    // ========== Gestion des logements (propriétaire) ==========
 
     /**
      * @return Collection<int, Logement>
@@ -263,7 +271,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $this->logements->add($logement);
             $logement->setProprietaire($this);
         }
-
         return $this;
     }
 
@@ -274,11 +281,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $logement->setProprietaire(null);
             }
         }
-
         return $this;
     }
 
-    // ========== Helper Methods (inchangés) ==========
+    // ========== ⭐ NOUVEAUX : Gestion des FAVORIS ==========
+
+    /**
+     * @return Collection<int, Logement>
+     */
+    public function getFavoris(): Collection
+    {
+        return $this->favoris;
+    }
+
+    public function addFavori(Logement $logement): static
+    {
+        if (!$this->favoris->contains($logement)) {
+            $this->favoris->add($logement);
+            $logement->addUtilisateurFavori($this);
+        }
+        return $this;
+    }
+
+    public function removeFavori(Logement $logement): static
+    {
+        if ($this->favoris->removeElement($logement)) {
+            $logement->removeUtilisateurFavori($this);
+        }
+        return $this;
+    }
+
+    public function isFavori(Logement $logement): bool
+    {
+        return $this->favoris->contains($logement);
+    }
+
+    public function getNombreFavoris(): int
+    {
+        return $this->favoris->count();
+    }
+
+    // ========== Helper Methods ==========
 
     public function getFullName(): string
     {
@@ -288,5 +331,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->getFullName();
+    }
+
+    /**
+     * Vérifier si l'utilisateur est propriétaire
+     */
+    public function isProprietaire(): bool
+    {
+        return in_array('ROLE_PROPRIETAIRE', $this->roles) || 
+               in_array('ROLE_ADMIN', $this->roles);
+    }
+
+    /**
+     * Vérifier si l'utilisateur est client
+     */
+    public function isClient(): bool
+    {
+        return in_array('ROLE_USER', $this->roles) && 
+               !in_array('ROLE_PROPRIETAIRE', $this->roles) && 
+               !in_array('ROLE_ADMIN', $this->roles);
     }
 }

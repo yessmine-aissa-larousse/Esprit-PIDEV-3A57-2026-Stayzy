@@ -109,13 +109,14 @@
                                 
                                 {# Boutons actions #}
                                 <div class="col-lg-2 col-md-12">
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary flex-fill">
-                                            <i class="bi bi-search"></i>
+                                    <div class="search-field">
+                                        <button type="submit" class="btn btn-primary w-100 search-btn">
+                                            <i class="bi bi-search"></i> 
+                                            <span>Rechercher</span>
                                         </button>
                                         {% if filtres.ville or filtres.categorie or filtres.prix_max or (filtres.chambres and filtres.chambres != 'any') %}
                                             <a href="{{ path('app_properties') }}" 
-                                               class="btn btn-outline-secondary" 
+                                               class="reset-btn" 
                                                title="Réinitialiser les filtres"
                                                data-bs-toggle="tooltip">
                                                 <i class="bi bi-arrow-counterclockwise"></i>
@@ -178,11 +179,11 @@
                 <div class="properties-masonry view-masonry active" data-aos="fade-up" data-aos-delay="250">
                     
                     {% if logements is empty %}
-                        <div class="alert alert-warning text-center">
+                        <div class="alert text-center">
                             <i class="bi bi-search"></i>
                             <h5 class="mt-2">Aucun logement trouvé</h5>
                             <p>Essayez de modifier vos critères de recherche.</p>
-                            <a href="{{ path('app_properties') }}" class="btn btn-primary">
+                            <a href="{{ path('app_properties') }}" >
                                 Voir tous les logements
                             </a>
                         </div>
@@ -354,3 +355,4 @@
         }
     </script>
 {% endblock %}
+

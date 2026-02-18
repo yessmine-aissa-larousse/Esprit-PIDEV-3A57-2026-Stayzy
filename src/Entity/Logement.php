@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\LogementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -74,14 +76,16 @@ class Logement
     #[Assert\NotBlank(message: "La catégorie est obligatoire")]
     private ?Categorie $categorie = null;
 
-    // ⭐ NOUVEAU : Relation avec User (Propriétaire)
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'logements')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $proprietaire = null;
 
-    // ⭐ NOUVEAU : Date de création
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    // ⭐ NOUVEAU : Utilisateurs qui ont mis ce logement en favori
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoris')]
+    private Collection $utilisateursFavoris;
 
     public function __construct()
     {
@@ -89,7 +93,11 @@ class Logement
         $this->disponible = true;
         $this->noteMoyenne = null;
         $this->totalAvis = 0;
+        $this->utilisateursFavoris = new ArrayCollection();
     }
+
+    // ========== Getters/Setters existants ==========
+
     public function getId(): ?int
     {
         return $this->id;
@@ -103,7 +111,6 @@ class Logement
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
-
         return $this;
     }
 
@@ -115,7 +122,6 @@ class Logement
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 
@@ -138,7 +144,6 @@ class Logement
     public function setPrix(float $prix): static
     {
         $this->prix = $prix;
-
         return $this;
     }
 
@@ -150,7 +155,6 @@ class Logement
     public function setSuperficie(int $superficie): static
     {
         $this->superficie = $superficie;
-
         return $this;
     }
 
@@ -162,7 +166,6 @@ class Logement
     public function setNombreChambres(int $nombreChambres): static
     {
         $this->nombreChambres = $nombreChambres;
-
         return $this;
     }
 
@@ -174,7 +177,6 @@ class Logement
     public function setNombreSalleDeBain(int $nombreSalleDeBain): static
     {
         $this->nombreSalleDeBain = $nombreSalleDeBain;
-
         return $this;
     }
 
@@ -186,7 +188,6 @@ class Logement
     public function setAmenites(?array $amenites): static
     {
         $this->amenites = $amenites;
-
         return $this;
     }
 
@@ -198,7 +199,6 @@ class Logement
     public function setDisponible(bool $disponible): static
     {
         $this->disponible = $disponible;
-
         return $this;
     }
 
@@ -210,7 +210,6 @@ class Logement
     public function setPhotos(?array $photos): static
     {
         $this->photos = $photos;
-
         return $this;
     }
 
@@ -222,7 +221,6 @@ class Logement
     public function setPhotoPrincipale(?string $photoPrincipale): static
     {
         $this->photoPrincipale = $photoPrincipale;
-
         return $this;
     }
 
@@ -234,7 +232,6 @@ class Logement
     public function setNoteMoyenne(?float $noteMoyenne): static
     {
         $this->noteMoyenne = $noteMoyenne;
-
         return $this;
     }
 
@@ -246,7 +243,6 @@ class Logement
     public function setTotalAvis(?int $totalAvis): static
     {
         $this->totalAvis = $totalAvis;
-
         return $this;
     }
 
@@ -258,7 +254,6 @@ class Logement
     public function setCategorie(?Categorie $categorie): static
     {
         $this->categorie = $categorie;
-
         return $this;
     }
 
@@ -282,5 +277,45 @@ class Logement
     {
         $this->createdAt = $createdAt;
         return $this;
+    }
+
+    // ========== ⭐ NOUVEAUX : Gestion des favoris ==========
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUtilisateursFavoris(): Collection
+    {
+        return $this->utilisateursFavoris;
+    }
+
+    public function addUtilisateurFavori(User $user): static
+    {
+        if (!$this->utilisateursFavoris->contains($user)) {
+            $this->utilisateursFavoris->add($user);
+        }
+        return $this;
+    }
+
+    public function removeUtilisateurFavori(User $user): static
+    {
+        $this->utilisateursFavoris->removeElement($user);
+        return $this;
+    }
+
+    /**
+     * Nombre d'utilisateurs qui ont mis ce logement en favori
+     */
+    public function getNombreFavoris(): int
+    {
+        return $this->utilisateursFavoris->count();
+    }
+
+    /**
+     * Vérifier si un user spécifique a ce logement en favori
+     */
+    public function estEnFavoriPour(User $user): bool
+    {
+        return $this->utilisateursFavoris->contains($user);
     }
 }
