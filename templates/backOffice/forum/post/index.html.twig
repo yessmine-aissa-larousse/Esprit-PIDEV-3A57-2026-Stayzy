@@ -30,11 +30,8 @@
             {% endfor %}
 
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header">
                     <h5 class="card-title mb-0">Liste des posts ({{ total }})</h5>
-                    <a href="{{ path('admin_post_new') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-lg"></i> Nouveau post
-                    </a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -65,7 +62,11 @@
                                                 <span class="badge bg-secondary">Brouillon</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ post.commentsCount }}</td>
+                                        <td>
+                                            <a href="{{ path('admin_comment_index', {post_id: post.id}) }}" class="text-primary">
+                                                {{ post.commentsCount }} <i class="bi bi-chat-dots"></i>
+                                            </a>
+                                        </td>
                                         <td>{{ post.createdAt|date('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">

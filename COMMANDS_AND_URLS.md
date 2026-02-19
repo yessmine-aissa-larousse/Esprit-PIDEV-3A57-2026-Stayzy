@@ -73,6 +73,7 @@ docker compose exec php php bin/console about
 | Nos Logements | http://localhost:8080/properties | GET |
 | Forum (liste des posts) | http://localhost:8080/forum | GET |
 | Forum (page 2) | http://localhost:8080/forum?page=2 | GET |
+| Nouveau post | http://localhost:8080/forum/post/new | GET, POST |
 | Forum /post (redirige) | http://localhost:8080/forum/post | GET |
 | Détail d’un post + commentaires | http://localhost:8080/forum/post/1 | GET, POST |
 
@@ -93,18 +94,20 @@ docker compose exec php php bin/console about
 |--------|-----|---------|
 | Liste des posts | http://localhost:8080/admin/forum/post | GET |
 | Liste (page 2) | http://localhost:8080/admin/forum/post?page=2 | GET |
-| Nouveau post | http://localhost:8080/admin/forum/post/new | GET, POST |
 | Détail post | http://localhost:8080/admin/forum/post/1 | GET |
 | Modifier post | http://localhost:8080/admin/forum/post/1/edit | GET, POST |
 | Supprimer post | http://localhost:8080/admin/forum/post/1/delete | POST |
+
+*Création de posts : sur le frontend (Forum > Nouveau post)*
 
 ### Commentaires
 
 | Action | URL | Méthode |
 |--------|-----|---------|
 | Liste des commentaires | http://localhost:8080/admin/forum/comment | GET |
+| Liste filtrée par post | http://localhost:8080/admin/forum/comment?post_id=1 | GET |
 | Liste (page 2) | http://localhost:8080/admin/forum/comment?page=2 | GET |
-| Modifier commentaire | http://localhost:8080/admin/forum/comment/1/edit | GET, POST |
+| Voir commentaire (frontend) | http://localhost:8080/admin/forum/comment/1 | GET |
 | Supprimer commentaire | http://localhost:8080/admin/forum/comment/1/delete | POST |
 
 *(Remplace 1 par l’ID correspondant)*

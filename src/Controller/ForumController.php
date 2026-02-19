@@ -5,9 +5,12 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\Post;
 use App\Form\CommentType;
+use App\Form\PostType;
+use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -16,9 +19,11 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ForumController extends AbstractController
 {
     private const POSTS_PER_PAGE = 9;
+    private const SESSION_AUTHOR_KEY = 'forum_author';
 
     public function __construct(
         private readonly PostRepository $postRepository,
+        private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -37,6 +42,27 @@ final class ForumController extends AbstractController
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total' => $total,
+        ]);
+    }
+
+    #[Route('/post/new', name: 'forum_post_new', methods: ['GET', 'POST'])]
+    public function newPost(Request $request): Response
+    {
+        $post = new Post();
+        $post->setIsPublished(true);
+        $form = $this->createForm(PostType::class, $post);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($post);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Votre post a été créé.');
+            return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
+        }
+
+        return $this->render('frontOffice/forum/post_new.html.twig', [
+            'post' => $post,
+            'form' => $form,
         ]);
     }
 
@@ -59,15 +85,136 @@ final class ForumController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if ($request->request->has('parent_id')) {
+                $parentId = (int) $request->request->get('parent_id');
+                if ($parentId > 0) {
+                    $parent = $this->commentRepository->find($parentId);
+                    if ($parent && $parent->getPost() === $post) {
+                        $comment->setParent($parent);
+                    }
+                }
+            }
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
+            $request->getSession()->set(self::SESSION_AUTHOR_KEY, $comment->getAuthor());
             $this->addFlash('success', 'Votre commentaire a été publié.');
             return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
         }
 
+        $rootComments = $this->commentRepository->findRootCommentsByPost($post);
+        $currentAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
+
         return $this->render('frontOffice/forum/show.html.twig', [
             'post' => $post,
             'form' => $form,
+            'root_comments' => $rootComments,
+            'current_author' => $currentAuthor,
         ]);
+    }
+
+    #[Route('/comment/{id}/edit', name: 'forum_comment_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function editComment(Request $request, Comment $comment): Response
+    {
+        $sessionAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
+        if ($sessionAuthor !== $comment->getAuthor()) {
+            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres commentaires.');
+            return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+        }
+
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Commentaire modifié.');
+            return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+        }
+
+        return $this->render('frontOffice/forum/comment_edit.html.twig', [
+            'comment' => $comment,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/comment/{id}/delete', name: 'forum_comment_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function deleteComment(Request $request, Comment $comment): Response
+    {
+        $sessionAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
+        if ($sessionAuthor !== $comment->getAuthor()) {
+            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres commentaires.');
+            return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+        }
+        if ($this->isCsrfTokenValid('delete_comment' . $comment->getId(), (string) $request->request->get('_token'))) {
+            $this->entityManager->remove($comment);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Commentaire supprimé.');
+        }
+        return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+    }
+
+    #[Route('/post/{id}/avis', name: 'forum_post_avis', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function postAvis(Post $post): Response
+    {
+        if (!$post->isPublished()) {
+            throw $this->createNotFoundException();
+        }
+        $post->incrementAvis();
+        $this->entityManager->flush();
+        return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
+    }
+
+    #[Route('/post/{id}/dislike', name: 'forum_post_dislike', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function postDislike(Post $post): Response
+    {
+        if (!$post->isPublished()) {
+            throw $this->createNotFoundException();
+        }
+        $post->incrementDislike();
+        $this->entityManager->flush();
+        return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
+    }
+
+    #[Route('/comment/{id}/avis', name: 'forum_comment_avis', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function commentAvis(Comment $comment): Response
+    {
+        $comment->incrementAvis();
+        $this->entityManager->flush();
+        return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+    }
+
+    #[Route('/comment/{id}/dislike', name: 'forum_comment_dislike', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function commentDislike(Comment $comment): Response
+    {
+        $comment->incrementDislike();
+        $this->entityManager->flush();
+        return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
+    }
+
+    #[Route('/chat', name: 'forum_chat', methods: ['POST'])]
+    public function chat(Request $request): JsonResponse
+    {
+        $message = trim((string) $request->request->get('message', ''));
+        if ($message === '') {
+            return new JsonResponse(['reply' => 'Veuillez entrer un message.'], 400);
+        }
+
+        $reply = $this->getChatbotReply($message);
+
+        return new JsonResponse(['reply' => $reply]);
+    }
+
+    private function getChatbotReply(string $message): string
+    {
+        $lower = mb_strtolower($message);
+        if (str_contains($lower, 'bonjour') || str_contains($lower, 'salut')) {
+            return 'Bonjour ! Comment puis-je vous aider sur le forum Stayzy ?';
+        }
+        if (str_contains($lower, 'aide') || str_contains($lower, 'help')) {
+            return 'Vous pouvez parcourir les posts, commenter, répondre aux commentaires et liker les publications. Créez un nouveau post depuis la page Forum si vous souhaitez démarrer une discussion.';
+        }
+        if (str_contains($lower, 'merci')) {
+            return 'Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions.';
+        }
+        return 'Merci pour votre message. Pour toute question sur le forum, parcourez les articles ou créez un nouveau post.';
     }
 }

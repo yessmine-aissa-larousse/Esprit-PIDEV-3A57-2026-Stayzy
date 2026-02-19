@@ -11,6 +11,11 @@
                 <h2>Derniers articles et discussions</h2>
                 <p>Découvrez nos articles et participez aux échanges</p>
             </div>
+            <div class="text-center mb-4">
+                <a href="{{ path('forum_post_new') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Nouveau post
+                </a>
+            </div>
         </div>
     </section>
 
@@ -30,12 +35,18 @@
                             <h3 class="title">
                                 <a href="{{ path('forum_post_show', {id: post.id}) }}">{{ post.title }}</a>
                             </h3>
-                            <div class="d-flex align-items-center">
-                                <img src="{{ asset('frontOffice/img/blog/author.jpg') }}" alt="{{ post.author }}" class="post-author-img me-3" onerror="this.style.display='none'" />
-                                <div>
-                                    <p class="post-author mb-0">{{ post.author }}</p>
-                                    <p class="post-date">{{ post.createdAt|date('d M Y') }}</p>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ asset('frontOffice/img/blog/author.jpg') }}" alt="{{ post.author }}" class="post-author-img me-3" onerror="this.style.display='none'" />
+                                    <div>
+                                        <p class="post-author mb-0">{{ post.author }}</p>
+                                        <p class="post-date">{{ post.createdAt|date('d M Y') }}</p>
+                                    </div>
                                 </div>
+                                <span class="text-muted small">
+                                    <i class="bi bi-hand-thumbs-up"></i> {{ post.avisCount }}
+                                    <i class="bi bi-hand-thumbs-down ms-1"></i> {{ post.dislikeCount }}
+                                </span>
                             </div>
                             {% if post.excerpt %}
                                 <p class="mt-2">{{ post.excerpt|length > 120 ? post.excerpt|slice(0, 120) ~ '...' : post.excerpt }}</p>
@@ -81,4 +92,5 @@
             {% endif %}
         </div>
     </section>
+    {% include 'frontOffice/forum/_chatbot.html.twig' %}
 {% endblock %}

@@ -1,0 +1,84 @@
+<div id="forum-chatbot" class="forum-chatbot">
+    <button type="button" id="forum-chatbot-toggle" class="forum-chatbot-toggle btn btn-primary rounded-circle shadow" title="Assistant forum" aria-label="Ouvrir le chat">
+        <i class="bi bi-robot"></i>
+    </button>
+    <div id="forum-chatbot-panel" class="forum-chatbot-panel shadow d-none">
+        <div class="forum-chatbot-header d-flex justify-content-between align-items-center p-2 bg-primary text-white rounded-top">
+            <span><i class="bi bi-robot me-2"></i> Assistant Forum</span>
+            <button type="button" class="btn btn-link btn-sm text-white p-0 opacity-75 forum-chatbot-close" aria-label="Fermer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="forum-chatbot-messages p-2" style="height: 280px; overflow-y: auto; background: #f8f9fa;">
+            <div class="forum-msg bot small text-muted">
+                Bonjour ! Posez-moi une question sur le forum.
+            </div>
+        </div>
+        <div class="forum-chatbot-input p-2 border-top">
+            <form id="forum-chatbot-form" class="d-flex gap-1">
+                <input type="text" name="message" class="form-control form-control-sm" placeholder="Votre message..." maxlength="500" required>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+<style>
+.forum-chatbot { position: fixed; bottom: 24px; right: 24px; z-index: 1050; }
+.forum-chatbot-toggle { width: 56px; height: 56px; font-size: 1.5rem; }
+.forum-chatbot-panel { width: 320px; max-width: calc(100vw - 48px); background: #fff; border-radius: 12px; }
+.forum-msg { margin-bottom: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 8px; }
+.forum-msg.bot { background: #e9ecef; }
+.forum-msg.user { background: #0d6efd; color: #fff; margin-left: 1.5rem; }
+</style>
+<script>
+(function() {
+    var panel = document.getElementById('forum-chatbot-panel');
+    var toggle = document.getElementById('forum-chatbot-toggle');
+    var closeBtn = panel && panel.querySelector('.forum-chatbot-close');
+    var form = document.getElementById('forum-chatbot-form');
+    var messagesEl = panel && panel.querySelector('.forum-chatbot-messages');
+    var input = form && form.querySelector('input[name="message"]');
+
+    function openPanel() { if (panel) panel.classList.remove('d-none'); }
+    function closePanel() { if (panel) panel.classList.add('d-none'); }
+    function togglePanel() { if (panel) panel.classList.toggle('d-none'); }
+
+    if (toggle) toggle.addEventListener('click', togglePanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+    if (form && messagesEl) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var msg = (input && input.value) ? input.value.trim() : '';
+            if (!msg) return;
+            var userDiv = document.createElement('div');
+            userDiv.className = 'forum-msg user';
+            userDiv.textContent = msg;
+            messagesEl.appendChild(userDiv);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            input.value = '';
+
+            fetch('{{ path('forum_chat') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                body: 'message=' + encodeURIComponent(msg)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var botDiv = document.createElement('div');
+                botDiv.className = 'forum-msg bot small text-muted';
+                botDiv.textContent = data.reply || 'Désolé, pas de réponse.';
+                messagesEl.appendChild(botDiv);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            })
+            .catch(function() {
+                var errDiv = document.createElement('div');
+                errDiv.className = 'forum-msg bot small text-danger';
+                errDiv.textContent = 'Erreur de connexion.';
+                messagesEl.appendChild(errDiv);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            });
+        });
+    }
+})();
+</script>

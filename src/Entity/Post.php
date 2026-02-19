@@ -49,6 +49,12 @@ class Post
     #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(name: 'avis_count', options: ['default' => 0])]
+    private int $avisCount = 0;
+
+    #[ORM\Column(name: 'dislike_count', options: ['default' => 0])]
+    private int $dislikeCount = 0;
+
     /**
      * @var Collection<int, Comment>
      */
@@ -174,6 +180,40 @@ class Post
     public function getCommentsCount(): int
     {
         return $this->comments->count();
+    }
+
+    public function getAvisCount(): int
+    {
+        return $this->avisCount;
+    }
+
+    public function setAvisCount(int $avisCount): static
+    {
+        $this->avisCount = $avisCount;
+        return $this;
+    }
+
+    public function incrementAvis(): static
+    {
+        $this->avisCount++;
+        return $this;
+    }
+
+    public function getDislikeCount(): int
+    {
+        return $this->dislikeCount;
+    }
+
+    public function setDislikeCount(int $dislikeCount): static
+    {
+        $this->dislikeCount = $dislikeCount;
+        return $this;
+    }
+
+    public function incrementDislike(): static
+    {
+        $this->dislikeCount++;
+        return $this;
     }
 
     #[ORM\PreUpdate]

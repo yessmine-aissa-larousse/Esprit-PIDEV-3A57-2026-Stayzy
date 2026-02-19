@@ -31,7 +31,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Liste des commentaires ({{ total }})</h5>
+                    <h5 class="card-title mb-0">Liste des commentaires ({{ total }}){% if filter_post_id %} pour ce post{% endif %}</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -58,8 +58,8 @@
                                         <td>{{ comment.createdAt|date('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ path('admin_comment_edit', {id: comment.id}) }}" class="btn btn-outline-warning" title="Modifier">
-                                                    <i class="bi bi-pencil"></i>
+                                                <a href="{{ path('admin_comment_show', {id: comment.id}) }}" class="btn btn-outline-info" title="Voir">
+                                                    <i class="bi bi-eye"></i>
                                                 </a>
                                                 <form method="post" action="{{ path('admin_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ comment.id) }}">
@@ -84,15 +84,15 @@
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-center">
                             <li class="page-item {{ current_page <= 1 ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', {page: current_page - 1}) }}">«</a>
+                                <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: current_page - 1, post_id: filter_post_id} : {page: current_page - 1}) }}">«</a>
                             </li>
                             {% for p in 1..total_pages %}
                                 <li class="page-item {{ p == current_page ? 'active' : '' }}">
-                                    <a class="page-link" href="{{ path('admin_comment_index', {page: p}) }}">{{ p }}</a>
+                                    <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: p, post_id: filter_post_id} : {page: p}) }}">{{ p }}</a>
                                 </li>
                             {% endfor %}
                             <li class="page-item {{ current_page >= total_pages ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', {page: current_page + 1}) }}">»</a>
+                                <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: current_page + 1, post_id: filter_post_id} : {page: current_page + 1}) }}">»</a>
                             </li>
                         </ul>
                     </nav>

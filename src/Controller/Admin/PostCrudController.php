@@ -44,26 +44,6 @@ final class PostCrudController extends AbstractController
         ]);
     }
 
-    #[Route('/new', name: 'admin_post_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
-    {
-        $post = new Post();
-        $form = $this->createForm(PostType::class, $post);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($post);
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Le post a été créé avec succès.');
-            return $this->redirectToRoute('admin_post_index');
-        }
-
-        return $this->render('backOffice/forum/post/new.html.twig', [
-            'post' => $post,
-            'form' => $form,
-        ]);
-    }
-
     #[Route('/{id}', name: 'admin_post_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(Post $post): Response
     {

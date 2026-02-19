@@ -3,8 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Comment;
-use App\Form\CommentType;
 use App\Repository\CommentRepository;
+use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +18,7 @@ final class CommentCrudController extends AbstractController
 
     public function __construct(
         private readonly CommentRepository $commentRepository,
+        private readonly PostRepository $postRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -25,15 +26,23 @@ final class CommentCrudController extends AbstractController
     #[Route('', name: 'admin_comment_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
+        $postId = $request->query->getInt('post_id', 0);
+        $criteria = [];
+        if ($postId > 0) {
+            $post = $this->postRepository->find($postId);
+            if ($post) {
+                $criteria['post'] = $post;
+            }
+        }
         $page = max(1, (int) $request->query->get('page', 1));
         $offset = ($page - 1) * self::PER_PAGE;
         $comments = $this->commentRepository->findBy(
-            [],
+            $criteria,
             ['createdAt' => 'DESC'],
             self::PER_PAGE,
             $offset
         );
-        $total = $this->commentRepository->count([]);
+        $total = $this->commentRepository->count($criteria);
         $totalPages = (int) ceil($total / self::PER_PAGE);
 
         return $this->render('backOffice/forum/comment/index.html.twig', [
@@ -41,25 +50,14 @@ final class CommentCrudController extends AbstractController
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total' => $total,
+            'filter_post_id' => $postId > 0 ? $postId : null,
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'admin_comment_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function edit(Request $request, Comment $comment): Response
+    #[Route('/{id}', name: 'admin_comment_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function show(Comment $comment): Response
     {
-        $form = $this->createForm(CommentType::class, $comment);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Le commentaire a été modifié.');
-            return $this->redirectToRoute('admin_comment_index');
-        }
-
-        return $this->render('backOffice/forum/comment/edit.html.twig', [
-            'comment' => $comment,
-            'form' => $form,
-        ]);
+        return $this->redirect($this->generateUrl('forum_post_show', ['id' => $comment->getPost()->getId()]) . '#comment-' . $comment->getId());
     }
 
     #[Route('/{id}/delete', name: 'admin_comment_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

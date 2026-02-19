@@ -29,4 +29,23 @@ class CommentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Root comments only (no parent), with replies loaded, ordered by date DESC.
+     *
+     * @return Comment[]
+     */
+    public function findRootCommentsByPost(Post $post): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.post = :post')
+            ->andWhere('c.parent IS NULL')
+            ->setParameter('post', $post)
+            ->leftJoin('c.replies', 'r')
+            ->addSelect('r')
+            ->orderBy('c.createdAt', 'DESC')
+            ->addOrderBy('r.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

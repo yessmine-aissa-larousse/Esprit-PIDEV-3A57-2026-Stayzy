@@ -4,6 +4,14 @@
 
 This project includes a forum module with two related entities: **Post** and **Comment**, with server-side validation constraints. The frontend uses the HomeSpace Bootstrap template (blog section), and the backend CRUD uses the Gentella/AdminLTE admin template style.
 
+**Features:**
+- Create posts from the frontend
+- Like/dislike (avis) on posts and comments
+- Nested replies on comments
+- Edit and delete comments (authors only, via session)
+- AI chatbot assistant on forum pages
+- Backend: manage posts (edit, delete), view and delete comments
+
 ## Entities & Constraints
 
 ### Post
@@ -12,12 +20,16 @@ This project includes a forum module with two related entities: **Post** and **C
 - **excerpt** (optional, max 500 chars)
 - **author** (required, max 180 chars)
 - **isPublished** (boolean)
+- **avisCount** (likes), **dislikeCount**
 - **createdAt**, **updatedAt**
 
 ### Comment
 - **content** (required, 3-2000 chars)
 - **author** (required, max 180 chars)
 - **post** (ManyToOne → Post, cascade delete)
+- **parent** (ManyToOne → Comment, for replies)
+- **avisCount** (likes), **dislikeCount**
+- **createdAt**
 
 ## Docker Setup
 
@@ -63,15 +75,30 @@ symfony server:start  # or php -S localhost:8000 -t public
 
 ## Routes
 
+### Frontend
+
 | Route | Description |
 |-------|-------------|
 | `/forum` | Forum index (published posts) |
+| `/forum/post/new` | Create new post |
 | `/forum/post/{id}` | Post detail + comments |
+| `/forum/comment/{id}/edit` | Edit comment (author only) |
+| `/forum/post/{id}/avis` | Like post (POST) |
+| `/forum/post/{id}/dislike` | Dislike post (POST) |
+| `/forum/comment/{id}/avis` | Like comment (POST) |
+| `/forum/comment/{id}/dislike` | Dislike comment (POST) |
+| `/forum/chat` | AI chatbot API (POST) |
+
+### Backend
+
+| Route | Description |
+|-------|-------------|
 | `/admin` | Admin dashboard |
-| `/admin/forum/post` | Posts CRUD |
-| `/admin/forum/comment` | Comments CRUD |
+| `/admin/forum/post` | Posts list (edit, delete) |
+| `/admin/forum/post/{id}` | Post detail |
+| `/admin/forum/comment` | Comments list (filter by post, view, delete) |
 
 ## Templates
 
-- **Frontend**: `templates/frontOffice/forum/` (HomeSpace blog section styles)
-- **Backend**: `templates/backOffice/forum/` (Gentella/AdminLTE table style)
+- **Frontend**: `templates/frontOffice/forum/` (index, show, post_new, comment_edit, _chatbot)
+- **Backend**: `templates/backOffice/forum/` (post: index, show, edit; comment: index)
