@@ -1,0 +1,140 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Inscription - StayZy{% endblock %}
+
+{% block body %}
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <!-- Bouton retour -->
+                <div class="mb-4">
+                    <a href="{{ path('app_home') }}" class="btn btn-light">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <!-- En-tête -->
+                        <div class="text-center mb-4">
+                            <div class="mb-3">
+                                {% if role == 'client' %}
+                                    <i class="bi bi-person-plus-fill text-success" style="font-size: 4rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-building text-warning" style="font-size: 4rem;"></i>
+                                {% endif %}
+                            </div>
+                            <h2 class="fw-bold">
+                                {% if role == 'client' %}
+                                    Inscription Client
+                                {% else %}
+                                    Inscription Propriétaire
+                                {% endif %}
+                            </h2>
+                            <p class="text-muted">Créez votre compte en quelques secondes</p>
+                        </div>
+
+                        <!-- Messages flash -->
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                        
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Formulaire -->
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        <div class="row g-3">
+                            <!-- Email -->
+                            <div class="col-12">
+                                {{ form_row(form.email, {
+                                    'label': 'Email',
+                                    'attr': {'class': 'form-control', 'placeholder': 'exemple@email.com'}
+                                }) }}
+                            </div>
+
+                            <!-- Nom -->
+                            <div class="col-md-6">
+                                {{ form_row(form.nom, {
+                                    'label': 'Nom',
+                                    'attr': {'class': 'form-control', 'placeholder': 'Nom'}
+                                }) }}
+                            </div>
+
+                            <!-- Prénom -->
+                            <div class="col-md-6">
+                                {{ form_row(form.prenom, {
+                                    'label': 'Prénom',
+                                    'attr': {'class': 'form-control', 'placeholder': 'Prénom'}
+                                }) }}
+                            </div>
+
+                            <!-- Téléphone -->
+                            <div class="col-12">
+                                {{ form_row(form.tel, {
+                                    'label': 'Téléphone',
+                                    'attr': {'class': 'form-control', 'placeholder': '+216 XX XXX XXX'}
+                                }) }}
+                            </div>
+
+                            <!-- Adresse -->
+                            <div class="col-12">
+                                {{ form_row(form.adresse, {
+                                    'label': 'Adresse',
+                                    'attr': {'class': 'form-control', 'placeholder': 'Votre adresse'}
+                                }) }}
+                            </div>
+
+                            <!-- Mot de passe -->
+                            <div class="col-12">
+                                {{ form_row(form.password, {
+                                    'label': 'Mot de passe',
+                                    'attr': {'class': 'form-control', 'placeholder': 'Minimum 6 caractères'}
+                                }) }}
+                            </div>
+
+                            <!-- Rôle (caché) -->
+                            {{ form_row(form.roles, {'attr': {'style': 'display:none'}}) }}
+                            {{ form_row(form.isActive, {'attr': {'style': 'display:none'}}) }}
+                            {{ form_row(form.imageUrl, {'attr': {'style': 'display:none'}}) }}
+
+                            <!-- Bouton -->
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-{{ role == 'client' ? 'success' : 'warning' }} btn-lg w-100">
+                                    <i class="bi bi-person-plus"></i> Créer mon compte
+                                </button>
+                            </div>
+                        </div>
+
+                        {{ form_end(form) }}
+
+                        <!-- Lien vers connexion -->
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-0">
+                                Vous avez déjà un compte ? 
+                                <a href="{{ path('app_login') }}" class="fw-bold">Se connecter</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informations de sécurité -->
+                <div class="text-center mt-4 text-white">
+                    <small>
+                        <i class="bi bi-shield-check"></i> Vos données sont sécurisées et confidentielles
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

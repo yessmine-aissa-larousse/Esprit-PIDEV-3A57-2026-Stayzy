@@ -1,6 +1,5 @@
 /**
- * SYSTÈME DE FAVORIS - JavaScript CORRIGÉ
- * Version sans onclick inline
+ * SYSTÈME DE FAVORIS - JavaScript avec Authentification
  */
 
 // ============================================================================
@@ -23,6 +22,19 @@ async function toggleFavorite(event, logementId) {
         });
         
         const data = await response.json();
+        
+        // ⚠️ Si l'utilisateur n'est pas connecté (401)
+        if (response.status === 401) {
+            showToast('⚠️ Vous devez être connecté pour ajouter des favoris', 'warning');
+            
+            // Rediriger vers la page de connexion après 2 secondes
+            if (data.redirect) {
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 2000);
+            }
+            return;
+        }
         
         if (data.success) {
             if (data.action === 'added') {
@@ -153,6 +165,7 @@ function showToast(message, type = 'info') {
     // Déterminer la classe Bootstrap selon le type
     const alertClass = type === 'success' ? 'alert-success' : 
                       type === 'error' ? 'alert-danger' : 
+                      type === 'warning' ? 'alert-warning' :
                       'alert-info';
     
     // Créer le toast

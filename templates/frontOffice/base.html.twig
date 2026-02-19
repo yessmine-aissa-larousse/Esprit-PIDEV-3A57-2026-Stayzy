@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>{% block title %}HomeSpace Bootstrap Template{% endblock %}</title>
+    <title>{% block title %}Stayzy - Trouvez votre logement idéal{% endblock %}</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -25,6 +25,53 @@
 
         <!-- Main CSS File -->
         <link href="{{ asset('frontOffice/css/main.css') }}" rel="stylesheet">
+
+        <style>
+            /* Style pour le menu utilisateur */
+            .user-menu-item {
+                position: relative;
+            }
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #0d6efd;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+            .user-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                border-radius: 8px;
+                min-width: 200px;
+                padding: 10px 0;
+                display: none;
+                z-index: 1000;
+                margin-top: 10px;
+            }
+            .user-dropdown.show {
+                display: block;
+            }
+            .user-dropdown a {
+                display: block;
+                padding: 10px 20px;
+                color: #333;
+                text-decoration: none;
+                transition: background 0.3s;
+            }
+            .user-dropdown a:hover {
+                background: #f8f9fa;
+            }
+            .user-dropdown .dropdown-divider {
+                height: 1px;
+                background: #e9ecef;
+                margin: 5px 0;
+            }
+        </style>
     {% endblock %}
 </head>
 
@@ -51,22 +98,70 @@
                 <h1 class="sitename">Stayzy</h1>
             </a>
 
-            {# ⭐ NAVIGATION MODIFIÉE AVEC FAVORIS #}
+            {# ⭐ NAVIGATION ADAPTÉE SELON L'AUTHENTIFICATION #}
             <nav id="navmenu" class="navmenu">
                 <ul>
                     <li><a href="{{ path('app_home') }}" class="active">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
                     <li><a href="{{ path('app_properties') }}">Nos Logements</a></li>
                     <li><a href="#">Services</a></li>
-                    <li>
-                        <a href="{{ path('mes_favoris') }}">
-                            ❤️ Mes Favoris
-                            <span class="badge bg-danger favori-count-badge" style="display:none; font-size: 0.7em; margin-left: 5px;">0</span>
-                        </a>
-                    </li>
                     <li><a href="#">Aide</a></li>
-                    <li><a href="{{ path('admin_logement_list') }}">se connecter</a></li>
-                    <li><a href="#">s'inscrire</a></li>
+
+                    {% if app.user %}
+                        {# ✅ UTILISATEUR CONNECTÉ #}
+                        <li class="user-menu-item">
+                            <a href="#" onclick="toggleUserMenu(event)" style="display: flex; align-items: center;">
+                                {% if app.user.profilePicture %}
+                                    <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}" 
+                                         alt="{{ app.user.fullName }}" 
+                                         class="user-avatar">
+                                {% else %}
+                                    <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
+                                         alt="Avatar" 
+                                         class="user-avatar">
+                                {% endif %}
+                                {{ app.user.prenom }} <i class="bi bi-chevron-down ms-1"></i>
+                            </a>
+                            
+                            {# Dropdown menu #}
+                            <div class="user-dropdown" id="userDropdown">
+                                {% if app.user.isProprietaire %}
+                                    <a href="{{ path('app_proprietaire_profile') }}">
+                                        <i class="bi bi-person-circle me-2"></i>Mon Profil
+                                    </a>
+                                    <a href="{{ path('admin_dashboard') }}">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                    </a>
+                                    <a href="{{ path('admin_logement_list') }}">
+                                        <i class="bi bi-house-door me-2"></i>Mes Logements
+                                    </a>
+                                    <a href="{{ path('admin_favoris_clients') }}">
+                                        <i class="bi bi-star me-2"></i>Favoris de mes clients
+                                    </a>
+                                {% elseif app.user.isClient %}
+                                    <a href="{{ path('app_client_profile') }}">
+                                        <i class="bi bi-person-circle me-2"></i>Mon Profil
+                                    </a>
+                                    <a href="{{ path('admin_mes_favoris') }}">
+                                        <i class="bi bi-heart me-2"></i>Mes Favoris
+                                    </a>
+                                {% else %}
+                                    <a href="{{ path('admin_dashboard') }}">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard Admin
+                                    </a>
+                                {% endif %}
+                                <div class="dropdown-divider"></div>
+                                <a href="{{ path('app_logout') }}" style="color: #dc3545;">
+                                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                </a>
+                            </div>
+                        </li>
+                    {% else %}
+                        {# ❌ UTILISATEUR NON CONNECTÉ #}
+                        <li><a href="{{ path('app_portal', {type: 'login'}) }}">Se connecter</a></li>
+                        <li><a href="{{ path('app_portal', {type: 'register'}) }}">S'inscrire</a></li>
+                    {% endif %}
+
                     <li><a href="#">Contact</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -100,36 +195,33 @@
                 </div>
 
                 <div class="col-lg-2 col-6 footer-links">
-                    <h4>liens utils</h4>
+                    <h4>Liens utils</h4>
                     <ul>
-                        <li><a href="#">Accueil</a></li>
-                        <li><a href="#">qui somme-nous</a></li>
+                        <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                        <li><a href="#">Qui sommes-nous</a></li>
                         <li><a href="#">Services</a></li>
-                        
                     </ul>
                 </div>
 
                 <div class="col-lg-2 col-6 footer-links">
                     <h4>Nos Services</h4>
                     <ul>
-                        <li><a href="#">Annonces logement</a></li>
+                        <li><a href="{{ path('app_properties') }}">Annonces logement</a></li>
                         <li><a href="#">Aide client</a></li>
-                        <li><a href="#">facilité de trouver votre prichain maison</a></li>
+                        <li><a href="#">Trouvez votre logement</a></li>
                     </ul>
                 </div>
 
                 <div class="col-lg-3 col-md-12 footer-contact text-center text-md-start">
-                    <h4>Contact Us</h4>
-                    <p>Rue Yamen  8011</p>
-                    <p>Dar chaabene</p>
-                    <p>Nabeul</p>
-                    <p class="mt-4"><strong>Phone:</strong> <span>+216 56 150 403</span></p>
-                    <p><strong>Email:</strong> <span>lemonde@gmail.com</span></p>
+                    <h4>Contact</h4>
+                    <p>Rue Yamen 8011</p>
+                    <p>Dar Chaabane</p>
+                    <p>Nabeul, Tunisie</p>
+                    <p class="mt-4"><strong>Tél:</strong> <span>+216 56 150 403</span></p>
+                    <p><strong>Email:</strong> <span>contact@stayzy.tn</span></p>
                 </div>
             </div>
         </div>
-
-        
     </footer>
     <!-- End Footer -->
 
@@ -152,8 +244,27 @@
         <!-- Main JS File -->
         <script src="{{ asset('frontOffice/js/main.js') }}"></script>
         
-        {# ⭐ NOUVEAU : Script Favoris #}
+        {# ⭐ Script Favoris #}
         <script src="{{ asset('frontOffice/js/favoris.js') }}"></script>
+
+        {# ⭐ Script pour le dropdown utilisateur #}
+        <script>
+            function toggleUserMenu(event) {
+                event.preventDefault();
+                const dropdown = document.getElementById('userDropdown');
+                dropdown.classList.toggle('show');
+            }
+
+            // Fermer le dropdown si on clique ailleurs
+            document.addEventListener('click', function(event) {
+                const userMenu = document.querySelector('.user-menu-item');
+                const dropdown = document.getElementById('userDropdown');
+                
+                if (dropdown && !userMenu.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+        </script>
     {% endblock %}
 
 </body>

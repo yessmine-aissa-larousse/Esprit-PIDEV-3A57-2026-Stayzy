@@ -12,30 +12,23 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class FavoriController extends AbstractController
 {
-    // ⚠️ TEMPORAIRE : ID utilisateur de test
-    private const TEST_USER_ID = 3;
-
-    private function getTestUser(EntityManagerInterface $em): ?User
-    {
-        return $em->getRepository(User::class)->find(self::TEST_USER_ID);
-    }
-
     // =========================================================================
     // FRONTEND : PAGE MES FAVORIS (Pour les clients)
     // =========================================================================
     #[Route('/mes-favoris', name: 'mes_favoris')]
-    public function mesFavoris(EntityManagerInterface $em): Response
+    public function mesFavoris(): Response
     {
-        $user = $this->getTestUser($em);
+        // Vérifier si l'utilisateur est connecté
+        $user = $this->getUser();
 
         if (!$user) {
-            $this->addFlash('error', 'Vous devez être connecté');
-            return $this->redirectToRoute('app_home');
+            $this->addFlash('error', 'Vous devez être connecté pour accéder à vos favoris');
+            return $this->redirectToRoute('app_login'); // Remplace par ta route de connexion
         }
 
         $favoris = $user->getFavoris();
 
-        return $this->render('frontOffice/favoris.html.twig', [
+        return $this->render('backOffice/favoris/favoris.html.twig', [
             'favoris' => $favoris,
         ]);
     }
@@ -44,13 +37,13 @@ class FavoriController extends AbstractController
     // BACKOFFICE : MES FAVORIS (Pour les clients dans le backoffice)
     // =========================================================================
     #[Route('/admin/mes-favoris', name: 'admin_mes_favoris')]
-    public function adminMesFavoris(EntityManagerInterface $em): Response
+    public function adminMesFavoris(): Response
     {
-        $user = $this->getTestUser($em);
+        $user = $this->getUser();
 
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
-            return $this->redirectToRoute('admin_dashboard');
+            return $this->redirectToRoute('app_login');
         }
 
         $favoris = $user->getFavoris();
@@ -64,16 +57,16 @@ class FavoriController extends AbstractController
     // BACKOFFICE : LOGEMENTS MIS EN FAVORIS PAR MES CLIENTS (Pour propriétaires)
     // =========================================================================
     #[Route('/admin/favoris-clients', name: 'admin_favoris_clients')]
-    public function favorisClients(EntityManagerInterface $em): Response
+    public function favorisClients(): Response
     {
-        $user = $this->getTestUser($em);
+        $user = $this->getUser();
 
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
-            return $this->redirectToRoute('admin_dashboard');
+            return $this->redirectToRoute('app_login');
         }
 
-        // Récupérer les logements du propriétaire
+        // Récupérer les logements du propriétaire connecté
         $mesLogements = $user->getLogements();
 
         // Pour chaque logement, compter les favoris
@@ -102,10 +95,15 @@ class FavoriController extends AbstractController
     #[Route('/favori/toggle/{id}', name: 'favori_toggle', methods: ['POST'])]
     public function toggleFavori(int $id, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getTestUser($em);
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
         
         if (!$user) {
-            return new JsonResponse(['success' => false, 'message' => 'Non connecté'], 401);
+            return new JsonResponse([
+                'success' => false, 
+                'message' => 'Vous devez être connecté pour ajouter des favoris',
+                'redirect' => $this->generateUrl('app_login')
+            ], 401);
         }
 
         $logement = $em->getRepository(Logement::class)->find($id);
@@ -142,7 +140,7 @@ class FavoriController extends AbstractController
     #[Route('/favori/check/{id}', name: 'favori_check', methods: ['GET'])]
     public function checkFavori(int $id, EntityManagerInterface $em): JsonResponse
     {
-        $user = $this->getTestUser($em);
+        $user = $this->getUser();
 
         if (!$user) {
             return new JsonResponse(['isFavorite' => false]);
@@ -163,9 +161,9 @@ class FavoriController extends AbstractController
     // AJAX : COMPTEUR FAVORIS (Badge menu)
     // =========================================================================
     #[Route('/favori/count', name: 'favori_count', methods: ['GET'])]
-    public function countFavoris(EntityManagerInterface $em): JsonResponse
+    public function countFavoris(): JsonResponse
     {
-        $user = $this->getTestUser($em);
+        $user = $this->getUser();
 
         if (!$user) {
             return new JsonResponse(['count' => 0]);

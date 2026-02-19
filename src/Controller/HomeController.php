@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class HomeController extends AbstractController
 {
-    #[Route('/home', name: 'app_home')]
+    #[Route('/', name: 'app_home')]
     public function index(EntityManagerInterface $em): Response
     {
         // Récupérer les 6 logements les plus récents pour l'affichage
@@ -159,7 +159,14 @@ final class HomeController extends AbstractController
 
         return $this->render('frontOffice/property-details.html.twig', [
             'logement' => $logement,
-            'logementsSimilaires' => $logementsSimilaires,
+            'logementsSimilaires' => $logementsSimilaires,]);
+    }
+            
+    #[Route('/portal/{type}', name: 'app_portal', requirements: ['type' => 'login|register'])]
+    public function portal(string $type): Response  
+    {
+        return $this->render('frontOffice/portal.html.twig', [
+            'type' => $type,
         ]);
     }
 }
