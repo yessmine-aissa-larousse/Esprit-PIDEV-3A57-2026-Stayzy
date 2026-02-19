@@ -90,6 +90,28 @@
 
                             </form>
 
+                            {# ===== BOUTON GOOGLE ===== #}
+                            <hr style="margin: 25px 0; border-color: #eee;">
+                            <div class="text-center mb-3">
+                                <p class="text-muted mb-3" style="font-size: 14px;">Ou connectez-vous avec</p>
+
+                                <div id="g_id_onload"
+                                     data-client_id="320990500147-o6jc2tbou35khph5g2mltjbf4l1nvcnb.apps.googleusercontent.com"
+                                     data-login_uri="http://localhost:8000/connect/google/check"
+                                     data-auto_prompt="false">
+                                </div>
+                                <div class="g_id_signin"
+                                     data-type="standard"
+                                     data-size="large"
+                                     data-theme="outline"
+                                     data-text="signin_with"
+                                     data-shape="rectangular"
+                                     data-logo_alignment="left"
+                                     data-width="350">
+                                </div>
+                            </div>
+                            {# ===== FIN BOUTON GOOGLE ===== #}
+
                             <hr style="margin: 25px 0; border-color: #eee;">
 
                             <div class="text-center">
@@ -120,6 +142,7 @@
 
 {% block javascripts %}
 {{ parent() }}
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 function togglePassword() {
     const pwd = document.getElementById('password');

@@ -67,17 +67,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    // Statut d'approbation pour les propriétaires
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $approvalStatus = null;
 
-    // Date d'approbation/rejet
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTime $approvalDate = null;
 
-    // Raison du rejet (optionnel)
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $rejectionReason = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $profilePicture = null;
 
     public function __construct()
     {
@@ -92,19 +92,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->createdAt = new \DateTimeImmutable();
     }
-    #[ORM\Column(length: 255, nullable: true)]
-private ?string $profilePicture = null;
-
-public function getProfilePicture(): ?string
-{
-    return $this->profilePicture;
-}
-
-public function setProfilePicture(?string $profilePicture): self
-{
-    $this->profilePicture = $profilePicture;
-    return $this;
-}
 
     // ========== ID ==========
     public function getId(): ?int { return $this->id; }
@@ -126,7 +113,7 @@ public function setProfilePicture(?string $profilePicture): self
     public function getRoles(): array
     {
         $roles = $this->roles;
-         $roles[] = 'ROLE_USER'; 
+        $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
 
@@ -191,6 +178,14 @@ public function setProfilePicture(?string $profilePicture): self
     public function setImageUrl(?string $imageUrl): self
     {
         $this->imageUrl = $imageUrl;
+        return $this;
+    }
+
+    // ========== PROFILE PICTURE ==========
+    public function getProfilePicture(): ?string { return $this->profilePicture; }
+    public function setProfilePicture(?string $profilePicture): self
+    {
+        $this->profilePicture = $profilePicture;
         return $this;
     }
 
@@ -292,139 +287,86 @@ public function setProfilePicture(?string $profilePicture): self
         return in_array('ROLE_PROPRIETAIRE', $this->roles);
     }
 
+    // Vérifier si l'utilisateur est un client ← AJOUTÉ
+    public function isClient(): bool
+    {
+        return in_array('ROLE_CLIENT', $this->roles);
+    }
+
+    // Vérifier si l'utilisateur est un admin ← AJOUTÉ
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->roles);
+    }
+
     // Vérifier si le propriétaire peut accéder à son compte
     public function canAccessAccount(): bool
     {
-        // Les clients et admins peuvent toujours accéder
         if (!$this->isProprietaire()) {
             return $this->isActive;
         }
-        // Les propriétaires doivent être approuvés et actifs
         return $this->isActive && $this->isApproved();
     }
-    public function getTrustScore(): int
-{
-    $score = 0;
-    
-    // Email vérifié: +20 points
-    if ($this->isVerified) {
-        $score += 20;
-    }
-    
-    // Photo de profil: +15 points
-    if ($this->profilePicture) {
-        $score += 15;
-    }
-    
-    // Téléphone renseigné: +15 points
-    if ($this->tel) {
-        $score += 15;
-    }
-    
-    // Adresse renseignée: +10 points
-    if ($this->adresse) {
-        $score += 10;
-    }
-    
-    // Compte actif: +10 points
-    if ($this->isActive) {
-        $score += 10;
-    }
-    
-    // Propriétaire approuvé: +30 points
-    if ($this->isProprietaire() && $this->approvalStatus === self::STATUS_APPROVED) {
-        $score += 30;
-    }
-    
-    // Bonus pour profil complet
-    if ($this->nom && $this->prenom && $this->email && $this->tel && $this->profilePicture) {
-        $score += 10; // Bonus profil complet
-    }
-    
-    return min($score, 100); // Max 100
-}
 
-/**
- * Retourne le niveau du badge (bronze, silver, gold)
- */
-public function getTrustBadgeLevel(): string
-{
-    $score = $this->getTrustScore();
-    
-    if ($score >= 71) {
-        return 'gold';
-    } elseif ($score >= 41) {
-        return 'silver';
-    } else {
+    // ========== TRUST SCORE (IA) ==========
+    public function getTrustScore(): int
+    {
+        $score = 0;
+
+        if ($this->isVerified) { $score += 20; }
+        if ($this->profilePicture) { $score += 15; }
+        if ($this->tel) { $score += 15; }
+        if ($this->adresse) { $score += 10; }
+        if ($this->isActive) { $score += 10; }
+
+        if ($this->isProprietaire() && $this->approvalStatus === self::STATUS_APPROVED) {
+            $score += 30;
+        }
+
+        if ($this->nom && $this->prenom && $this->email && $this->tel && $this->profilePicture) {
+            $score += 10;
+        }
+
+        return min($score, 100);
+    }
+
+    public function getTrustBadgeLevel(): string
+    {
+        $score = $this->getTrustScore();
+        if ($score >= 71) return 'gold';
+        if ($score >= 41) return 'silver';
         return 'bronze';
     }
-}
 
-/**
- * Retourne le nom du badge en français
- */
-public function getTrustBadgeName(): string
-{
-    return match($this->getTrustBadgeLevel()) {
-        'gold' => 'Or',
-        'silver' => 'Argent',
-        'bronze' => 'Bronze',
-        default => 'Bronze'
-    };
-}
+    public function getTrustBadgeName(): string
+    {
+        return match($this->getTrustBadgeLevel()) {
+            'gold' => 'Or',
+            'silver' => 'Argent',
+            default => 'Bronze'
+        };
+    }
 
-/**
- * Retourne les suggestions pour améliorer le score
- */
-public function getTrustScoreSuggestions(): array
-{
-    $suggestions = [];
-    
-    if (!$this->isVerified) {
-        $suggestions[] = [
-            'icon' => 'bi-envelope-check',
-            'text' => 'Vérifiez votre email pour gagner +20 points',
-            'points' => 20,
-            'color' => 'warning'
-        ];
+    public function getTrustScoreSuggestions(): array
+    {
+        $suggestions = [];
+
+        if (!$this->isVerified) {
+            $suggestions[] = ['icon' => 'bi-envelope-check', 'text' => 'Vérifiez votre email pour gagner +20 points', 'points' => 20, 'color' => 'warning'];
+        }
+        if (!$this->profilePicture) {
+            $suggestions[] = ['icon' => 'bi-camera', 'text' => 'Ajoutez une photo de profil pour gagner +15 points', 'points' => 15, 'color' => 'info'];
+        }
+        if (!$this->tel) {
+            $suggestions[] = ['icon' => 'bi-phone', 'text' => 'Ajoutez votre numéro de téléphone pour gagner +15 points', 'points' => 15, 'color' => 'info'];
+        }
+        if (!$this->adresse) {
+            $suggestions[] = ['icon' => 'bi-geo-alt', 'text' => 'Ajoutez votre adresse pour gagner +10 points', 'points' => 10, 'color' => 'info'];
+        }
+        if ($this->isProprietaire() && $this->approvalStatus === self::STATUS_PENDING) {
+            $suggestions[] = ['icon' => 'bi-hourglass-split', 'text' => 'Votre compte propriétaire est en attente d\'approbation (+30 points)', 'points' => 30, 'color' => 'warning'];
+        }
+
+        return $suggestions;
     }
-    
-    if (!$this->profilePicture) {
-        $suggestions[] = [
-            'icon' => 'bi-camera',
-            'text' => 'Ajoutez une photo de profil pour gagner +15 points',
-            'points' => 15,
-            'color' => 'info'
-        ];
-    }
-    
-    if (!$this->tel) {
-        $suggestions[] = [
-            'icon' => 'bi-phone',
-            'text' => 'Ajoutez votre numéro de téléphone pour gagner +15 points',
-            'points' => 15,
-            'color' => 'info'
-        ];
-    }
-    
-    if (!$this->adresse) {
-        $suggestions[] = [
-            'icon' => 'bi-geo-alt',
-            'text' => 'Ajoutez votre adresse pour gagner +10 points',
-            'points' => 10,
-            'color' => 'info'
-        ];
-    }
-    
-    if ($this->isProprietaire() && $this->approvalStatus === self::STATUS_PENDING) {
-        $suggestions[] = [
-            'icon' => 'bi-hourglass-split',
-            'text' => 'Votre compte propriétaire est en attente d\'approbation (+30 points)',
-            'points' => 30,
-            'color' => 'warning'
-        ];
-    }
-    
-    return $suggestions;
-}
 }

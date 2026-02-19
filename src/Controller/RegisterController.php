@@ -54,8 +54,7 @@ class RegisterController extends AbstractController
                 $this->addFlash('success', 'Bienvenue sur StayZy ! Votre compte a été créé avec succès.');
                 return $this->redirectToRoute('app_client_dashboard');
             } else {
-                $adminEmail = 'admin@stayzy.com';
-                $email = (new Email())
+                    $adminEmail = 'khemirinourchene8@gmail.com';                $email = (new Email())
                     ->from('no-reply@stayzy.com')
                     ->to($adminEmail)
                     ->subject('Nouvelle demande inscription propriétaire')
