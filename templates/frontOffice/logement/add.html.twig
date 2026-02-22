@@ -1,0 +1,172 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Publier un logement - Stayzy{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">📝 Publier un logement</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('proprietaire_logement_list') }}">Mes Logements</a></li>
+                <li class="current">Publier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 60px 0; background: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                {# ÉTAPE 1 : Informations de base #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-1-circle"></i> Informations de base</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                {{ form_label(form.titre, 'Titre de l\'annonce *') }}
+                                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Appartement cosy au centre-ville'}}) }}
+                                {{ form_errors(form.titre) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.categorie, 'Type de logement *') }}
+                                {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.categorie) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description') }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez votre logement, ses atouts, son environnement...'}}) }}
+                            <small class="text-muted">Soyez précis pour attirer plus de clients !</small>
+                        </div>
+                    </div>
+                </div>
+
+                {# ÉTAPE 2 : Caractéristiques #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-2-circle"></i> Caractéristiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.prix, 'Prix par nuit (€) *') }}
+                                <div class="input-group">
+                                    {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'placeholder': '150'}}) }}
+                                    <span class="input-group-text">€</span>
+                                </div>
+                                {{ form_errors(form.prix) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.superficie, 'Superficie (m²) *') }}
+                                <div class="input-group">
+                                    {{ form_widget(form.superficie, {'attr': {'class': 'form-control', 'placeholder': '75'}}) }}
+                                    <span class="input-group-text">m²</span>
+                                </div>
+                                {{ form_errors(form.superficie) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.nombreChambres, 'Chambres *') }}
+                                {{ form_widget(form.nombreChambres, {'attr': {'class': 'form-control', 'placeholder': '2'}}) }}
+                                {{ form_errors(form.nombreChambres) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.nombreSalleDeBain, 'Salles de bain *') }}
+                                {{ form_widget(form.nombreSalleDeBain, {'attr': {'class': 'form-control', 'placeholder': '1'}}) }}
+                                {{ form_errors(form.nombreSalleDeBain) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ÉTAPE 3 : Adresse #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-3-circle"></i> Localisation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="rue" class="form-label">Adresse *</label>
+                                <input type="text" class="form-control" id="rue" name="rue" placeholder="123 Rue de la Paix">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="ville" class="form-label">Ville *</label>
+                                <input type="text" class="form-control" id="ville" name="ville" placeholder="Paris">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="codePostal" class="form-label">Code postal *</label>
+                                <input type="text" class="form-control" id="codePostal" name="codePostal" placeholder="75001">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="pays" class="form-label">Pays *</label>
+                                <input type="text" class="form-control" id="pays" name="pays" value="France">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ÉTAPE 4 : Photos #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-4-circle"></i> Photos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form_label(form.photoPrincipale, 'Photo principale *') }}
+                            {{ form_widget(form.photoPrincipale, {'attr': {'class': 'form-control'}}) }}
+                            <small class="text-muted">Cette photo sera la première visible par les clients</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.photos, 'Photos supplémentaires') }}
+                            {{ form_widget(form.photos, {'attr': {'class': 'form-control'}}) }}
+                            <small class="text-muted">Vous pouvez ajouter plusieurs photos</small>
+                        </div>
+                    </div>
+                </div>
+
+                {# ÉTAPE 5 : Équipements #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-5-circle"></i> Équipements</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Aménités disponibles</label>
+                            <div class="row">
+                                {{ form_widget(form.amenites) }}
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.disponible, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                            {{ form_label(form.disponible, 'Logement disponible à la location', {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Boutons #}
+                <div class="d-flex gap-3 justify-content-end">
+                    <a href="{{ path('proprietaire_logement_list') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                    {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
+                </div>
+
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

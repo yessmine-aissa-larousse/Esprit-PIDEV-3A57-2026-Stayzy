@@ -76,7 +76,7 @@ class ClientPortalController extends AbstractController
             return $this->redirectToRoute('app_client_profile');
         }
 
-        return $this->render('backOffice/profile/client_profile.html.twig', [
+        return $this->render('frontOffice/profile/client_profile.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
         ]);

@@ -36,7 +36,7 @@ class FavoriController extends AbstractController
     // =========================================================================
     // BACKOFFICE : MES FAVORIS (Pour les clients dans le backoffice)
     // =========================================================================
-    #[Route('/admin/mes-favoris', name: 'admin_mes_favoris')]
+    #[Route('/client/mes-favoris', name: 'client_mes_favoris')]
     public function adminMesFavoris(): Response
     {
         $user = $this->getUser();
@@ -48,15 +48,15 @@ class FavoriController extends AbstractController
 
         $favoris = $user->getFavoris();
 
-        return $this->render('backOffice/favoris/mes_favoris.html.twig', [
+        return $this->render('frontOffice/favoris/favoris.html.twig', [
             'favoris' => $favoris,
         ]);
     }
 
     // =========================================================================
-    // BACKOFFICE : LOGEMENTS MIS EN FAVORIS PAR MES CLIENTS (Pour propriétaires)
+    //  LOGEMENTS MIS EN FAVORIS PAR MES CLIENTS (Pour propriétaires)
     // =========================================================================
-    #[Route('/admin/favoris-clients', name: 'admin_favoris_clients')]
+    #[Route('/proprieyaire/favoris-clients', name: 'proprieyaire_favoris_clients')]
     public function favorisClients(): Response
     {
         $user = $this->getUser();
@@ -84,7 +84,7 @@ class FavoriController extends AbstractController
             return $b['nombre_favoris'] <=> $a['nombre_favoris'];
         });
 
-        return $this->render('backOffice/favoris/favoris_clients.html.twig', [
+        return $this->render('frontOffice/favoris/favoris_clients.html.twig', [
             'statistiques' => $statistiques,
         ]);
     }

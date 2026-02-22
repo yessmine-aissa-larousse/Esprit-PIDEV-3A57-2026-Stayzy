@@ -39,7 +39,6 @@ class ProprietairePortalController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // Si entre-temps approuvé, rediriger vers le profil
         if ($user->isApproved()) {
             return $this->redirectToRoute('app_proprietaire_profile');
         }
@@ -59,7 +58,6 @@ class ProprietairePortalController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // Si entre-temps approuvé, rediriger vers le profil
         if ($user->isApproved()) {
             return $this->redirectToRoute('app_proprietaire_profile');
         }
@@ -83,7 +81,6 @@ class ProprietairePortalController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // Bloquer l'accès direct au profil si pas encore approuvé
         if ($user->isPending()) {
             return $this->redirectToRoute('app_proprietaire_pending');
         }
@@ -126,7 +123,7 @@ class ProprietairePortalController extends AbstractController
             return $this->redirectToRoute('app_proprietaire_profile');
         }
 
-        return $this->render('backOffice/profile/proprietaire_profile.html.twig', [
+        return $this->render('frontOffice/profile/proprietaire_profile.html.twig', [
             'form' => $form->createView(),
             'user' => $user,
         ]);

@@ -104,6 +104,16 @@
                     <li><a href="{{ path('app_home') }}" class="active">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
                     <li><a href="{{ path('app_properties') }}">Nos Logements</a></li>
+                    
+                    {% if app.user and app.user.isClient() %}
+                        <li>
+                            <a href="{{ path('comparateur_view') }}" class="btn-comparer">
+                                📊 Comparer
+                                <span class="badge bg-primary comparateur-count-badge" style="display:none; font-size: 0.7em; margin-left: 5px;">0</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
                     <li><a href="#">Services</a></li>
                     <li><a href="#">Aide</a></li>
 
@@ -113,48 +123,72 @@
                             <a href="#" onclick="toggleUserMenu(event)" style="display: flex; align-items: center;">
                                 {% if app.user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}" 
-                                         alt="{{ app.user.fullName }}" 
-                                         class="user-avatar">
+                                        alt="{{ app.user.fullName }}" 
+                                        class="user-avatar">
                                 {% else %}
                                     <img src="{{ asset('backOffice/assets/img/user2-160x160.jpg') }}" 
-                                         alt="Avatar" 
-                                         class="user-avatar">
+                                        alt="Avatar" 
+                                        class="user-avatar">
                                 {% endif %}
                                 {{ app.user.prenom }} <i class="bi bi-chevron-down ms-1"></i>
                             </a>
                             
-                            {# Dropdown menu #}
-                            <div class="user-dropdown" id="userDropdown">
-                                {% if app.user.isProprietaire %}
+                            {# Dropdown menu PROPRIÉTAIRE #}
+                            {% if app.user.isProprietaire %}
+                                <div class="user-dropdown" id="userDropdown">
                                     <a href="{{ path('app_proprietaire_profile') }}">
                                         <i class="bi bi-person-circle me-2"></i>Mon Profil
                                     </a>
-                                    <a href="{{ path('admin_dashboard') }}">
-                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                    <div class="dropdown-divider"></div>
+                                    
+                                    {# ⭐ SECTION LOGEMENTS #}
+                                    <div style="padding: 5px 20px; font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600;">
+                                        Mes Logements
+                                    </div>
+                                    <a href="{{ path('proprietaire_logement_add') }}" style="color: #0d6efd; font-weight: 600;">
+                                        <i class="bi bi-plus-circle me-2"></i>Publier un logement
                                     </a>
-                                    <a href="{{ path('admin_logement_list') }}">
-                                        <i class="bi bi-house-door me-2"></i>Mes Logements
+                                    <a href="{{ path('proprietaire_logement_list') }}">
+                                        <i class="bi bi-house-door me-2"></i>Mes Annonces
                                     </a>
-                                    <a href="{{ path('admin_favoris_clients') }}">
+                                    
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{{ path('proprieyaire_favoris_clients') }}">
                                         <i class="bi bi-star me-2"></i>Favoris de mes clients
                                     </a>
-                                {% elseif app.user.isClient %}
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{{ path('app_logout') }}" style="color: #dc3545;">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    </a>
+                                </div>
+                            
+                            {# Dropdown menu CLIENT #}
+                            {% elseif app.user.isClient %}
+                                <div class="user-dropdown" id="userDropdown">
                                     <a href="{{ path('app_client_profile') }}">
                                         <i class="bi bi-person-circle me-2"></i>Mon Profil
                                     </a>
-                                    <a href="{{ path('admin_mes_favoris') }}">
+                                    <a href="{{ path('client_mes_favoris') }}">
                                         <i class="bi bi-heart me-2"></i>Mes Favoris
                                     </a>
-                                {% else %}
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{{ path('app_logout') }}" style="color: #dc3545;">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    </a>
+                                </div>
+                            
+                            {# Dropdown menu ADMIN #}
+                            {% else %}
+                                <div class="user-dropdown" id="userDropdown">
                                     <a href="{{ path('admin_dashboard') }}">
                                         <i class="bi bi-speedometer2 me-2"></i>Dashboard Admin
                                     </a>
-                                {% endif %}
-                                <div class="dropdown-divider"></div>
-                                <a href="{{ path('app_logout') }}" style="color: #dc3545;">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
-                                </a>
-                            </div>
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{{ path('app_logout') }}" style="color: #dc3545;">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Déconnexion
+                                    </a>
+                                </div>
+                            {% endif %}
                         </li>
                     {% else %}
                         {# ❌ UTILISATEUR NON CONNECTÉ #}
@@ -166,6 +200,7 @@
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
+
 
         </div>
     </header>
@@ -246,6 +281,9 @@
         
         {# ⭐ Script Favoris #}
         <script src="{{ asset('frontOffice/js/favoris.js') }}"></script>
+
+        {# ⭐ AJOUTER ICI : Script Comparateur #}
+        <script src="{{ asset('frontOffice/js/comparateur.js') }}"></script>
 
         {# ⭐ Script pour le dropdown utilisateur #}
         <script>

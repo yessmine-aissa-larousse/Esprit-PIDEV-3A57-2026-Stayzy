@@ -385,4 +385,240 @@ final class LogementController extends AbstractController
             'logement' => $logement,
         ]);
     }
+
+    // =========================================================================
+    // ⭐ FRONT OFFICE : LISTE DES LOGEMENTS DU PROPRIÉTAIRE
+    // =========================================================================
+    #[Route('/proprietaire/logements', name: 'proprietaire_logement_list')]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function proprietaireList(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        $search = $request->query->get('search', '');
+        
+        $qb = $em->getRepository(Logement::class)->createQueryBuilder('l')
+            ->leftJoin('l.categorie', 'c')
+            ->addSelect('c')
+            ->where('l.proprietaire = :user')
+            ->setParameter('user', $user);
+        
+        if (!empty($search)) {
+            $qb->andWhere('l.titre LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+        
+        $qb->orderBy('l.createdAt', 'DESC');
+        $logements = $qb->getQuery()->getResult();
+        
+        return $this->render('frontOffice/logement/list.html.twig', [
+            'logements' => $logements,
+        ]);
+    }
+
+    // =========================================================================
+    // ⭐ FRONT OFFICE : AJOUTER UN LOGEMENT
+    // =========================================================================
+    #[Route('/proprietaire/logement/publier', name: 'proprietaire_logement_add')]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function proprietaireAdd(Request $request, EntityManagerInterface $em): Response
+    {
+        $logement = new Logement();
+        $form = $this->createForm(LogementType::class, $logement);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $adresse = [
+                'rue'        => $request->request->get('rue'),
+                'ville'      => $request->request->get('ville'),
+                'codePostal' => $request->request->get('codePostal'),
+                'pays'       => $request->request->get('pays'),
+            ];
+            $logement->setAdresse($adresse);
+
+            // Gestion des photos
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            $photoPrincipaleFile = $form->get('photoPrincipale')->getData();
+            if ($photoPrincipaleFile && $photoPrincipaleFile->isValid()) {
+                $newFilename = uniqid() . '_principal.' . $photoPrincipaleFile->guessExtension();
+                $photoPrincipaleFile->move($uploadDir, $newFilename);
+                $logement->setPhotoPrincipale($newFilename);
+            }
+
+            $photosFiles = $form->get('photos')->getData();
+            $photosArray = [];
+            if ($photosFiles) {
+                foreach ($photosFiles as $index => $file) {
+                    if ($file && $file->isValid()) {
+                        $newFilename = uniqid() . '.' . $file->guessExtension();
+                        $file->move($uploadDir, $newFilename);
+                        $photosArray[] = $newFilename;
+                        if ($index === 0 && !$logement->getPhotoPrincipale()) {
+                            $logement->setPhotoPrincipale($newFilename);
+                        }
+                    }
+                }
+            }
+            $logement->setPhotos($photosArray);
+
+            $logement->setNoteMoyenne(null);
+            $logement->setTotalAvis(0);
+            $logement->setProprietaire($this->getUser());
+
+            $em->persist($logement);
+            $em->flush();
+
+            $this->creerNotificationAdmin($em, $logement);
+
+            $this->addFlash('success', 'Votre logement a été publié avec succès !');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        return $this->render('frontOffice/logement/add.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    // =========================================================================
+    // ⭐ FRONT OFFICE : MODIFIER UN LOGEMENT
+    // =========================================================================
+    #[Route('/proprietaire/logement/modifier/{id}', name: 'proprietaire_logement_edit')]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function proprietaireEdit(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): Response
+    {
+        $logement = $em->getRepository(Logement::class)->find($id);
+
+        if (!$logement) {
+            $this->addFlash('error', 'Logement introuvable !');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        $user = $this->getUser();
+        if ($logement->getProprietaire() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres logements.');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        $categories = $em->getRepository(Categorie::class)->findAll();
+        $errors = [];
+
+        if ($request->isMethod('POST')) {
+            $logement->setTitre($request->request->get('titre', ''));
+            $logement->setDescription($request->request->get('description'));
+            $logement->setPrix((float) $request->request->get('prix', 0));
+            $logement->setSuperficie((int) $request->request->get('superficie', 0));
+            $logement->setNombreChambres((int) $request->request->get('nombreChambres', 0));
+            $logement->setNombreSalleDeBain((int) $request->request->get('nombreSalleDeBain', 0));
+            $logement->setDisponible((bool) $request->request->get('disponible'));
+
+            $adresse = [
+                'rue'        => $request->request->get('rue'),
+                'ville'      => $request->request->get('ville'),
+                'codePostal' => $request->request->get('codePostal'),
+                'pays'       => $request->request->get('pays'),
+            ];
+            $logement->setAdresse($adresse);
+
+            $categorieId = $request->request->get('categorie');
+            $categorie = $em->getRepository(Categorie::class)->find($categorieId);
+            $logement->setCategorie($categorie);
+
+            $amenites = $request->request->all('amenites') ?? [];
+            $logement->setAmenites($amenites);
+
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            $uploadedFiles = $request->files->all();
+            
+            if (isset($uploadedFiles['photoPrincipale']) && $uploadedFiles['photoPrincipale']->isValid()) {
+                if ($logement->getPhotoPrincipale()) {
+                    $old = $uploadDir . $logement->getPhotoPrincipale();
+                    if (file_exists($old)) unlink($old);
+                }
+                $file = $uploadedFiles['photoPrincipale'];
+                $newFilename = uniqid() . '_principal.' . $file->guessExtension();
+                $file->move($uploadDir, $newFilename);
+                $logement->setPhotoPrincipale($newFilename);
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'Logement modifié avec succès !');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        return $this->render('frontOffice/logement/edit.html.twig', [
+            'logement'   => $logement,
+            'categories' => $categories,
+            'errors'     => $errors,
+        ]);
+    }
+
+    // =========================================================================
+    // ⭐ FRONT OFFICE : DÉTAILS D'UN LOGEMENT
+    // =========================================================================
+    #[Route('/proprietaire/logement/{id}', name: 'proprietaire_logement_details')]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function proprietaireDetails(int $id, EntityManagerInterface $em): Response
+    {
+        $logement = $em->getRepository(Logement::class)->find($id);
+        
+        if (!$logement) {
+            $this->addFlash('error', 'Logement introuvable !');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        $user = $this->getUser();
+        if ($logement->getProprietaire() !== $user) {
+            $this->addFlash('error', 'Accès non autorisé.');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        return $this->render('frontOffice/logement/details.html.twig', [
+            'logement' => $logement,
+        ]);
+    }
+
+    // =========================================================================
+    // ⭐ FRONT OFFICE : SUPPRIMER UN LOGEMENT
+    // =========================================================================
+    #[Route('/proprietaire/logement/supprimer/{id}', name: 'proprietaire_logement_delete')]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function proprietaireDelete(int $id, EntityManagerInterface $em): Response
+    {
+        $logement = $em->getRepository(Logement::class)->find($id);
+        
+        if (!$logement) {
+            $this->addFlash('error', 'Logement introuvable !');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        $user = $this->getUser();
+        if ($logement->getProprietaire() !== $user) {
+            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres logements.');
+            return $this->redirectToRoute('proprietaire_logement_list');
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+
+        if ($logement->getPhotoPrincipale()) {
+            $path = $uploadDir . $logement->getPhotoPrincipale();
+            if (file_exists($path)) unlink($path);
+        }
+        if ($logement->getPhotos()) {
+            foreach ($logement->getPhotos() as $photo) {
+                $path = $uploadDir . $photo;
+                if (file_exists($path)) unlink($path);
+            }
+        }
+
+        $em->remove($logement);
+        $em->flush();
+
+        $this->addFlash('success', 'Logement supprimé avec succès !');
+        return $this->redirectToRoute('proprietaire_logement_list');
+    }
 }

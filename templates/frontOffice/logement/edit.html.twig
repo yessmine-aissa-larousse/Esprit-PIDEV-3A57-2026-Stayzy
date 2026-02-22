@@ -1,0 +1,226 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier mon logement - Stayzy{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">✏️ Modifier mon logement</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('proprietaire_logement_list') }}">Mes Logements</a></li>
+                <li class="current">Modifier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 60px 0; background: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                {# Messages Flash #}
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show">
+                        ✅ {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        ❌ {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+
+                <form method="POST" enctype="multipart/form-data">
+
+                    {# Informations de base #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Informations de base</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Titre *</label>
+                                    <input type="text" class="form-control" name="titre" value="{{ logement.titre }}" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Catégorie *</label>
+                                    <select class="form-select" name="categorie" required>
+                                        {% for cat in categories %}
+                                            <option value="{{ cat.id }}" {% if logement.categorie and logement.categorie.id == cat.id %}selected{% endif %}>
+                                                {{ cat.nom }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="5">{{ logement.description }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Caractéristiques #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Caractéristiques</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Prix (€) *</label>
+                                    <input type="number" class="form-control" name="prix" value="{{ logement.prix }}" step="0.01" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Superficie (m²) *</label>
+                                    <input type="number" class="form-control" name="superficie" value="{{ logement.superficie }}" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Chambres *</label>
+                                    <input type="number" class="form-control" name="nombreChambres" value="{{ logement.nombreChambres }}" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Salles de bain *</label>
+                                    <input type="number" class="form-control" name="nombreSalleDeBain" value="{{ logement.nombreSalleDeBain }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Adresse #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Localisation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Adresse *</label>
+                                    <input type="text" class="form-control" name="rue" value="{{ logement.adresse.rue|default('') }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Ville *</label>
+                                    <input type="text" class="form-control" name="ville" value="{{ logement.adresse.ville|default('') }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Code postal *</label>
+                                    <input type="text" class="form-control" name="codePostal" value="{{ logement.adresse.codePostal|default('') }}">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Pays *</label>
+                                    <input type="text" class="form-control" name="pays" value="{{ logement.adresse.pays|default('France') }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Photos #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Photos</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if logement.photoPrincipale %}
+                                <div class="mb-3">
+                                    <label class="form-label">Photo principale actuelle</label>
+                                    <div>
+                                        <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                                             class="img-thumbnail" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <label class="form-label">Changer la photo principale</label>
+                                <input type="file" class="form-control" name="photoPrincipale" accept="image/*">
+                            </div>
+
+                            {% if logement.photos|length > 0 %}
+                                <div class="mb-3">
+                                    <label class="form-label">Photos supplémentaires ({{ logement.photos|length }})</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for photo in logement.photos %}
+                                            <div style="position: relative;">
+                                                <img src="{{ asset('uploads/logements/' ~ photo) }}" 
+                                                     class="img-thumbnail" 
+                                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Ajouter des photos</label>
+                                <input type="file" class="form-control" name="photos[]" accept="image/*" multiple>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Équipements #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Équipements</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% set amenitesList = ['wifi', 'parking', 'climatisation', 'piscine', 'cuisine', 'lave_linge', 'balcon', 'jardin'] %}
+                                {% set amenitesLabels = {
+                                    'wifi': 'WiFi',
+                                    'parking': 'Parking',
+                                    'climatisation': 'Climatisation',
+                                    'piscine': 'Piscine',
+                                    'cuisine': 'Cuisine équipée',
+                                    'lave_linge': 'Lave-linge',
+                                    'balcon': 'Balcon',
+                                    'jardin': 'Jardin'
+                                } %}
+                                {% for amenite in amenitesList %}
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenites[]" 
+                                                   value="{{ amenite }}" id="{{ amenite }}"
+                                                   {% if logement.amenites and amenite in logement.amenites %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ amenite }}">
+                                                {{ amenitesLabels[amenite] }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input" type="checkbox" name="disponible" value="1" 
+                                       id="disponible" {% if logement.disponible %}checked{% endif %}>
+                                <label class="form-check-label" for="disponible">
+                                    Logement disponible à la location
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="d-flex gap-3 justify-content-end">
+                        <a href="{{ path('proprietaire_logement_list') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

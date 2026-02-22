@@ -21,9 +21,6 @@ class UserChecker implements UserCheckerInterface
                 'Votre compte a été désactivé. Contactez l\'administrateur.'
             );
         }
-
-        // Les propriétaires pending/rejetés peuvent se connecter
-        // mais seront redirigés vers une page d'information
     }
 
     public function checkPostAuth(UserInterface $user): void {}
