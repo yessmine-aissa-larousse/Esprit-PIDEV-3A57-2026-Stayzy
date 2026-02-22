@@ -24,7 +24,7 @@ services:
     image: nginx:alpine
     container_name: stayzy_nginx
     ports:
-      - "8080:80"
+      - "8000:80"
     volumes:
       - .:/var/www/html:ro
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro

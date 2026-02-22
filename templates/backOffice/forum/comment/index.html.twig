@@ -30,8 +30,15 @@
             {% endfor %}
 
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 class="card-title mb-0">Liste des commentaires ({{ total }}){% if filter_post_id %} pour ce post{% endif %}</h5>
+                    <form method="get" class="d-flex gap-1">
+                        {% if filter_post_id %}
+                            <input type="hidden" name="post_id" value="{{ filter_post_id }}">
+                        {% endif %}
+                        <input type="text" name="q" value="{{ search|default('') }}" class="form-control form-control-sm" placeholder="Rechercher..." style="width: 180px;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
+                    </form>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -42,6 +49,8 @@
                                     <th>Post</th>
                                     <th>Auteur</th>
                                     <th>Contenu</th>
+                                    <th><i class="bi bi-hand-thumbs-up text-success"></i></th>
+                                    <th><i class="bi bi-hand-thumbs-down text-danger"></i></th>
                                     <th>Date</th>
                                     <th width="120">Actions</th>
                                 </tr>
@@ -55,6 +64,8 @@
                                         </td>
                                         <td>{{ comment.author }}</td>
                                         <td>{{ comment.content|length > 60 ? comment.content|slice(0, 60) ~ '...' : comment.content }}</td>
+                                        <td>{{ comment.avisCount }}</td>
+                                        <td>{{ comment.dislikeCount }}</td>
                                         <td>{{ comment.createdAt|date('d/m/Y H:i') }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
@@ -72,7 +83,7 @@
                                     </tr>
                                 {% else %}
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">Aucun commentaire.</td>
+                                        <td colspan="8" class="text-center py-4 text-muted">Aucun commentaire.</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -84,15 +95,24 @@
                     <nav>
                         <ul class="pagination pagination-sm mb-0 justify-content-center">
                             <li class="page-item {{ current_page <= 1 ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: current_page - 1, post_id: filter_post_id} : {page: current_page - 1}) }}">«</a>
+                                {% set prev_params = {page: current_page - 1} %}
+                                {% if filter_post_id %}{% set prev_params = prev_params|merge({post_id: filter_post_id}) %}{% endif %}
+                                {% if search %}{% set prev_params = prev_params|merge({q: search}) %}{% endif %}
+                                <a class="page-link" href="{{ path('admin_comment_index', prev_params) }}">«</a>
                             </li>
                             {% for p in 1..total_pages %}
                                 <li class="page-item {{ p == current_page ? 'active' : '' }}">
-                                    <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: p, post_id: filter_post_id} : {page: p}) }}">{{ p }}</a>
+                                    {% set pagination_params = {page: p} %}
+                                    {% if filter_post_id %}{% set pagination_params = pagination_params|merge({post_id: filter_post_id}) %}{% endif %}
+                                    {% if search %}{% set pagination_params = pagination_params|merge({q: search}) %}{% endif %}
+                                    <a class="page-link" href="{{ path('admin_comment_index', pagination_params) }}">{{ p }}</a>
                                 </li>
                             {% endfor %}
                             <li class="page-item {{ current_page >= total_pages ? 'disabled' : '' }}">
-                                <a class="page-link" href="{{ path('admin_comment_index', filter_post_id ? {page: current_page + 1, post_id: filter_post_id} : {page: current_page + 1}) }}">»</a>
+                                {% set pagination_params = {page: current_page + 1} %}
+                                {% if filter_post_id %}{% set pagination_params = pagination_params|merge({post_id: filter_post_id}) %}{% endif %}
+                                {% if search %}{% set pagination_params = pagination_params|merge({q: search}) %}{% endif %}
+                                <a class="page-link" href="{{ path('admin_comment_index', pagination_params) }}">»</a>
                             </li>
                         </ul>
                     </nav>

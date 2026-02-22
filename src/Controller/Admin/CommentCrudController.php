@@ -26,24 +26,13 @@ final class CommentCrudController extends AbstractController
     #[Route('', name: 'admin_comment_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
         $postId = $request->query->getInt('post_id', 0);
-        $criteria = [];
-        if ($postId > 0) {
-            $post = $this->postRepository->find($postId);
-            if ($post) {
-                $criteria['post'] = $post;
-            }
-        }
         $page = max(1, (int) $request->query->get('page', 1));
         $offset = ($page - 1) * self::PER_PAGE;
-        $comments = $this->commentRepository->findBy(
-            $criteria,
-            ['createdAt' => 'DESC'],
-            self::PER_PAGE,
-            $offset
-        );
-        $total = $this->commentRepository->count($criteria);
-        $totalPages = (int) ceil($total / self::PER_PAGE);
+        $comments = $this->commentRepository->search($q, $postId > 0 ? $postId : null, self::PER_PAGE, $offset);
+        $total = $this->commentRepository->countSearch($q, $postId > 0 ? $postId : null);
+        $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
 
         return $this->render('backOffice/forum/comment/index.html.twig', [
             'comments' => $comments,
@@ -51,6 +40,7 @@ final class CommentCrudController extends AbstractController
             'total_pages' => $totalPages,
             'total' => $total,
             'filter_post_id' => $postId > 0 ? $postId : null,
+            'search' => $q,
         ]);
     }
 

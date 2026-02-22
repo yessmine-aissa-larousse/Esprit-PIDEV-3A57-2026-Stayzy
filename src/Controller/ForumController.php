@@ -8,6 +8,8 @@ use App\Form\CommentType;
 use App\Form\PostType;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
+use App\Service\DislikeAlertMailer;
+use App\Service\ForumAiAssistant;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,23 +27,39 @@ final class ForumController extends AbstractController
         private readonly PostRepository $postRepository,
         private readonly CommentRepository $commentRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly DislikeAlertMailer $dislikeAlertMailer,
+        private readonly ForumAiAssistant $forumAiAssistant,
     ) {
+    }
+
+    #[Route('/test-mail', name: 'forum_test_mail', methods: ['GET'])]
+    public function testMail(): Response
+    {
+        try {
+            $this->dislikeAlertMailer->sendTestEmail();
+            $this->addFlash('success', 'Email de test envoyé ! Vérifiez votre Mailtrap Inbox (mailtrap.io), pas Gmail.');
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Erreur : ' . $e->getMessage());
+        }
+        return $this->redirectToRoute('forum_index');
     }
 
     #[Route('', name: 'forum_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
         $page = max(1, (int) $request->query->get('page', 1));
         $offset = ($page - 1) * self::POSTS_PER_PAGE;
-        $posts = $this->postRepository->findPublishedOrderedByDate(self::POSTS_PER_PAGE, $offset);
-        $total = $this->postRepository->countPublished();
-        $totalPages = (int) ceil($total / self::POSTS_PER_PAGE);
+        $posts = $this->postRepository->searchPublished($q, self::POSTS_PER_PAGE, $offset);
+        $total = $this->postRepository->countSearchPublished($q);
+        $totalPages = max(1, (int) ceil($total / self::POSTS_PER_PAGE));
 
         return $this->render('frontOffice/forum/index.html.twig', [
             'posts' => $posts,
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total' => $total,
+            'search' => $q,
         ]);
     }
 
@@ -171,6 +189,7 @@ final class ForumController extends AbstractController
         }
         $post->incrementDislike();
         $this->entityManager->flush();
+        $this->dislikeAlertMailer->sendPostAlertIfNeeded($post);
         return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
     }
 
@@ -187,6 +206,7 @@ final class ForumController extends AbstractController
     {
         $comment->incrementDislike();
         $this->entityManager->flush();
+        $this->dislikeAlertMailer->sendCommentAlertIfNeeded($comment);
         return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
     }
 
@@ -198,23 +218,8 @@ final class ForumController extends AbstractController
             return new JsonResponse(['reply' => 'Veuillez entrer un message.'], 400);
         }
 
-        $reply = $this->getChatbotReply($message);
+        $reply = $this->forumAiAssistant->ask($message);
 
         return new JsonResponse(['reply' => $reply]);
-    }
-
-    private function getChatbotReply(string $message): string
-    {
-        $lower = mb_strtolower($message);
-        if (str_contains($lower, 'bonjour') || str_contains($lower, 'salut')) {
-            return 'Bonjour ! Comment puis-je vous aider sur le forum Stayzy ?';
-        }
-        if (str_contains($lower, 'aide') || str_contains($lower, 'help')) {
-            return 'Vous pouvez parcourir les posts, commenter, répondre aux commentaires et liker les publications. Créez un nouveau post depuis la page Forum si vous souhaitez démarrer une discussion.';
-        }
-        if (str_contains($lower, 'merci')) {
-            return 'Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions.';
-        }
-        return 'Merci pour votre message. Pour toute question sur le forum, parcourez les articles ou créez un nouveau post.';
     }
 }

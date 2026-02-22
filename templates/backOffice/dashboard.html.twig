@@ -3,66 +3,152 @@
 {% block title %}Dashboard - BackOffice{% endblock %}
 
 {% block admin_content %}
-    {# App Content Header #}
     <div class="app-content-header">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <h3 class="mb-0">Dashboard </h3>
+                    <h3 class="mb-0">Dashboard - Avis Forum</h3>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-end">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Dashboard </li>
+                        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
                     </ol>
                 </div>
             </div>
         </div>
     </div>
 
-    {# App Content #}
     <div class="app-content">
         <div class="container-fluid">
-            {# Info boxes #}
-            <div class="row">
+            <div class="row mb-4">
                 <div class="col-12 col-sm-6 col-md-3">
                     <div class="info-box">
-                        <span class="info-box-icon text-bg-primary shadow-sm">
-                            <i class="bi bi-gear-fill"></i>
-                        </span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">CPU Traffic</span>
-                            <span class="info-box-number">10 <small>%</small></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-12 col-sm-6 col-md-3">
-                    <div class="info-box">
-                        <span class="info-box-icon text-bg-danger shadow-sm">
+                        <span class="info-box-icon text-bg-success shadow-sm">
                             <i class="bi bi-hand-thumbs-up-fill"></i>
                         </span>
                         <div class="info-box-content">
-                            <span class="info-box-text">Likes</span>
-                            <span class="info-box-number">41,410</span>
+                            <span class="info-box-text">Total Likes (Posts)</span>
+                            <span class="info-box-number">{{ total_post_likes }}</span>
                         </div>
                     </div>
                 </div>
-
-                {# ... Ajoutez les autres info-boxes ici ... #}
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-danger shadow-sm">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Dislikes (Posts)</span>
+                            <span class="info-box-number">{{ total_post_dislikes }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-info shadow-sm">
+                            <i class="bi bi-chat-heart-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Likes (Comments)</span>
+                            <span class="info-box-number">{{ total_comment_likes }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="info-box">
+                        <span class="info-box-icon text-bg-warning shadow-sm">
+                            <i class="bi bi-chat-square-text-fill"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Dislikes (Comments)</span>
+                            <span class="info-box-number">{{ total_comment_dislikes }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {# Vous pouvez copier le reste du contenu du dashboard ici #}
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Posts les plus aimés</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for post in most_liked_posts %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <a href="{{ path('forum_post_show', {id: post.id}) }}">{{ post.title|length > 50 ? post.title|slice(0, 50) ~ '...' : post.title }}</a>
+                                        <span class="badge bg-success rounded-pill">{{ post.avisCount }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="list-group-item text-muted">Aucun post</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-hand-thumbs-down"></i> Posts les plus dislikés</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for post in most_disliked_posts %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center table-danger">
+                                        <a href="{{ path('forum_post_show', {id: post.id}) }}">{{ post.title|length > 50 ? post.title|slice(0, 50) ~ '...' : post.title }}</a>
+                                        <span class="badge bg-danger rounded-pill">{{ post.dislikeCount }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="list-group-item text-muted">Aucun post</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-hand-thumbs-up"></i> Commentaires les plus aimés</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for comment in most_liked_comments %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>{{ comment.content|length > 40 ? comment.content|slice(0, 40) ~ '...' : comment.content }}</span>
+                                        <span class="badge bg-success rounded-pill">{{ comment.avisCount }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="list-group-item text-muted">Aucun commentaire</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-hand-thumbs-down"></i> Commentaires les plus dislikés</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for comment in most_disliked_comments %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center table-warning">
+                                        <span>{{ comment.content|length > 40 ? comment.content|slice(0, 40) ~ '...' : comment.content }}</span>
+                                        <span class="badge bg-danger rounded-pill">{{ comment.dislikeCount }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="list-group-item text-muted">Aucun commentaire</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    
-    {# Charts Scripts - Uniquement pour la page dashboard #}
-    <script>
-        // Scripts ApexCharts pour les graphiques
-        // (Copiez les scripts des charts ici si nécessaire)
-    </script>
 {% endblock %}

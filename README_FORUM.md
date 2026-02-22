@@ -9,7 +9,10 @@ This project includes a forum module with two related entities: **Post** and **C
 - Like/dislike (avis) on posts and comments
 - Nested replies on comments
 - Edit and delete comments (authors only, via session)
-- AI chatbot assistant on forum pages
+- Search/filter on frontend and backend
+- Avis dashboard: most liked/disliked posts and comments
+- Mailing: admin alert when post/comment reaches 5+ dislikes (Mailtrap/Brevo)
+- AI assistant (OpenAI API): answers forum-specific questions
 - Backend: manage posts (edit, delete), view and delete comments
 
 ## Entities & Constraints
@@ -52,11 +55,11 @@ docker compose exec php php bin/console doctrine:schema:create
 ```
 
 Access:
-- **Frontend**: http://localhost:8080
-- **Forum**: http://localhost:8080/forum
-- **Admin**: http://localhost:8080/admin
-- **Posts CRUD**: http://localhost:8080/admin/forum/post
-- **Comments CRUD**: http://localhost:8080/admin/forum/comment
+- **Frontend**: http://localhost:8000
+- **Forum**: http://localhost:8000/forum
+- **Admin**: http://localhost:8000/admin
+- **Posts CRUD**: http://localhost:8000/admin/forum/post
+- **Comments CRUD**: http://localhost:8000/admin/forum/comment
 
 ## Without Docker
 
@@ -88,6 +91,7 @@ symfony server:start  # or php -S localhost:8000 -t public
 | `/forum/comment/{id}/avis` | Like comment (POST) |
 | `/forum/comment/{id}/dislike` | Dislike comment (POST) |
 | `/forum/chat` | AI chatbot API (POST) |
+| `/forum/test-mail` | Send test email (GET) |
 
 ### Backend
 
@@ -97,6 +101,48 @@ symfony server:start  # or php -S localhost:8000 -t public
 | `/admin/forum/post` | Posts list (edit, delete) |
 | `/admin/forum/post/{id}` | Post detail |
 | `/admin/forum/comment` | Comments list (filter by post, view, delete) |
+
+## Mailing (alertes dislikes)
+
+Quand un post ou commentaire atteint **5 dislikes**, un email est envoyé à `ADMIN_EMAIL`.
+
+### Configuration
+
+1. **Mailtrap (tests)** – emails dans Mailtrap Inbox :
+   - Inscription : https://mailtrap.io
+   - Transactional → My Sandbox → Integration → copier Username et Password
+   - `.env` : `MAILER_DSN=smtp://USER:PASSWORD@sandbox.smtp.mailtrap.io:2525`
+   - `MAILER_FROM=your@email.com`
+
+2. **Brevo (vrais emails)** : `MAILER_DSN=brevo+smtp://EMAIL:SMTP_KEY@default`
+
+3. **Créer la table Messenger** (requise pour le mail) :
+   ```bash
+   docker compose exec php php bin/console messenger:setup-transports
+   ```
+
+4. **Test** : `docker compose exec php php bin/console app:test-mail` ou http://localhost:8000/forum/test-mail
+
+> Emails envoyés via transport `sync` – pas de worker à lancer.
+
+## AI Assistant
+
+Le chatbot du forum peut répondre aux questions sur les posts et commentaires.
+
+### Sans clé API (mode fallback)
+
+Fonctionne déjà avec des questions comme :
+- "Combien de posts ?"
+- "Quel est le post le plus populaire ?"
+- "Quel post a le plus de dislikes ?"
+
+### Avec OpenAI (réponses plus riches)
+
+1. Créer une clé API : https://platform.openai.com/api-keys
+2. `.env` : `OPENAI_API_KEY=sk-...`
+3. Vider le cache : `php bin/console cache:clear`
+
+Le service `ForumAiAssistant` envoie le contexte du forum (posts, commentaires) à l’API et renvoie des réponses plus complètes.
 
 ## Templates
 

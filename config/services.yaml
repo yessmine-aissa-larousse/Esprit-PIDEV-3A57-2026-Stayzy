@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    forum.openai_api_key_default: ''
 
 services:
     # default configuration for services in *this* file
@@ -19,6 +20,20 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Service\DislikeAlertMailer:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $mailerFrom: '%env(MAILER_FROM)%'
+
+    App\Service\ForumAiAssistant:
+        arguments:
+            $apiKey: '%env(default:forum.openai_api_key_default:OPENAI_API_KEY)%'
+
+    App\Command\TestMailCommand:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $mailerFrom: '%env(MAILER_FROM)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

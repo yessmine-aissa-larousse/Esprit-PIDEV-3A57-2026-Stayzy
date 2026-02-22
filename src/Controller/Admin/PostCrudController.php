@@ -25,22 +25,36 @@ final class PostCrudController extends AbstractController
     #[Route('', name: 'admin_post_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
+        $q = trim((string) $request->query->get('q', ''));
         $page = max(1, (int) $request->query->get('page', 1));
         $offset = ($page - 1) * self::PER_PAGE;
-        $posts = $this->postRepository->findBy(
-            [],
-            ['createdAt' => 'DESC'],
-            self::PER_PAGE,
-            $offset
-        );
-        $total = $this->postRepository->count([]);
-        $totalPages = (int) ceil($total / self::PER_PAGE);
+        if ($q !== '') {
+            $posts = $this->postRepository->createQueryBuilder('p')
+                ->where('p.title LIKE :q OR p.content LIKE :q OR p.author LIKE :q OR p.excerpt LIKE :q')
+                ->setParameter('q', '%' . $q . '%')
+                ->orderBy('p.createdAt', 'DESC')
+                ->setMaxResults(self::PER_PAGE)
+                ->setFirstResult($offset)
+                ->getQuery()
+                ->getResult();
+            $total = (int) $this->postRepository->createQueryBuilder('p')
+                ->select('COUNT(p.id)')
+                ->where('p.title LIKE :q OR p.content LIKE :q OR p.author LIKE :q OR p.excerpt LIKE :q')
+                ->setParameter('q', '%' . $q . '%')
+                ->getQuery()
+                ->getSingleScalarResult();
+        } else {
+            $posts = $this->postRepository->findBy([], ['createdAt' => 'DESC'], self::PER_PAGE, $offset);
+            $total = $this->postRepository->count([]);
+        }
+        $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
 
         return $this->render('backOffice/forum/post/index.html.twig', [
             'posts' => $posts,
             'current_page' => $page,
             'total_pages' => $totalPages,
             'total' => $total,
+            'search' => $q,
         ]);
     }
 
