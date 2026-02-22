@@ -193,7 +193,7 @@
                                 <!-- Property Item -->
                                 <div class="col-lg-4 col-md-6">
                                     <div class="property-item">
-                                        {# ✅ LIEN VERS PAGE DÉTAILS #}
+                                        {# Lien vers page détails #}
                                         <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
                                             <div class="property-image-wrapper">
                                                 {% if logement.photoPrincipale %}
@@ -214,7 +214,10 @@
                                                 </div>
                                                 
                                                 <div class="property-actions">
-                                                    <button class="action-btn favorite-btn" data-toggle="tooltip" title="Ajouter aux favoris">
+                                                    {# ✅ CORRIGÉ : data-logement-id ajouté #}
+                                                    <button class="action-btn favorite-btn" 
+                                                            data-logement-id="{{ logement.id }}"
+                                                            title="Ajouter aux favoris">
                                                         <i class="bi bi-heart"></i>
                                                     </button>
                                                     <button class="action-btn compare-btn" 
@@ -222,11 +225,11 @@
                                                             title="Ajouter au comparateur">
                                                         <i class="bi bi-plus-square"></i>
                                                     </button>
-                                                    <button class="action-btn share-btn" data-toggle="tooltip" title="Partager">
+                                                    <button class="action-btn share-btn" title="Partager">
                                                         <i class="bi bi-share"></i>
                                                     </button>
                                                     {% if logement.photos and logement.photos|length > 0 %}
-                                                        <button class="action-btn gallery-btn" data-toggle="tooltip" title="Voir la galerie">
+                                                        <button class="action-btn gallery-btn" title="Voir la galerie">
                                                             <i class="bi bi-images"></i>
                                                             <span class="gallery-count">{{ logement.photos|length }}</span>
                                                         </button>
@@ -236,7 +239,6 @@
                                         </a>
                                         
                                         <div class="property-details">
-                                            {# ✅ LIEN VERS PAGE DÉTAILS #}
                                             <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
                                                 <div class="property-header">
                                                     <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
@@ -345,14 +347,13 @@
         // Gestion des boutons de chambres
         function setChambres(value) {
             document.getElementById('chambres-input').value = value;
-            // Mettre à jour l'état actif des boutons
             document.querySelectorAll('.bed-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
         }
 
-        // Changement de tri (recharge la page avec le nouveau tri)
+        // Changement de tri
         function changeTri(triValue) {
             const url = new URL(window.location);
             url.searchParams.set('tri', triValue);
@@ -360,4 +361,3 @@
         }
     </script>
 {% endblock %}
-
