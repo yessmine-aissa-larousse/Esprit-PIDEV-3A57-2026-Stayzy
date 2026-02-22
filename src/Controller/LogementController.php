@@ -18,10 +18,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class LogementController extends AbstractController
 {
     // =========================================================================
-    // AJOUTER UN LOGEMENT
+    // AJOUTER UN LOGEMENT (backoffice admin)
     // =========================================================================
     #[Route('/admin/logement/add', name: 'admin_logement_add')]
-    #[IsGranted('ROLE_PROPRIETAIRE')]  // ✅ Autorise admin ET propriétaire (ROLE_ADMIN > ROLE_PROPRIETAIRE)
+    #[IsGranted('ROLE_PROPRIETAIRE')]
     public function addLogement(Request $request, EntityManagerInterface $em): Response
     {
         $logement = new Logement();
@@ -29,21 +29,21 @@ final class LogementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // ── ÉTAPE 6 : Récupérer lat/lng envoyés par Leaflet ──
             $adresse = [
                 'rue'        => $request->request->get('rue'),
                 'ville'      => $request->request->get('ville'),
                 'codePostal' => $request->request->get('codePostal'),
                 'pays'       => $request->request->get('pays'),
+                'latitude'   => $request->request->get('latitude'),   // ← nouveau
+                'longitude'  => $request->request->get('longitude'),  // ← nouveau
             ];
             $logement->setAdresse($adresse);
 
-            // Gestion des photos
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
-            // Photo principale
             $photoPrincipaleFile = $form->get('photoPrincipale')->getData();
             if ($photoPrincipaleFile && $photoPrincipaleFile->isValid()) {
                 $newFilename = uniqid() . '_principal.' . $photoPrincipaleFile->guessExtension();
@@ -51,7 +51,6 @@ final class LogementController extends AbstractController
                 $logement->setPhotoPrincipale($newFilename);
             }
 
-            // Photos supplémentaires
             $photosFiles = $form->get('photos')->getData();
             $photosArray = [];
             if ($photosFiles) {
@@ -67,60 +66,26 @@ final class LogementController extends AbstractController
                 }
             }
             $logement->setPhotos($photosArray);
-
-            // Initialiser les champs calculés
             $logement->setNoteMoyenne(null);
             $logement->setTotalAvis(0);
 
-            // ✅ Propriétaire = utilisateur connecté
             /** @var User $user */
             $user = $this->getUser();
             $logement->setProprietaire($user);
 
-
-            // Sauvegarde
             $em->persist($logement);
             $em->flush();
-
-            // ⭐ NOUVEAU : Créer notification pour l'admin
             $this->creerNotificationAdmin($em, $logement);
-
 
             $this->addFlash('success', 'Logement ajouté avec succès !');
             return $this->redirectToRoute('admin_logement_list');
         }
 
-        return $this->render('backOffice/logement/add.html.twig', [
-            'form' => $form,
-        ]);
-    }
-
-    // ⭐ NOUVELLE MÉTHODE : Créer notification pour admin
-    private function creerNotificationAdmin(EntityManagerInterface $em, Logement $logement): void
-    {
-        // Trouver l'admin (vous pouvez adapter selon votre système)
-        $admin = $em->getRepository(User::class)
-            ->createQueryBuilder('u')
-            ->where('u.roles LIKE :role')
-            ->setParameter('role', '%ROLE_ADMIN%')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-        
-        if ($admin) {
-            $notification = new Notification();
-            $notification->setMessage('Nouveau logement publié : ' . $logement->getTitre());
-            $notification->setType('nouveau_logement');
-            $notification->setDestinataire($admin);
-            $notification->setLogement($logement);
-            
-            $em->persist($notification);
-            $em->flush();
-        }
+        return $this->render('backOffice/logement/add.html.twig', ['form' => $form]);
     }
 
     // =========================================================================
-    // MODIFIER UN LOGEMENT
+    // MODIFIER UN LOGEMENT (backoffice)
     // =========================================================================
     #[Route('/admin/logement/edit/{id}', name: 'admin_logement_edit')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
@@ -133,7 +98,6 @@ final class LogementController extends AbstractController
             return $this->redirectToRoute('admin_logement_list');
         }
 
-        // ✅ Sécurité : un propriétaire ne peut modifier que SES logements
         /** @var User $user */
         $user = $this->getUser();
         if (!$this->isGranted('ROLE_ADMIN') && $logement->getProprietaire() !== $user) {
@@ -153,18 +117,20 @@ final class LogementController extends AbstractController
             $logement->setNombreSalleDeBain((int) $request->request->get('nombreSalleDeBain', 0));
             $logement->setDisponible((bool) $request->request->get('disponible'));
 
+            // ── ÉTAPE 6 ──
             $adresse = [
                 'rue'        => $request->request->get('rue'),
                 'ville'      => $request->request->get('ville'),
                 'codePostal' => $request->request->get('codePostal'),
                 'pays'       => $request->request->get('pays'),
+                'latitude'   => $request->request->get('latitude'),
+                'longitude'  => $request->request->get('longitude'),
             ];
             $logement->setAdresse($adresse);
 
             $categorieId = $request->request->get('categorie');
             $categorie = $em->getRepository(Categorie::class)->find($categorieId);
             $logement->setCategorie($categorie);
-
             $amenites = $request->request->all('amenites') ?? [];
             $logement->setAmenites($amenites);
 
@@ -174,18 +140,14 @@ final class LogementController extends AbstractController
                     $errors[$violation->getPropertyPath()] = $violation->getMessage();
                 }
                 return $this->render('backOffice/logement/edit.html.twig', [
-                    'logement'   => $logement,
-                    'categories' => $categories,
-                    'errors'     => $errors,
+                    'logement' => $logement, 'categories' => $categories, 'errors' => $errors,
                 ]);
             }
 
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
             $uploadedFiles = $request->files->all();
+
             if (isset($uploadedFiles['photoPrincipale']) && $uploadedFiles['photoPrincipale']->isValid()) {
                 if ($logement->getPhotoPrincipale()) {
                     $old = $uploadDir . $logement->getPhotoPrincipale();
@@ -215,14 +177,12 @@ final class LogementController extends AbstractController
         }
 
         return $this->render('backOffice/logement/edit.html.twig', [
-            'logement'   => $logement,
-            'categories' => $categories,
-            'errors'     => [],
+            'logement' => $logement, 'categories' => $categories, 'errors' => [],
         ]);
     }
 
     // =========================================================================
-    // LISTE DES LOGEMENTS
+    // LISTE (backoffice)
     // =========================================================================
     #[Route('/admin/logement/list', name: 'admin_logement_list')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
@@ -236,50 +196,38 @@ final class LogementController extends AbstractController
 
         /** @var User $user */
         $user = $this->getUser();
-
         $qb = $em->getRepository(Logement::class)->createQueryBuilder('l')
-            ->leftJoin('l.categorie', 'c')
-            ->addSelect('c');
+            ->leftJoin('l.categorie', 'c')->addSelect('c');
 
-        // ✅ Si propriétaire : ne voir QUE ses propres logements
         if (!$this->isGranted('ROLE_ADMIN')) {
-            $qb->andWhere('l.proprietaire = :user')
-               ->setParameter('user', $user);
+            $qb->andWhere('l.proprietaire = :user')->setParameter('user', $user);
         }
-
         if (!empty($search)) {
             $qb->andWhere('l.titre LIKE :search OR l.description LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
         if (!empty($categorieId)) {
-            $qb->andWhere('c.id = :categorieId')
-               ->setParameter('categorieId', $categorieId);
+            $qb->andWhere('c.id = :categorieId')->setParameter('categorieId', $categorieId);
         }
         if (!empty($prixMin) && is_numeric($prixMin)) {
-            $qb->andWhere('l.prix >= :prixMin')
-               ->setParameter('prixMin', (float) $prixMin);
+            $qb->andWhere('l.prix >= :prixMin')->setParameter('prixMin', (float)$prixMin);
         }
         if (!empty($prixMax) && is_numeric($prixMax)) {
-            $qb->andWhere('l.prix <= :prixMax')
-               ->setParameter('prixMax', (float) $prixMax);
+            $qb->andWhere('l.prix <= :prixMax')->setParameter('prixMax', (float)$prixMax);
         }
         if ($disponible !== '') {
-            $qb->andWhere('l.disponible = :disponible')
-               ->setParameter('disponible', (bool) $disponible);
+            $qb->andWhere('l.disponible = :disponible')->setParameter('disponible', (bool)$disponible);
         }
-
         $qb->orderBy('l.createdAt', 'DESC');
-        $logements = $qb->getQuery()->getResult();
-        $categories = $em->getRepository(Categorie::class)->findAll();
 
         return $this->render('backOffice/logement/list.html.twig', [
-            'logements'  => $logements,
-            'categories' => $categories,
+            'logements'  => $qb->getQuery()->getResult(),
+            'categories' => $em->getRepository(Categorie::class)->findAll(),
         ]);
     }
 
     // =========================================================================
-    // SUPPRIMER UN LOGEMENT
+    // SUPPRIMER (backoffice)
     // =========================================================================
     #[Route('/admin/logement/delete/{id}', name: 'admin_logement_delete')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
@@ -291,7 +239,6 @@ final class LogementController extends AbstractController
             return $this->redirectToRoute('admin_logement_list');
         }
 
-        // ✅ Sécurité : propriétaire ne peut supprimer que SES logements
         /** @var User $user */
         $user = $this->getUser();
         if (!$this->isGranted('ROLE_ADMIN') && $logement->getProprietaire() !== $user) {
@@ -300,7 +247,6 @@ final class LogementController extends AbstractController
         }
 
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-
         if ($logement->getPhotoPrincipale()) {
             $path = $uploadDir . $logement->getPhotoPrincipale();
             if (file_exists($path)) unlink($path);
@@ -314,22 +260,19 @@ final class LogementController extends AbstractController
 
         $em->remove($logement);
         $em->flush();
-
         $this->addFlash('success', 'Logement supprimé avec succès !');
         return $this->redirectToRoute('admin_logement_list');
     }
 
     // =========================================================================
-    // SUPPRIMER UNE PHOTO
+    // SUPPRIMER UNE PHOTO / PHOTO PRINCIPALE (backoffice)
     // =========================================================================
     #[Route('/admin/logement/photo/delete/{id}/{photoName}', name: 'admin_logement_photo_delete')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function deletePhoto(int $id, string $photoName, EntityManagerInterface $em): Response
     {
         $logement = $em->getRepository(Logement::class)->find($id);
-        if (!$logement) {
-            return $this->redirectToRoute('admin_logement_list');
-        }
+        if (!$logement) return $this->redirectToRoute('admin_logement_list');
 
         if ($logement->getPhotos()) {
             $photos = $logement->getPhotos();
@@ -347,9 +290,6 @@ final class LogementController extends AbstractController
         return $this->redirectToRoute('admin_logement_edit', ['id' => $id]);
     }
 
-    // =========================================================================
-    // SUPPRIMER LA PHOTO PRINCIPALE
-    // =========================================================================
     #[Route('/admin/logement/photo-principale/delete/{id}', name: 'admin_logement_photo_principale_delete')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function deletePhotoPrincipale(int $id, EntityManagerInterface $em): Response
@@ -375,50 +315,42 @@ final class LogementController extends AbstractController
     }
 
     // =========================================================================
-    // DÉTAILS D'UN LOGEMENT (BACKOFFICE)
+    // DÉTAILS (backoffice)
     // =========================================================================
     #[Route('/admin/logement/{id}/details', name: 'admin_logement_details')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function details(Logement $logement): Response
     {
-        return $this->render('backOffice/logement/details.html.twig', [
-            'logement' => $logement,
-        ]);
+        return $this->render('backOffice/logement/details.html.twig', ['logement' => $logement]);
     }
 
     // =========================================================================
-    // ⭐ FRONT OFFICE : LISTE DES LOGEMENTS DU PROPRIÉTAIRE
+    // FRONT OFFICE — LISTE
     // =========================================================================
     #[Route('/proprietaire/logements', name: 'proprietaire_logement_list')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function proprietaireList(Request $request, EntityManagerInterface $em): Response
     {
         /** @var User $user */
-        $user = $this->getUser();
-        
+        $user   = $this->getUser();
         $search = $request->query->get('search', '');
-        
+
         $qb = $em->getRepository(Logement::class)->createQueryBuilder('l')
-            ->leftJoin('l.categorie', 'c')
-            ->addSelect('c')
-            ->where('l.proprietaire = :user')
-            ->setParameter('user', $user);
-        
+            ->leftJoin('l.categorie', 'c')->addSelect('c')
+            ->where('l.proprietaire = :user')->setParameter('user', $user);
+
         if (!empty($search)) {
-            $qb->andWhere('l.titre LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+            $qb->andWhere('l.titre LIKE :search')->setParameter('search', '%' . $search . '%');
         }
-        
+
         $qb->orderBy('l.createdAt', 'DESC');
-        $logements = $qb->getQuery()->getResult();
-        
         return $this->render('frontOffice/logement/list.html.twig', [
-            'logements' => $logements,
+            'logements' => $qb->getQuery()->getResult(),
         ]);
     }
 
     // =========================================================================
-    // ⭐ FRONT OFFICE : AJOUTER UN LOGEMENT
+    // FRONT OFFICE — AJOUTER (avec Leaflet — ÉTAPE 6)
     // =========================================================================
     #[Route('/proprietaire/logement/publier', name: 'proprietaire_logement_add')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
@@ -429,19 +361,20 @@ final class LogementController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            // ── ÉTAPE 6 : lat/lng depuis les champs hidden Leaflet ──
             $adresse = [
                 'rue'        => $request->request->get('rue'),
                 'ville'      => $request->request->get('ville'),
                 'codePostal' => $request->request->get('codePostal'),
                 'pays'       => $request->request->get('pays'),
+                'latitude'   => $request->request->get('latitude'),   // ← Leaflet
+                'longitude'  => $request->request->get('longitude'),  // ← Leaflet
             ];
             $logement->setAdresse($adresse);
 
-            // Gestion des photos
             $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $photoPrincipaleFile = $form->get('photoPrincipale')->getData();
             if ($photoPrincipaleFile && $photoPrincipaleFile->isValid()) {
@@ -465,34 +398,29 @@ final class LogementController extends AbstractController
                 }
             }
             $logement->setPhotos($photosArray);
-
             $logement->setNoteMoyenne(null);
             $logement->setTotalAvis(0);
             $logement->setProprietaire($this->getUser());
 
             $em->persist($logement);
             $em->flush();
-
             $this->creerNotificationAdmin($em, $logement);
 
             $this->addFlash('success', 'Votre logement a été publié avec succès !');
             return $this->redirectToRoute('proprietaire_logement_list');
         }
 
-        return $this->render('frontOffice/logement/add.html.twig', [
-            'form' => $form,
-        ]);
+        return $this->render('frontOffice/logement/add.html.twig', ['form' => $form]);
     }
 
     // =========================================================================
-    // ⭐ FRONT OFFICE : MODIFIER UN LOGEMENT
+    // FRONT OFFICE — MODIFIER
     // =========================================================================
     #[Route('/proprietaire/logement/modifier/{id}', name: 'proprietaire_logement_edit')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function proprietaireEdit(int $id, Request $request, EntityManagerInterface $em, ValidatorInterface $validator): Response
     {
         $logement = $em->getRepository(Logement::class)->find($id);
-
         if (!$logement) {
             $this->addFlash('error', 'Logement introuvable !');
             return $this->redirectToRoute('proprietaire_logement_list');
@@ -516,24 +444,26 @@ final class LogementController extends AbstractController
             $logement->setNombreSalleDeBain((int) $request->request->get('nombreSalleDeBain', 0));
             $logement->setDisponible((bool) $request->request->get('disponible'));
 
+            // ── ÉTAPE 6 ──
             $adresse = [
                 'rue'        => $request->request->get('rue'),
                 'ville'      => $request->request->get('ville'),
                 'codePostal' => $request->request->get('codePostal'),
                 'pays'       => $request->request->get('pays'),
+                'latitude'   => $request->request->get('latitude'),
+                'longitude'  => $request->request->get('longitude'),
             ];
             $logement->setAdresse($adresse);
 
             $categorieId = $request->request->get('categorie');
-            $categorie = $em->getRepository(Categorie::class)->find($categorieId);
+            $categorie   = $em->getRepository(Categorie::class)->find($categorieId);
             $logement->setCategorie($categorie);
-
             $amenites = $request->request->all('amenites') ?? [];
             $logement->setAmenites($amenites);
 
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            $uploadDir     = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
             $uploadedFiles = $request->files->all();
-            
+
             if (isset($uploadedFiles['photoPrincipale']) && $uploadedFiles['photoPrincipale']->isValid()) {
                 if ($logement->getPhotoPrincipale()) {
                     $old = $uploadDir . $logement->getPhotoPrincipale();
@@ -551,21 +481,18 @@ final class LogementController extends AbstractController
         }
 
         return $this->render('frontOffice/logement/edit.html.twig', [
-            'logement'   => $logement,
-            'categories' => $categories,
-            'errors'     => $errors,
+            'logement' => $logement, 'categories' => $categories, 'errors' => $errors,
         ]);
     }
 
     // =========================================================================
-    // ⭐ FRONT OFFICE : DÉTAILS D'UN LOGEMENT
+    // FRONT OFFICE — DÉTAILS + SUPPRIMER
     // =========================================================================
     #[Route('/proprietaire/logement/{id}', name: 'proprietaire_logement_details')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function proprietaireDetails(int $id, EntityManagerInterface $em): Response
     {
         $logement = $em->getRepository(Logement::class)->find($id);
-        
         if (!$logement) {
             $this->addFlash('error', 'Logement introuvable !');
             return $this->redirectToRoute('proprietaire_logement_list');
@@ -577,20 +504,14 @@ final class LogementController extends AbstractController
             return $this->redirectToRoute('proprietaire_logement_list');
         }
 
-        return $this->render('frontOffice/logement/details.html.twig', [
-            'logement' => $logement,
-        ]);
+        return $this->render('frontOffice/logement/details.html.twig', ['logement' => $logement]);
     }
 
-    // =========================================================================
-    // ⭐ FRONT OFFICE : SUPPRIMER UN LOGEMENT
-    // =========================================================================
     #[Route('/proprietaire/logement/supprimer/{id}', name: 'proprietaire_logement_delete')]
     #[IsGranted('ROLE_PROPRIETAIRE')]
     public function proprietaireDelete(int $id, EntityManagerInterface $em): Response
     {
         $logement = $em->getRepository(Logement::class)->find($id);
-        
         if (!$logement) {
             $this->addFlash('error', 'Logement introuvable !');
             return $this->redirectToRoute('proprietaire_logement_list');
@@ -603,7 +524,6 @@ final class LogementController extends AbstractController
         }
 
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-
         if ($logement->getPhotoPrincipale()) {
             $path = $uploadDir . $logement->getPhotoPrincipale();
             if (file_exists($path)) unlink($path);
@@ -617,8 +537,31 @@ final class LogementController extends AbstractController
 
         $em->remove($logement);
         $em->flush();
-
         $this->addFlash('success', 'Logement supprimé avec succès !');
         return $this->redirectToRoute('proprietaire_logement_list');
+    }
+
+    // =========================================================================
+    // MÉTHODE PRIVÉE — Notification admin
+    // =========================================================================
+    private function creerNotificationAdmin(EntityManagerInterface $em, Logement $logement): void
+    {
+        $admin = $em->getRepository(User::class)
+            ->createQueryBuilder('u')
+            ->where('u.roles LIKE :role')
+            ->setParameter('role', '%ROLE_ADMIN%')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($admin) {
+            $notification = new Notification();
+            $notification->setMessage('Nouveau logement publié : ' . $logement->getTitre());
+            $notification->setType('nouveau_logement');
+            $notification->setDestinataire($admin);
+            $notification->setLogement($logement);
+            $em->persist($notification);
+            $em->flush();
+        }
     }
 }

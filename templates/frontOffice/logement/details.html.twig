@@ -2,6 +2,19 @@
 
 {% block title %}{{ logement.titre }} - Stayzy{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Sidebar fixe sans décalage visuel au scroll */
+        .sidebar-sticky {
+            position: sticky;
+            top: 80px;          /* hauteur de la navbar — ajuste si besoin */
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 
 <div class="page-title light-background">
@@ -115,8 +128,10 @@
             {# Sidebar #}
             <div class="col-lg-4">
                 
-                {# Carte d'actions #}
-                <div class="card mb-4 sticky-top" style="top: 100px;">
+                {# ── CORRECTION : remplacé sticky-top (top:100px) par la classe
+                   sidebar-sticky définie en CSS, qui garde la carte visible
+                   sans qu'elle "remonte" au-dessus du viewport au scroll ── #}
+                <div class="card mb-4 sidebar-sticky">
                     <div class="card-body">
                         <h4 class="mb-4">Gestion</h4>
                         
