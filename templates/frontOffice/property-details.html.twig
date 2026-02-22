@@ -486,6 +486,118 @@
     .sim-card .sim-specs .sp i { color: var(--green); }
 
     /* ═══════════════════════════════════════════════
+       MÉTÉO — Widget flottant sur le hero
+    ═══════════════════════════════════════════════ */
+    .weather-hero-badge {
+        position: absolute;
+        top: 24px; right: 48px;
+        z-index: 4;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 16px;
+        padding: 10px 18px;
+        display: flex; align-items: center; gap: 10px;
+        color: #fff;
+        animation: fadeInDown .5s ease;
+    }
+    @keyframes fadeInDown {
+        from { opacity:0; transform: translateY(-10px); }
+        to   { opacity:1; transform: translateY(0); }
+    }
+    .weather-hero-badge .w-icon { font-size: 2rem; line-height: 1; }
+    .weather-hero-badge .w-temp {
+        font-size: 1.4rem; font-weight: 700; line-height: 1;
+    }
+    .weather-hero-badge .w-city {
+        font-size: .72rem; opacity: .8; margin-top: 2px;
+    }
+    .weather-hero-badge .w-desc {
+        font-size: .75rem; opacity: .75; text-transform: capitalize;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MÉTÉO — Card section gauche (détail complet)
+    ═══════════════════════════════════════════════ */
+    .weather-card {
+        background: linear-gradient(135deg, #0f4c81 0%, #1a7fc4 50%, #2196f3 100%);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin-bottom: 22px;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(21,101,192,.35);
+        position: relative;
+        overflow: hidden;
+    }
+    .weather-card::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.06);
+    }
+    .weather-card::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: -20px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.04);
+    }
+    .weather-card h3 {
+        font-size: 1rem; font-weight: 600;
+        opacity: .85; margin-bottom: 20px;
+        display: flex; align-items: center; gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.15);
+        padding-bottom: 12px;
+        color: #fff;
+    }
+    .weather-main {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        position: relative; z-index: 1;
+    }
+    .weather-main .big-temp {
+        font-size: 4rem; font-weight: 700; line-height: 1;
+    }
+    .weather-main .big-temp sup { font-size: 1.5rem; font-weight: 400; }
+    .weather-main .w-meta { text-align: right; }
+    .weather-main .w-meta .big-icon { font-size: 3.5rem; line-height: 1; }
+    .weather-main .w-meta .w-desc-big {
+        font-size: .88rem; opacity: .85;
+        text-transform: capitalize; margin-top: 4px;
+    }
+    .weather-main .w-meta .w-city-big {
+        font-size: .8rem; opacity: .7;
+        display: flex; align-items: center; gap: 4px; justify-content: flex-end;
+    }
+
+    .weather-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        position: relative; z-index: 1;
+    }
+    .w-stat {
+        background: rgba(255,255,255,.12);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+    .w-stat i { font-size: 1.1rem; margin-bottom: 4px; opacity: .85; }
+    .w-stat .w-val { font-size: .95rem; font-weight: 700; }
+    .w-stat .w-lbl { font-size: .68rem; opacity: .7; margin-top: 2px; }
+
+    /* État de chargement / erreur */
+    .weather-loading {
+        text-align: center; padding: 20px; opacity: .7;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .weather-error { display: none; }
+
+    /* ═══════════════════════════════════════════════
        RESPONSIVE
     ═══════════════════════════════════════════════ */
     @media (max-width: 991px) {
@@ -511,6 +623,16 @@
        HERO GALERIE
     ══════════════════════════════════════ #}
     <div class="prop-hero">
+
+        {# ── BADGE MÉTÉO flottant — rempli par JS ── #}
+        <div id="weather-hero-badge" class="weather-hero-badge" style="display:none;">
+            <div class="w-icon" id="wh-icon"></div>
+            <div>
+                <div class="w-temp" id="wh-temp"></div>
+                <div class="w-desc" id="wh-desc"></div>
+                <div class="w-city" id="wh-city"></div>
+            </div>
+        </div>
 
         <div class="hero-breadcrumb">
             <a href="{{ path('app_home') }}">Accueil</a>
@@ -666,6 +788,63 @@
                         </div>
                     </div>
                     {% endif %}
+
+                    {# ── MÉTÉO LOCALE — card détaillée ── #}
+                    <div class="weather-card" id="weather-detail-card">
+                        <h3>
+                            <i class="bi bi-cloud-sun"></i>
+                            Météo actuelle · <span id="wd-city-title">chargement…</span>
+                        </h3>
+                        <div class="weather-loading" id="wd-loading">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Récupération de la météo…
+                        </div>
+                        <div id="wd-content" style="display:none;">
+                            <div class="weather-main">
+                                <div>
+                                    <div class="big-temp">
+                                        <span id="wd-temp"></span><sup>°C</sup>
+                                    </div>
+                                    <div style="font-size:.85rem;opacity:.8;margin-top:6px;">
+                                        Ressenti : <span id="wd-feels"></span>°C
+                                    </div>
+                                </div>
+                                <div class="w-meta">
+                                    <div class="big-icon" id="wd-icon"></div>
+                                    <div class="w-desc-big" id="wd-desc"></div>
+                                    <div class="w-city-big">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span id="wd-city"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weather-stats">
+                                <div class="w-stat">
+                                    <i class="bi bi-droplet-fill"></i>
+                                    <div class="w-val"><span id="wd-hum"></span>%</div>
+                                    <div class="w-lbl">Humidité</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-wind"></i>
+                                    <div class="w-val"><span id="wd-wind"></span> km/h</div>
+                                    <div class="w-lbl">Vent</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-eye"></i>
+                                    <div class="w-val"><span id="wd-vis"></span> km</div>
+                                    <div class="w-lbl">Visibilité</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <div class="w-val"><span id="wd-pressure"></span></div>
+                                    <div class="w-lbl">Pression hPa</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weather-error" id="wd-error">
+                            <i class="bi bi-exclamation-circle"></i> Météo indisponible pour cette ville.
+                        </div>
+                    </div>
 
                     <div class="section-card">
                         <h3><span class="dot"></span> Localisation</h3>
@@ -904,12 +1083,133 @@
         });
 
         // ════════════════════════════════════════
+        // VARIABLES COMMUNES (lat/lng/adresse)
+        // ← déclarées EN PREMIER pour être
+        //   disponibles partout dans le bloc
+        // ════════════════════════════════════════
+        const latSaved     = parseFloat('{{ logement.adresse.latitude|default("")|e("js") }}') || null;
+        const lngSaved     = parseFloat('{{ logement.adresse.longitude|default("")|e("js") }}') || null;
+        const adresseTexte = '{{ ((logement.adresse.rue|default("")) ~ " " ~ (logement.adresse.ville|default("")) ~ " " ~ (logement.adresse.pays|default("")))|trim|e("js") }}';
+        const popupTexte   = '<strong>{{ logement.titre|e("js") }}</strong><br>{{ logement.adresse.ville|default("")|e("js") }}';
+
+        // ════════════════════════════════════════
+        // MÉTÉO — OpenWeatherMap API
+        // ════════════════════════════════════════
+        const OWM_KEY    = 'b4f744b95d35ca8b42d5493363d9e6a0';
+        const villeMeteo = '{{ logement.adresse.ville|default("")|e("js") }}';
+        const paysMeteo  = '{{ logement.adresse.pays|default("")|e("js") }}';
+
+        // Icônes emoji selon le code météo OWM
+        function owmEmoji(code) {
+            if (code >= 200 && code < 300) return '⛈️';
+            if (code >= 300 && code < 400) return '🌦️';
+            if (code >= 500 && code < 600) return '🌧️';
+            if (code >= 600 && code < 700) return '❄️';
+            if (code >= 700 && code < 800) return '🌫️';
+            if (code === 800)              return '☀️';
+            if (code === 801)              return '🌤️';
+            if (code === 802)              return '⛅';
+            if (code >= 803)              return '☁️';
+            return '🌡️';
+        }
+
+        function afficherMeteo(data) {
+            const temp    = Math.round(data.main.temp);
+            const feels   = Math.round(data.main.feels_like);
+            const desc    = data.weather[0].description;
+            const code    = data.weather[0].id;
+            const hum     = data.main.humidity;
+            const wind    = Math.round(data.wind.speed * 3.6); // m/s → km/h
+            const vis     = Math.round((data.visibility || 10000) / 1000);
+            const pressure= data.main.pressure;
+            const city    = data.name;
+            const emoji   = owmEmoji(code);
+
+            // Remplir badge hero
+            document.getElementById('wh-icon').textContent  = emoji;
+            document.getElementById('wh-temp').textContent  = temp + '°C';
+            document.getElementById('wh-desc').textContent  = desc;
+            document.getElementById('wh-city').textContent  = city;
+            document.getElementById('weather-hero-badge').style.display = 'flex';
+
+            // Remplir card détail
+            document.getElementById('wd-city-title').textContent = city;
+            document.getElementById('wd-temp').textContent      = temp;
+            document.getElementById('wd-feels').textContent     = feels;
+            document.getElementById('wd-icon').textContent      = emoji;
+            document.getElementById('wd-desc').textContent      = desc;
+            document.getElementById('wd-city').textContent      = city;
+            document.getElementById('wd-hum').textContent       = hum;
+            document.getElementById('wd-wind').textContent      = wind;
+            document.getElementById('wd-vis').textContent       = vis;
+            document.getElementById('wd-pressure').textContent  = pressure;
+
+            document.getElementById('wd-loading').style.display = 'none';
+            document.getElementById('wd-content').style.display = 'block';
+        }
+
+        function erreurMeteo() {
+            document.getElementById('wd-loading').style.display  = 'none';
+            document.getElementById('wd-error').style.display    = 'block';
+            document.getElementById('wd-city-title').textContent = 'Indisponible';
+        }
+
+        function fetchMeteoParLatLng(lat, lng) {
+            fetch('https://api.openweathermap.org/data/2.5/weather'
+                + '?lat='   + lat
+                + '&lon='   + lng
+                + '&units=metric'
+                + '&lang=fr'
+                + '&appid=' + OWM_KEY)
+            .then(r => r.json())
+            .then(function(d) {
+                if (d.cod === 200) afficherMeteo(d);
+                else fetchMeteoParVille();   // fallback par ville
+            })
+            .catch(fetchMeteoParVille);
+        }
+
+        function fetchMeteoParVille() {
+            if (!villeMeteo) { erreurMeteo(); return; }
+            const q = villeMeteo + (paysMeteo ? ',' + paysMeteo : '');
+            fetch('https://api.openweathermap.org/data/2.5/weather'
+                + '?q='     + encodeURIComponent(q)
+                + '&units=metric'
+                + '&lang=fr'
+                + '&appid=' + OWM_KEY)
+            .then(r => r.json())
+            .then(function(d) {
+                if (d.cod === 200) afficherMeteo(d);
+                else erreurMeteo();
+            })
+            .catch(erreurMeteo);
+        }
+
+        // Lancer la météo : priorité lat/lng enregistrés, sinon ville
+        if (latSaved && lngSaved) {
+            fetchMeteoParLatLng(latSaved, lngSaved);
+        } else if (adresseTexte.trim()) {
+            // Essayer de geocoder l'adresse pour obtenir lat/lng, puis météo
+            fetch('https://nominatim.openstreetmap.org/search'
+                + '?q=' + encodeURIComponent(adresseTexte)
+                + '&format=json&limit=1&accept-language=fr')
+            .then(r => r.json())
+            .then(function(res) {
+                if (res && res.length > 0) {
+                    fetchMeteoParLatLng(parseFloat(res[0].lat), parseFloat(res[0].lon));
+                } else {
+                    fetchMeteoParVille();
+                }
+            })
+            .catch(fetchMeteoParVille);
+        } else {
+            fetchMeteoParVille();
+        }
+
+
+        // ════════════════════════════════════════
         // MINI-CARTE LEAFLET
         // ════════════════════════════════════════
-        const latSaved = parseFloat('{{ logement.adresse.latitude|default("")|e("js") }}') || null;
-        const lngSaved = parseFloat('{{ logement.adresse.longitude|default("")|e("js") }}') || null;
-        const adresseTexte = '{{ ((logement.adresse.rue|default("")) ~ " " ~ (logement.adresse.ville|default("")) ~ " " ~ (logement.adresse.pays|default("")))|trim|e("js") }}';
-        const popupTexte  = '<strong>{{ logement.titre|e("js") }}</strong><br>{{ logement.adresse.ville|default("")|e("js") }}';
 
         function initMap(lat, lng) {
             const map = L.map('map-detail', { scrollWheelZoom: false }).setView([lat, lng], 15);
