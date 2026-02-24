@@ -7,7 +7,6 @@
     <section style="padding: 80px 0; background: #f8f9fa; min-height: 80vh;">
         <div class="container">
             
-            {# Messages flash #}
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success alert-dismissible fade show">
                     <i class="bi bi-check-circle me-2"></i>{{ message }}
@@ -17,12 +16,11 @@
 
             <div class="row">
                 
-                {# COLONNE GAUCHE - Carte profil #}
+                {# COLONNE GAUCHE #}
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 100px;">
                         <div class="card-body text-center" style="padding: 40px 30px;">
                             
-                            {# Photo de profil #}
                             <div style="position: relative; display: inline-block;">
                                 {% if user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" 
@@ -33,14 +31,11 @@
                                         {{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}
                                     </div>
                                 {% endif %}
-                                
-                                {# Badge vérifié #}
                                 <span style="position: absolute; bottom: 10px; right: 10px; background: #2e7d32; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
                                     ✅ Actif
                                 </span>
                             </div>
 
-                            {# Nom #}
                             <h4 class="mt-3 mb-1" style="font-weight: 700; color: #1a1a1a;">
                                 {{ user.prenom }} {{ user.nom }}
                             </h4>
@@ -48,14 +43,12 @@
                                 <i class="bi bi-envelope me-1"></i> {{ user.email }}
                             </p>
 
-                            {# Badge client #}
                             <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;">
                                 <i class="bi bi-person-circle me-1"></i> Client
                             </span>
 
                             <hr style="margin: 25px 0;">
 
-                            {# Statistiques rapides #}
                             <div class="row text-center">
                                 <div class="col-6 mb-3">
                                     <div style="background: #e8f5e9; padding: 15px; border-radius: 10px;">
@@ -73,21 +66,39 @@
 
                             <hr style="margin: 25px 0;">
 
-                            {# Score de Confiance #}
                             {% include 'components/trust_score.html.twig' %}
 
-                            {# Boutons #}
                             <a href="{{ path('app_client_dashboard') }}" class="btn btn-outline-success w-100 mb-2 mt-3" style="border-radius: 10px;">
                                 <i class="bi bi-speedometer2 me-2"></i> Tableau de bord
                             </a>
-                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger w-100" style="border-radius: 10px;">
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger w-100 mb-3" style="border-radius: 10px;">
                                 <i class="bi bi-box-arrow-right me-2"></i> Déconnexion
                             </a>
+
+                            {# ===== FACE ID ===== #}
+                            <hr style="margin: 15px 0;">
+                            <button type="button" onclick="startFaceSave()" 
+                                    class="btn w-100"
+                                    style="background: #1565c0; color: white; border-radius: 10px; padding: 12px; border: none;">
+                                <i class="bi bi-camera me-2"></i> Enregistrer mon visage
+                            </button>
+
+                            {% if user.faceDescriptor %}
+                                <div class="mt-2 text-center">
+                                    <small style="color: #2e7d32;"><i class="bi bi-check-circle-fill me-1"></i>Visage enregistré ✅</small>
+                                </div>
+                            {% else %}
+                                <div class="mt-2 text-center">
+                                    <small class="text-muted"><i class="bi bi-x-circle me-1"></i>Aucun visage enregistré</small>
+                                </div>
+                            {% endif %}
+                            {# ===== FIN FACE ID ===== #}
+
                         </div>
                     </div>
                 </div>
 
-                {# COLONNE DROITE - Formulaire #}
+                {# COLONNE DROITE #}
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px;">
                         <div class="card-header" style="background: white; border-bottom: 2px solid #f0f0f0; padding: 25px 30px;">
@@ -99,7 +110,6 @@
                             
                             {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
 
-                            {# Upload photo #}
                             <div class="mb-4">
                                 <label class="form-label fw-semibold">
                                     <i class="bi bi-camera me-1" style="color: #2e7d32;"></i> Photo de profil
@@ -108,8 +118,7 @@
                                     <div>
                                         {% if user.profilePicture %}
                                             <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" 
-                                                 alt="Aperçu"
-                                                 id="preview"
+                                                 alt="Aperçu" id="preview"
                                                  style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #2e7d32;">
                                         {% else %}
                                             <div id="preview" style="width: 80px; height: 80px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #999;">
@@ -118,11 +127,8 @@
                                         {% endif %}
                                     </div>
                                     <div style="flex: 1;">
-                                        <input type="file" 
-                                               name="profile_picture" 
-                                               id="profilePicture"
-                                               class="form-control"
-                                               accept="image/*"
+                                        <input type="file" name="profile_picture" id="profilePicture"
+                                               class="form-control" accept="image/*"
                                                onchange="previewImage(event)"
                                                style="border-radius: 10px;">
                                         <small class="text-muted">JPG, PNG ou GIF - Max 2MB</small>
@@ -132,56 +138,38 @@
 
                             <hr>
 
-                            {# Informations personnelles #}
                             <h6 class="mb-3" style="color: #2e7d32; font-weight: 600;">
                                 <i class="bi bi-person-badge me-1"></i> Informations personnelles
                             </h6>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    {{ form_row(form.prenom, {
-                                        'label': 'Prénom',
-                                        'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}
-                                    }) }}
+                                    {{ form_row(form.prenom, {'label': 'Prénom', 'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}}) }}
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    {{ form_row(form.nom, {
-                                        'label': 'Nom',
-                                        'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}
-                                    }) }}
+                                    {{ form_row(form.nom, {'label': 'Nom', 'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}}) }}
                                 </div>
                             </div>
 
                             <div class="mb-3">
-                                {{ form_row(form.email, {
-                                    'label': 'Email',
-                                    'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}
-                                }) }}
+                                {{ form_row(form.email, {'label': 'Email', 'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;'}}) }}
                             </div>
 
                             <div class="mb-3">
-                                {{ form_row(form.tel, {
-                                    'label': 'Téléphone',
-                                    'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;', 'placeholder': '+216 XX XXX XXX'}
-                                }) }}
+                                {{ form_row(form.tel, {'label': 'Téléphone', 'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;', 'placeholder': '+216 XX XXX XXX'}}) }}
                             </div>
 
                             <hr class="my-4">
 
-                            {# Changer mot de passe #}
                             <h6 class="mb-3" style="color: #2e7d32; font-weight: 600;">
                                 <i class="bi bi-key me-1"></i> Changer le mot de passe
                             </h6>
 
                             <div class="mb-3">
-                                {{ form_row(form.password, {
-                                    'label': 'Nouveau mot de passe (optionnel)',
-                                    'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;', 'placeholder': 'Laissez vide pour ne pas changer'}
-                                }) }}
+                                {{ form_row(form.password, {'label': 'Nouveau mot de passe (optionnel)', 'attr': {'class': 'form-control', 'style': 'border-radius: 10px; padding: 12px;', 'placeholder': 'Laissez vide pour ne pas changer'}}) }}
                                 <small class="text-muted">Laissez vide si vous ne voulez pas changer votre mot de passe</small>
                             </div>
 
-                            {# Boutons #}
                             <div class="d-flex gap-2 mt-4">
                                 <button type="submit" class="btn btn-success btn-lg" style="border-radius: 10px; flex: 1;">
                                     <i class="bi bi-check-circle me-2"></i> Enregistrer les modifications
@@ -192,14 +180,11 @@
                             </div>
 
                             {{ form_end(form) }}
-
                         </div>
                     </div>
 
-                    {# Suggestions IA #}
                     {% include 'components/trust_suggestions.html.twig' %}
 
-                    {# Section réservations (pour plus tard) #}
                     <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px;">
                         <div class="card-header" style="background: white; border-bottom: 2px solid #f0f0f0; padding: 25px 30px;">
                             <h5 style="font-weight: 700; color: #1a1a1a; margin: 0;">
@@ -222,11 +207,45 @@
     </section>
 </main>
 
+{# ===== MODAL FACE ID ===== #}
+<div class="modal fade" id="faceRegisterModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Enregistrer mon visage</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopFaceCamera()"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div id="saveStatus" class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer
+                </div>
+                <div style="position: relative; display: inline-block;">
+                    <video id="saveVideo" width="300" height="225" autoplay muted
+                           style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                    <canvas id="saveCanvas" width="300" height="225"
+                            style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                </div>
+                <div class="mt-3">
+                    <button onclick="captureFace()" class="btn btn-primary" style="border-radius: 10px;">
+                        <i class="bi bi-camera me-2"></i> Capturer mon visage
+                    </button>
+                </div>
+                <div id="loadingSave" class="spinner-border text-primary d-none mt-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{# ===== FIN MODAL ===== #}
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
 <script>
 function previewImage(event) {
     const preview = document.getElementById('preview');
     const file = event.target.files[0];
-    
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -235,5 +254,91 @@ function previewImage(event) {
         reader.readAsDataURL(file);
     }
 }
+
+// ===== FACE SAVE =====
+let saveStream = null;
+let saveModelsLoaded = false;
+
+async function loadSaveModels() {
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+    await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+    ]);
+    saveModelsLoaded = true;
+}
+
+async function startFaceSave() {
+    const modal = new bootstrap.Modal(document.getElementById('faceRegisterModal'));
+    modal.show();
+
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Chargement des modèles IA...';
+
+    if (!saveModelsLoaded) await loadSaveModels();
+
+    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage et cliquez Capturer';
+
+    saveStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('saveVideo').srcObject = saveStream;
+}
+
+async function captureFace() {
+    const video = document.getElementById('saveVideo');
+    document.getElementById('loadingSave').classList.remove('d-none');
+    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Analyse du visage...';
+
+    const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    if (!detection) {
+        document.getElementById('loadingSave').classList.add('d-none');
+        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>Aucun visage détecté! Réessayez.';
+        return;
+    }
+
+    const response = await fetch('/face/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+    });
+
+    const result = await response.json();
+    document.getElementById('loadingSave').classList.add('d-none');
+
+    if (result.success) {
+        document.getElementById('saveStatus').className = 'alert alert-success mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Visage enregistré avec succès!';
+        stopFaceCamera();
+        setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('faceRegisterModal')).hide();
+            location.reload();
+        }, 1500);
+    } else {
+        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>Erreur: ' + result.error;
+    }
+}
+
+function stopFaceCamera() {
+    if (saveStream) {
+        saveStream.getTracks().forEach(t => t.stop());
+        saveStream = null;
+    }
+}
+
+document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
+// ===== FIN FACE SAVE =====
 </script>
 {% endblock %}

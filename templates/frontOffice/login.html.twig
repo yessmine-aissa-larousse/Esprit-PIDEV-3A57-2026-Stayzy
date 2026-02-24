@@ -16,6 +16,20 @@
                         </div>
                     {% endfor %}
 
+                    {% if status == 'pending' %}
+                        <div class="alert alert-warning alert-dismissible fade show">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            <strong>Demande en attente</strong> — Votre compte propriétaire est en cours de validation par l'administrateur. Vous recevrez un email dès que votre demande sera traitée.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% elseif status == 'rejected' %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            <i class="bi bi-x-circle me-2"></i>
+                            <strong>Demande refusée</strong> — Votre demande d'inscription propriétaire a été refusée. Contactez l'administrateur pour plus d'informations.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
                     <div class="card shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
 
                         <div style="background: #2e7d32; padding: 40px 30px 30px; text-align: center;">
@@ -112,6 +126,43 @@
                             </div>
                             {# ===== FIN BOUTON GOOGLE ===== #}
 
+                            {# ===== BOUTON FACE ID ===== #}
+                            <div class="text-center mt-3">
+                                <button type="button"
+                                        onclick="startFaceLogin()"
+                                        class="btn btn-lg w-100 fw-semibold"
+                                        style="background: #1565c0; color: white; border-radius: 10px; padding: 14px; border: none;">
+                                    <i class="bi bi-camera me-2"></i> Se connecter avec mon visage
+                                </button>
+                            </div>
+
+                            {# Modal caméra #}
+                            <div class="modal fade" id="faceModal" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content" style="border-radius: 16px;">
+                                        <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                                            <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Reconnaissance Faciale</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopCamera()"></button>
+                                        </div>
+                                        <div class="modal-body text-center p-4">
+                                            <div id="faceStatus" class="alert alert-info mb-3">
+                                                <i class="bi bi-info-circle me-2"></i>Positionnez votre visage dans le cadre
+                                            </div>
+                                            <div style="position: relative; display: inline-block;">
+                                                <video id="faceVideo" width="350" height="263" autoplay muted
+                                                       style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                                                <canvas id="faceCanvas" width="350" height="263"
+                                                        style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div id="loadingFace" class="spinner-border text-primary d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {# ===== FIN BOUTON FACE ID ===== #}
+
                             <hr style="margin: 25px 0; border-color: #eee;">
 
                             <div class="text-center">
@@ -143,6 +194,7 @@
 {% block javascripts %}
 {{ parent() }}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
 <script>
 function togglePassword() {
     const pwd = document.getElementById('password');
@@ -155,5 +207,105 @@ function togglePassword() {
         icon.className = 'bi bi-eye';
     }
 }
+
+// ===== FACE LOGIN =====
+let faceStream = null;
+let faceDetectionInterval = null;
+let modelsLoaded = false;
+
+async function loadFaceModels() {
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+    await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+    ]);
+    modelsLoaded = true;
+}
+
+async function startFaceLogin() {
+    const modal = new bootstrap.Modal(document.getElementById('faceModal'));
+    modal.show();
+
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Chargement des modèles IA...';
+    document.getElementById('loadingFace').classList.remove('d-none');
+
+    if (!modelsLoaded) await loadFaceModels();
+
+    document.getElementById('loadingFace').classList.add('d-none');
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage dans le cadre';
+
+    faceStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('faceVideo').srcObject = faceStream;
+
+    faceDetectionInterval = setInterval(detectAndLogin, 1000);
+}
+
+async function detectAndLogin() {
+    const video = document.getElementById('faceVideo');
+    const canvas = document.getElementById('faceCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const detection = await faceapi
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    if (!detection) {
+        document.getElementById('faceStatus').className = 'alert alert-warning mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-exclamation-triangle me-2"></i>Aucun visage détecté';
+        return;
+    }
+
+    const { x, y, width, height } = detection.detection.box;
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, width, height);
+
+    document.getElementById('faceStatus').className = 'alert alert-success mb-3';
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-check-circle me-2"></i>Visage détecté! Vérification...';
+
+    clearInterval(faceDetectionInterval);
+
+    const response = await fetch('/face/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Bienvenue ' + result.name + '! Redirection...';
+        stopCamera();
+        setTimeout(() => window.location.href = result.redirect, 1500);
+    } else {
+        document.getElementById('faceStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>Visage non reconnu. Réessayez.';
+        setTimeout(() => {
+            faceDetectionInterval = setInterval(detectAndLogin, 1000);
+        }, 2000);
+    }
+}
+
+function stopCamera() {
+    if (faceStream) {
+        faceStream.getTracks().forEach(t => t.stop());
+        faceStream = null;
+    }
+    if (faceDetectionInterval) {
+        clearInterval(faceDetectionInterval);
+    }
+}
+
+document.getElementById('faceModal')?.addEventListener('hidden.bs.modal', stopCamera);
+// ===== FIN FACE LOGIN =====
 </script>
 {% endblock %}

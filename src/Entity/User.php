@@ -78,6 +78,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
+    #[ORM\Column(type: 'text', nullable: true)]
+private ?string $faceDescriptor = null;
+
+public function getFaceDescriptor(): ?string
+{
+    return $this->faceDescriptor;
+}
+
+public function setFaceDescriptor(?string $faceDescriptor): self
+{
+    $this->faceDescriptor = $faceDescriptor;
+    return $this;
+}
 
     public function __construct()
     {
