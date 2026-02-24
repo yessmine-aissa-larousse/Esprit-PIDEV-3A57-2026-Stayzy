@@ -25,6 +25,11 @@
 
         <!-- Main CSS File -->
         <link href="{{ asset('frontOffice/css/main.css') }}" rel="stylesheet">
+
+
+        <script src="https://js.stripe.com/v3/"></script>
+
+
     {% endblock %}
 </head>
 
@@ -59,9 +64,9 @@
                 
  <li>
  {% if logement is defined %}
-    <a href="{{ path('front_reservation_new', {'id': logement.id}) }}">Réservation</a>
+    <a href="{{ path('front_reservation_list', {'id': logement.id}) }}">Mes Réservation</a>
 {% else %}
-    <a href="{{ path('front_reservation_new', {'id': 1}) }}">Réservation</a>
+    <a href="{{ path('front_reservation_list', {'id': 1}) }}">Mes Réservation</a>
 {% endif %}
 
 </li>

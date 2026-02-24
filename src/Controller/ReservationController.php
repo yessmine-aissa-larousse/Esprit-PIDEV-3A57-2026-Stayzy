@@ -16,11 +16,10 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/reservation', name: 'front_reservation_')]
 class ReservationController extends AbstractController
 {
-    /* ============================================================
-       🧍‍♀️ CLIENT
-    ============================================================ */
+    //CLIENT
+   
 
-    // 🔹 Créer une nouvelle réservation
+    //Créer une nouvelle réservation
     #[Route('/new/{id}', name: 'new')]
     public function new(Request $request, EntityManagerInterface $em, int $id): Response
     {
@@ -42,7 +41,7 @@ class ReservationController extends AbstractController
             $reservation->setPrixTotal($prixTotal);
             $reservation->setStatus('EN_ATTENTE');
 
-            // ⚠️ utilisateur test (à remplacer par $this->getUser())
+            // utilisateur test (à remplacer par $this->getUser())
             $user = $em->getRepository(User::class)->find(1);
             $reservation->setUser($user);
 
@@ -53,24 +52,24 @@ class ReservationController extends AbstractController
             return $this->redirectToRoute('front_reservation_list');
         }
 
-        return $this->render('frontOffice/reservation/new.html.twig', [
+        return $this->render('frontOffice/reservation/client/new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
-    // 🔹 Liste des réservations du client
+    // Liste des réservations du client
     #[Route('/list', name: 'list')]
     public function list(EntityManagerInterface $em): Response
     {
         $user = $em->getRepository(User::class)->find(1); // utilisateur test
         $reservations = $em->getRepository(Reservation::class)->findBy(['user' => $user]);
 
-        return $this->render('backOffice/reservation/client/list.html.twig', [
+        return $this->render('frontOffice/reservation/client/list.html.twig', [
             'reservations' => $reservations,
         ]);
     }
 
-    // 🔹 Modifier une réservation (client)
+    // Modifier une réservation (client)
     #[Route('/edit/{id}', name: 'edit')]
     public function edit(Reservation $reservation, Request $request, EntityManagerInterface $em): Response
     {
@@ -93,12 +92,12 @@ class ReservationController extends AbstractController
             return $this->redirectToRoute('front_reservation_list');
         }
 
-        return $this->render('backOffice/reservation/client/edit.html.twig', [
+        return $this->render('frontOffice/reservation/client/edit.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
-    // 🔹 Annuler une réservation (client)
+    // Annuler une réservation (client)
     #[Route('/cancel/{id}', name: 'cancel')]
     public function cancel(Reservation $reservation, EntityManagerInterface $em): Response
     {
@@ -114,11 +113,11 @@ class ReservationController extends AbstractController
         return $this->redirectToRoute('front_reservation_list');
     }
 
-    /* ============================================================
-       🧑‍💼 PROPRIÉTAIRE (Back Office)
-    ============================================================ */
 
-    // 🔹 Liste réservations propriétaire
+  //PROPRIÉTAIRE (Back Office)
+   
+
+    // Liste réservations propriétaire
     #[Route('/proprietaire', name: 'proprietaire_list')]
     public function proprietaireList(Request $request, EntityManagerInterface $em): Response
     {
@@ -131,21 +130,21 @@ class ReservationController extends AbstractController
             $reservations = $em->getRepository(Reservation::class)->findAll();
         }
 
-        return $this->render('backOffice/reservation/proprietaire/list.html.twig', [
+        return $this->render('frontOffice/reservation/proprietaire/list.html.twig', [
             'logements' => $logements,
             'reservations' => $reservations,
             'selectedLogement' => $logementId
         ]);
     }
 
-    // 🔹 Confirmer ou Annuler une réservation (directement depuis la liste)
+    //Confirmer ou Annuler une réservation (directement depuis la liste)
     #[Route('/proprietaire/action/{id}/{status}', name: 'proprietaire_action')]
     public function proprietaireAction(Reservation $reservation, string $status, EntityManagerInterface $em): Response
     {
         // Mettre à jour la réservation choisie
         $reservation->setStatus($status);
 
-        // ⚡ Si CONFIRMÉE → annuler les autres réservations en attente qui se chevauchent
+        // Si CONFIRMÉE → annuler les autres réservations en attente qui se chevauchent
         if ($status === 'CONFIRMÉE') {
             $autres = $em->getRepository(Reservation::class)->createQueryBuilder('r')
                 ->where('r.logement = :logement')
@@ -215,7 +214,7 @@ public function dashboard(EntityManagerInterface $em): Response
         ];
     }
 
-    return $this->render('backOffice/reservation/proprietaire/dashboard.html.twig', [
+    return $this->render('frontOffice/reservation/proprietaire/dashboard.html.twig', [
         'stats' => $stats,
     ]);
 }

@@ -1,0 +1,15 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Paiement annulé{% endblock %}
+
+{% block body %}
+<div class="container text-center mt-5">
+    <h2 class="text-danger mb-3">❌ Paiement annulé</h2>
+    <p class="lead">Votre commande n’a pas été réglée. Vous pouvez réessayer à tout moment.</p>
+    <div class="mt-4">
+        <a href="{{ path('commande_list') }}" class="btn btn-outline-secondary px-4">
+            <i class="bi bi-arrow-left-circle"></i> Retour à mes commandes
+        </a>
+    </div>
+</div>
+{% endblock %}

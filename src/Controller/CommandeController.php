@@ -13,22 +13,27 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/commande', name: 'commande_')]
 class CommandeController extends AbstractController
 {
-    // 🔹 Lister toutes les commandes (pour test ou admin)
+    // 🔹 Lister toutes les commandes pour le client
     #[Route('/', name: 'list')]
     public function list(EntityManagerInterface $em): Response
     {
-        $user = $em->getRepository(User::class)->find(1); // utilisateur test (client)
+        // 🔹 Remplacer par le user connecté si nécessaire
+        $user = $em->getRepository(User::class)->find(1);
+
         $commandes = $em->getRepository(Commande::class)->findBy(['user' => $user]);
 
-        return $this->render('backOffice/commande/list.html.twig', [
+        // ✅ Clé publique Stripe
+        $stripePublicKey = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? null;
+
+        return $this->render('frontOffice/commande/list.html.twig', [
             'commandes' => $commandes,
+            'stripe_public_key' => $stripePublicKey,
         ]);
     }
 
-    // 🔹 Générer une commande automatiquement lors d’une réservation confirmée
+    // 🔹 Générer une commande à partir d'une réservation confirmée
     public function createFromReservation(Reservation $reservation, EntityManagerInterface $em): void
     {
-        // Vérifie si commande déjà créée pour cette réservation
         $existing = $em->getRepository(Commande::class)->findOneBy(['reservation' => $reservation]);
         if ($existing) return;
 
@@ -36,8 +41,8 @@ class CommandeController extends AbstractController
         $commande->setDateDebut($reservation->getDateDebut());
         $commande->setDateFin($reservation->getDateFin());
         $commande->setPrixTotal($reservation->getPrixTotal());
-        $commande->setStatus('EN_COURS'); // statut par défaut
-        $commande->setPaymentMethode('Paiement à la livraison'); // temporaire
+        $commande->setStatus('EN_COURS');
+        $commande->setPaymentMethode('Carte (Stripe)');
         $commande->setPaymentStatus('EN_ATTENTE');
         $commande->setDateTransaction(new \DateTime());
         $commande->setReservation($reservation);
@@ -45,5 +50,17 @@ class CommandeController extends AbstractController
 
         $em->persist($commande);
         $em->flush();
+    }
+
+    #[Route('/success', name: 'commande_success')]
+    public function success(): Response
+    {
+        return $this->render('frontOffice/commande/success.html.twig');
+    }
+
+    #[Route('/cancel', name: 'commande_cancel')]
+    public function cancel(): Response
+    {
+        return $this->render('frontOffice/commande/cancel.html.twig');
     }
 }

@@ -1,8 +1,8 @@
-{% extends 'backOffice/base_admin.html.twig' %}
+{% extends 'frontOffice/base.html.twig' %}
 
 {% block title %}Modifier la Réservation{% endblock %}
 
-{% block admin_content %}
+{% block body %}
 
 <div class="container-fluid">
 
@@ -86,9 +86,10 @@
     Retour à la liste
 </a>
 
-                        <button class="btn btn-outline-primary fw-semibold px-4">
-                            Enregistrer
-                        </button>
+                        <button class="btn btn-outline-success fw-semibold px-4">
+    Enregistrer
+</button>
+
                     </div>
 
                     {{ form_end(form) }}
