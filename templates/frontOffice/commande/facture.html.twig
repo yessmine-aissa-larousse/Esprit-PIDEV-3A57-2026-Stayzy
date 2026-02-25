@@ -20,11 +20,11 @@
             border: 2px solid #27ae60;
         }
 
-        .client-info, .commande-info {
+        .client-info, .commande-info, .paiement-info {
             margin-bottom: 25px;
         }
 
-        .client-info p, .commande-info p {
+        .client-info p, .commande-info p, .paiement-info p {
             margin: 3px 0;
             font-size: 14px;
         }
@@ -74,15 +74,14 @@
 
 <div class="client-info">
     <p><strong>Numéro :</strong> {{ commande.id }}</p>
-    <p><strong>Date :</strong> {{ commande.dateTransaction ? commande.dateTransaction|date('d/m/Y') : 'N/A' }}</p>
+    <p><strong>Date :</strong> {{ commande.dateTransaction ? commande.dateTransaction|date('d/m/Y H:i') : 'N/A' }}</p>
     <p><strong>Client :</strong> {{ commande.user.nom }} {{ commande.user.prenom }}</p>
     <p><strong>Email :</strong> {{ commande.user.email }}</p>
 </div>
 
 <div class="commande-info">
     <p><strong>Logement :</strong> {{ commande.reservation.logement.titre }}</p>
-    <p><strong>Adresse :</strong> {{ commande.reservation.logement.adresse ? commande.reservation.logement.adresse|join(', ') : 'N/A' }}</p>
-    <p><strong>Propriétaire :</strong> {{ commande.reservation.logement.proprietaire.nom }}</p>
+<p><strong>Adresse :</strong> {{ commande.reservation.logement.adresse is iterable ? commande.reservation.logement.adresse|join(', ') : (commande.reservation.logement.adresse ?: 'N/A') }}</p>    <p><strong>Propriétaire :</strong> {{ commande.reservation.logement.proprietaire.nom }}</p>
     <p><strong>Date de début :</strong> {{ commande.dateDebut ? commande.dateDebut|date('d/m/Y') : 'N/A' }}</p>
     <p><strong>Date de fin :</strong> {{ commande.dateFin ? commande.dateFin|date('d/m/Y') : 'N/A' }}</p>
 
@@ -91,6 +90,12 @@
 
     {% set personnes = commande.reservation.nombrePersonnes ?: 1 %}
     <p><strong>Nombre de personnes :</strong> {{ personnes }}</p>
+</div>
+
+<div class="paiement-info">
+    <p><strong>Méthode de paiement :</strong> {{ commande.paymentMethode ?: 'N/A' }}</p>
+    <p><strong>Transaction ID :</strong> {{ commande.transactionId ?: 'N/A' }}</p>
+    <p><strong>Date Transaction :</strong> {{ commande.dateTransaction ? commande.dateTransaction|date('d/m/Y H:i') : 'N/A' }}</p>
 </div>
 
 <table>
