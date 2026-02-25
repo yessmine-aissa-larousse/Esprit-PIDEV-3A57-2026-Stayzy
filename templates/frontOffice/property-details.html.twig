@@ -868,8 +868,23 @@
 
                         <div class="booking-card">
                             <div class="booking-header">
-                                <div class="price">{{ logement.prix }} €</div>
-                                <div class="per">par nuit · toutes charges comprises</div>
+                                {% set promoActive = logement.promoActive %}
+                                {% if promoActive %}
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="text-decoration:line-through; opacity:.6; font-size:1rem;">{{ logement.prix }}€</span>
+                                        <span class="badge" style="background:#e53935; font-size:.78rem;"> -{{ promoActive.pourcentage }}%</span>
+                                    </div>
+                                    <div class="price">{{ promoActive.prixPromo }} €</div>
+                                    <div class="per">au lieu de {{ logement.prix }}€ · économisez {{ promoActive.economie }}€ !</div>
+                                    {% if promoActive.codePromo %}
+                                        <div style="background:rgba(255,255,255,.15); border-radius:8px; padding:6px 12px; margin-top:8px; font-size:.82rem;">
+                                             Code : <strong>{{ promoActive.codePromo }}</strong>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="price">{{ logement.prix }} €</div>
+                                    <div class="per">par nuit · toutes charges comprises</div>
+                                {% endif %}
                                 {% if logement.disponible %}
                                     <div class="avail">
                                         <i class="bi bi-check-circle-fill"></i> Disponible

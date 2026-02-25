@@ -71,6 +71,14 @@
                 background: #e9ecef;
                 margin: 5px 0;
             }
+            
+            .user-dropdown a[href*="promotion"] {
+                background: linear-gradient(135deg, #f0fdf4, #fff);
+            }
+            .user-dropdown a[href*="promotion"]:hover {
+                background: #e8f5ee;
+            }
+
         </style>
     {% endblock %}
 </head>
@@ -150,6 +158,19 @@
                                     </a>
                                     <a href="{{ path('proprietaire_logement_list') }}">
                                         <i class="bi bi-house-door me-2"></i>Mes Annonces
+                                    </a>
+
+                                    <div class="dropdown-divider"></div>
+
+                                    <!-- ⭐ NOUVEAU : Section Promotions -->
+                                    <div style="padding: 5px 20px; font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600;">
+                                        Promotions
+                                    </div>
+                                    <a href="{{ path('promotion_globale_list') }}" style="color: #077f46; font-weight: 600;">
+                                        <i class="bi bi-tags-fill me-2"></i>Toutes mes promotions
+                                    </a>
+                                    <a href="{{ path('promotion_globale_appliquer_tous') }}">
+                                        <i class="bi bi-lightning-fill me-2"></i>Appliquer à tous
                                     </a>
                                     
                                     <div class="dropdown-divider"></div>

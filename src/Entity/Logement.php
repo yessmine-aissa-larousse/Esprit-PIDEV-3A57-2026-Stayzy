@@ -87,6 +87,9 @@ class Logement
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoris')]
     private Collection $utilisateursFavoris;
 
+    #[ORM\OneToMany(targetEntity: Promotion::class, mappedBy: 'logement', orphanRemoval: true)]
+    private Collection $promotions;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -94,6 +97,7 @@ class Logement
         $this->noteMoyenne = null;
         $this->totalAvis = 0;
         $this->utilisateursFavoris = new ArrayCollection();
+        $this->promotions = new ArrayCollection();
     }
 
     // ========== Getters/Setters existants ==========
@@ -317,5 +321,59 @@ class Logement
     public function estEnFavoriPour(User $user): bool
     {
         return $this->utilisateursFavoris->contains($user);
+    }
+
+    public function getPromotions(): Collection
+    {
+        return $this->promotions;
+    }
+
+    public function addPromotion(Promotion $promotion): static
+    {
+        if (!$this->promotions->contains($promotion)) {
+            $this->promotions->add($promotion);
+            $promotion->setLogement($this);
+        }
+        return $this;
+    }
+
+    public function removePromotion(Promotion $promotion): static
+    {
+        if ($this->promotions->removeElement($promotion)) {
+            if ($promotion->getLogement() === $this) {
+                $promotion->setLogement(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getPromoActive(): ?\App\Entity\Promotion
+    {
+        $now = new \DateTime();
+        foreach ($this->promotions as $promo) {
+            if ($promo->isActive()
+                && $promo->getDateDebut() !== null
+                && $promo->getDateFin() !== null) {
+                $debut = clone $promo->getDateDebut(); $debut->setTime(0, 0, 0);
+                $fin   = clone $promo->getDateFin();   $fin->setTime(23, 59, 59);
+                if ($debut <= $now && $now <= $fin) {
+                    return $promo;
+                }
+            }
+        }
+        return null;
+    }
+
+        /**
+     * Retourne le prix final (avec promo si en cours, sinon prix normal)
+     * Ta camarade appelle juste logement.getPrixFinal() ou logement.prixFinal en Twig
+     */
+    public function getPrixFinal(): float
+    {
+        $promo = $this->getPromoActive();
+        if ($promo !== null) {
+            return $promo->getPrixPromo();
+        }
+        return (float) $this->prix;
     }
 }

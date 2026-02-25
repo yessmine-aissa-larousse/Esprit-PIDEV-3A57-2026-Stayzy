@@ -211,6 +211,10 @@
                                                     {% if logement.categorie %}
                                                         <span class="status-badge featured">{{ logement.categorie.nom }}</span>
                                                     {% endif %}
+                                                    {% set promoActive = logement.promoActive %}
+                                                    {% if promoActive %}
+                                                        <span class="status-badge" style="background:#e53935; color:#fff;"> -{{ promoActive.pourcentage }}%</span>
+                                                    {% endif %}
                                                 </div>
                                                 
                                                 <div class="property-actions">
@@ -241,8 +245,15 @@
                                         <div class="property-details">
                                             <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
                                                 <div class="property-header">
-                                                    <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
-                                                    {% if logement.categorie %}
+                                                    {% set promoActive = logement.promoActive %}
+                                                    {% if promoActive %}
+                                                        <div class="property-price">
+                                                            {{ promoActive.prixPromo }}€ <span>/nuit</span>
+                                                            <span style="text-decoration:line-through; color:#9ca3af; font-size:.8rem; font-weight:400; margin-left:4px;">{{ logement.prix }}€</span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
+                                                    {% endif %}                                                    {% if logement.categorie %}
                                                         <div class="property-type">{{ logement.categorie.nom }}</div>
                                                     {% endif %}
                                                 </div>
