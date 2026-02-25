@@ -14,8 +14,8 @@ final class ForumAiAssistant
     private const POST_CONTEXT_LIMIT = 20;
     private const COMMENT_CONTEXT_LIMIT = 25;
 
-    private const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-    private const OPENAI_MODEL = 'gpt-4o-mini';
+    private const OPENAI_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    private const OPENAI_MODEL = 'meta-llama/llama-3.3-70b-instruct';
 
     private readonly string $apiKey;
     private readonly string $apiUrl;

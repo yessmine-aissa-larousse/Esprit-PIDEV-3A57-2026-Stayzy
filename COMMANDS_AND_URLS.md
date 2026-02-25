@@ -61,6 +61,10 @@ Un email est envoyé à ADMIN_EMAIL quand un post/commentaire atteint 5 dislikes
 
 Chatbot forum : cliquez sur l’icône robot sur les pages forum. Sans clé : réponses basiques ("Combien de posts ?", etc.). Avec OpenAI : ajouter `OPENAI_API_KEY=sk-...` dans `.env` pour des réponses plus complètes.
 
+docker compose exec php php bin/console app:test-openai
+php -r 'echo getenv("OPENAI_API_KEY") . "
+\n";'
+
 ## Cache & Débogage
 
 ```bash
@@ -149,5 +153,8 @@ docker compose up -d
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:schema:create   # si besoin
 ```
+docker exec -it stayzy_php sh
+docker exec -it stayzy_mysql mysql -u root -p
+docker exec -it stayzy_mysql bash
 
 Puis ouvrir : **http://localhost:8000**
