@@ -77,9 +77,11 @@
                 {% if app.user and app.user.isClient() %}
                     <li>
                         <a href="{{ path('comparateur_view') }}" class="btn-comparer">
-                            📊 Comparer
+                            Comparer
                             <span class="badge bg-primary comparateur-count-badge" style="display:none; font-size: 0.7em; margin-left: 5px;">0</span>
                         </a>
+                        <li><a href="{{ path('commande_list') }}">Paiement</a></li>
+                        
                     </li>
                 {% endif %}
 

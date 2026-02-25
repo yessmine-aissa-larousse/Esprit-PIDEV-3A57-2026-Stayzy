@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Controller;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Symfony\Component\HttpFoundation\Response;
 
 use App\Entity\Commande;
 use App\Entity\Reservation;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/commande', name: 'commande_')]
@@ -18,7 +20,7 @@ class CommandeController extends AbstractController
     public function list(EntityManagerInterface $em): Response
     {
         // 🔹 Remplacer par le user connecté si nécessaire
-        $user = $em->getRepository(User::class)->find(1);
+        $user = $this->getUser();
 
         $commandes = $em->getRepository(Commande::class)->findBy(['user' => $user]);
 
@@ -63,4 +65,31 @@ class CommandeController extends AbstractController
     {
         return $this->render('frontOffice/commande/cancel.html.twig');
     }
+
+#[Route('/commande/{id}/facture', name: 'commande_facture')]
+public function facture(Commande $commande): Response
+{
+    if ($commande->getPaymentStatus() !== 'PAYÉ') {
+        throw $this->createAccessDeniedException();
+    }
+
+    $options = new Options();
+    $options->set('defaultFont', 'Arial');
+
+    $dompdf = new Dompdf($options);
+
+    $html = $this->renderView('frontOffice/commande/facture.html.twig', [
+    'commande' => $commande
+]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return new Response(
+        $dompdf->stream("facture_commande_".$commande->getId().".pdf", [
+            "Attachment" => true
+        ])
+    );
+}
 }
