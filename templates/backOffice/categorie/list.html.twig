@@ -1,0 +1,153 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Liste des catégories - BackOffice{% endblock %}
+
+{% block admin_content %}
+    {# App Content Header #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Liste des catégories</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="#">Catégories</a></li>
+                        <li class="breadcrumb-item active">Liste</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# App Content #}
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    
+                    {# Messages Flash #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {# Card avec le tableau #}
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Toutes les catégories</h3>
+                            <div class="card-tools">
+                                <a href="{{ path('admin_categorie_add') }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-plus-circle"></i> Ajouter une catégorie
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 10px">#</th>
+                                        <th>Icône</th>
+                                        <th>Nom</th>
+                                        <th>Description</th>
+                                        <th style="width: 120px">Nb Logements</th>
+                                        <th style="width: 150px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if categories is empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">
+                                                <i class="bi bi-inbox fs-1 text-muted"></i>
+                                                <p class="text-muted mt-2">Aucune catégorie disponible</p>
+                                                <a href="{{ path('admin_categorie_add') }}" class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-plus-circle"></i> Ajouter votre première catégorie
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        {% for categorie in categories %}
+                                            <tr class="align-middle">
+                                                <td>{{ categorie.id }}</td>
+                                                
+                                                {# Icône #}
+                                                <td>
+                                                    {% if categorie.icone %}
+                                                        <img src="{{ asset('uploads/categories/' ~ categorie.icone) }}" 
+                                                             alt="Icône {{ categorie.nom }}" 
+                                                             style="width: 50px; height: 50px; object-fit: contain;">
+                                                    {% else %}
+                                                        <i class="bi bi-question-circle fs-3 text-muted"></i>
+                                                    {% endif %}
+                                                </td>
+                                                
+                                                {# Nom #}
+                                                <td>
+                                                    <strong>{{ categorie.nom }}</strong>
+                                                </td>
+                                                
+                                                {# Description #}
+                                                <td>
+                                                    {% if categorie.description %}
+                                                        <small class="text-muted">
+                                                            {{ categorie.description|length > 80 ? categorie.description|slice(0, 80) ~ '...' : categorie.description }}
+                                                        </small>
+                                                    {% else %}
+                                                        <small class="text-muted">Aucune description</small>
+                                                    {% endif %}
+                                                </td>
+                                                
+                                                {# Nombre de logements #}
+                                                <td class="text-center">
+                                                    <span class="badge text-bg-info">
+                                                        {{ categorie.logements|length }} logement(s)
+                                                    </span>
+                                                </td>
+                                                
+                                                {# Actions #}
+                                                <td>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="{{ path('admin_categorie_edit', {id: categorie.id}) }}" 
+                                                           class="btn btn-warning" 
+                                                           title="Modifier">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                        <a href="{{ path('admin_categorie_delete', {id: categorie.id}) }}" 
+                                                           class="btn btn-danger" 
+                                                           title="Supprimer"
+                                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {# Footer avec statistiques #}
+                        <div class="card-footer clearfix">
+                            <div class="float-start">
+                                <strong>Total : {{ categories|length }} catégorie(s)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Ajouter une catégorie{% endblock %}
+
+{% block admin_content %}
+    {# App Content Header #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Ajouter une catégorie</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('admin_categorie_list') }}">Catégories</a></li>
+                        <li class="breadcrumb-item active">Ajouter</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# App Content #}
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+
+                    {# Messages Flash #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                    
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        
+                        {# CARD : Informations de la catégorie #}
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Informations de la catégorie</div>
+                            </div>
+                            <div class="card-body">
+                                
+                                {# Nom #}
+                                <div class="mb-3">
+                                    {{ form_label(form.nom) }}
+                                    {{ form_widget(form.nom) }}
+                                    {% if form.nom.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1">
+                                            {{ form_errors(form.nom) }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {# Description #}
+                                <div class="mb-3">
+                                    {{ form_label(form.description) }}
+                                    {{ form_widget(form.description) }}
+                                    {% if form.description.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1">
+                                            {{ form_errors(form.description) }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {# Icône #}
+                                <div class="mb-3">
+                                    {{ form_label(form.icone) }}
+                                    {{ form_widget(form.icone) }}
+                                    <div class="form-text">{{ form_help(form.icone) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Boutons d'action #}
+                        <div class="card">
+                            <div class="card-footer">
+                                {{ form_widget(form.save) }}
+                                <a href="{{ path('admin_categorie_list') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Annuler
+                                </a>
+                            </div>
+                        </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

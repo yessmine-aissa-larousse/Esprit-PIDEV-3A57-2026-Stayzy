@@ -1,0 +1,451 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Toutes mes promotions — Stayzy{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+:root {
+    --green:      #077f46;
+    --green-dark: #055c32;
+    --green-soft: #e8f5ee;
+    --red:        #e53935;
+    --red-soft:   #fff0f0;
+    --gold:       #f59e0b;
+    --gold-soft:  #fffbeb;
+    --blue:       #3b82f6;
+    --blue-soft:  #eff6ff;
+    --gray:       #6b7280;
+    --border:     #e5e7eb;
+    --bg:         #f7f8fa;
+    --white:      #ffffff;
+    --radius:     14px;
+    --shadow:     0 2px 16px rgba(0,0,0,.07);
+    --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+}
+.page-title { display: none !important; }
+
+/* ── Header ── */
+.pg-header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 44px 0 36px; color: #fff;
+    position: relative; overflow: hidden;
+}
+.pg-header::before {
+    content: ''; position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px; border-radius: 50%;
+    background: rgba(255,255,255,.04);
+}
+.pg-header .pg-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50px; padding: 4px 14px;
+    font-size: .75rem; font-weight: 600; letter-spacing: .05em;
+    text-transform: uppercase; margin-bottom: 14px; color: rgba(255,255,255,.85);
+}
+.pg-header h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px; }
+.pg-header p  { opacity: .65; margin: 0; font-size: .93rem; }
+
+.btn-apply-all {
+    background: var(--gold); color: #1e293b;
+    border: none; border-radius: 11px;
+    padding: 12px 24px; font-weight: 700; font-size: .9rem;
+    cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 14px rgba(245,158,11,.4);
+}
+.btn-apply-all:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,.5); color: #1e293b; }
+
+/* ── Stats ── */
+.stats-row {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+}
+.stats-row .inner {
+    display: flex; max-width: 1200px;
+    margin: 0 auto; padding: 0 24px;
+}
+.stat-box {
+    flex: 1; padding: 20px 24px;
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+}
+.stat-box:last-child { border-right: none; }
+.stat-box .sb-ico {
+    width: 44px; height: 44px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+}
+.sb-ico.green  { background: var(--green-soft); color: var(--green); }
+.sb-ico.gold   { background: var(--gold-soft);  color: var(--gold);  }
+.sb-ico.red    { background: var(--red-soft);   color: var(--red);   }
+.sb-ico.blue   { background: var(--blue-soft);  color: var(--blue);  }
+.sb-ico.dark   { background: #f1f5f9; color: #475569; }
+.stat-box .sb-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.stat-box .sb-lbl { font-size: .75rem; color: var(--gray); margin-top: 3px; }
+
+/* ── Body ── */
+.pg-body { padding: 36px 0 60px; background: var(--bg); min-height: 60vh; }
+
+/* ── Filtres ── */
+.filter-bar {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-bar span { font-size: .82rem; font-weight: 600; color: var(--gray); margin-right: 4px; }
+.filter-btn {
+    border: 1.5px solid var(--border); background: var(--white);
+    border-radius: 50px; padding: 6px 16px;
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    transition: all .15s; color: #374151;
+}
+.filter-btn:hover, .filter-btn.active { background: #1e293b; border-color: #1e293b; color: #fff; }
+.filter-btn.f-active:hover, .filter-btn.f-active.active   { background: var(--green); border-color: var(--green); }
+.filter-btn.f-future:hover, .filter-btn.f-future.active   { background: var(--gold);  border-color: var(--gold);  color: #1e293b; }
+.filter-btn.f-expiree:hover, .filter-btn.f-expiree.active { background: var(--gray);  border-color: var(--gray);  color: #fff; }
+
+/* ── Table ── */
+.promo-table-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.promo-table-card .table-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+}
+.promo-table-card .table-header h3 {
+    font-size: 1rem; font-weight: 700; margin: 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.promo-table-card .table-header .count-badge {
+    background: #1e293b; color: #fff;
+    border-radius: 50px; padding: 2px 10px; font-size: .75rem; font-weight: 700;
+}
+
+table.promo-tbl { width: 100%; border-collapse: collapse; }
+table.promo-tbl thead th {
+    background: #f8fafc; padding: 12px 16px;
+    font-size: .75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    color: var(--gray); border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+table.promo-tbl tbody tr { transition: background .12s; }
+table.promo-tbl tbody tr:hover { background: #fafafa; }
+table.promo-tbl tbody td {
+    padding: 14px 16px; border-bottom: 1px solid #f1f5f9;
+    font-size: .88rem; vertical-align: middle;
+}
+table.promo-tbl tbody tr:last-child td { border-bottom: none; }
+
+/* Logement pill */
+.logement-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 10px; font-size: .8rem; font-weight: 600;
+    text-decoration: none; color: #374151; transition: border-color .15s;
+    max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.logement-pill:hover { border-color: var(--green); color: var(--green); }
+.logement-pill img {
+    width: 24px; height: 24px; border-radius: 4px; object-fit: cover; flex-shrink: 0;
+}
+.logement-pill .lp-placeholder {
+    width: 24px; height: 24px; border-radius: 4px;
+    background: var(--green-soft); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; flex-shrink: 0;
+}
+
+/* Statut badge */
+.st-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .72rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 50px;
+    text-transform: uppercase; letter-spacing: .04em;
+    white-space: nowrap;
+}
+.st-active   { background: #d1fae5; color: #065f46; }
+.st-future   { background: #fef3c7; color: #92400e; }
+.st-expiree  { background: #f3f4f6; color: #6b7280; }
+.st-inactive { background: #f3f4f6; color: #6b7280; }
+
+/* Pct pill */
+.pct-pill {
+    display: inline-flex; align-items: center;
+    background: var(--red-soft); color: var(--red);
+    border-radius: 50px; padding: 3px 10px;
+    font-weight: 800; font-size: .88rem;
+}
+
+/* Prix */
+.prix-old { text-decoration: line-through; color: var(--gray); font-size: .8rem; }
+.prix-new { font-weight: 700; color: var(--green); font-size: .95rem; }
+
+/* Actions inline */
+.tbl-actions { display: flex; gap: 6px; align-items: center; }
+.tbl-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: .82rem; color: var(--gray);
+    text-decoration: none; transition: all .15s;
+}
+.tbl-btn:hover.edit   { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+.tbl-btn:hover.toggle { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+.tbl-btn:hover.del    { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+
+/* Empty state */
+.empty-state {
+    text-align: center; padding: 64px 20px;
+    background: var(--white); border-radius: var(--radius);
+    border: 2px dashed var(--border);
+}
+.empty-state .es-icon { font-size: 3rem; margin-bottom: 16px; }
+.empty-state h4 { font-weight: 700; margin-bottom: 8px; }
+.empty-state p  { color: var(--gray); margin-bottom: 24px; }
+
+@media (max-width: 768px) {
+    .stats-row .inner { flex-wrap: wrap; }
+    .stat-box { flex: 1 1 45%; border-bottom: 1px solid var(--border); }
+    .promo-table-card { overflow-x: auto; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── Header ── #}
+<div class="pg-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div style="position:relative;z-index:1;">
+                <div class="pg-label"><i class="bi bi-tags-fill"></i> Vision globale</div>
+                <h1>Toutes mes promotions</h1>
+                <p>Gérez l'ensemble des promotions sur vos {{ logements|length }} logement{{ logements|length > 1 ? 's' : '' }}</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap align-items-center" style="position:relative;z-index:1;">
+                <a href="{{ path('proprietaire_logement_list') }}"
+                   style="background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.25); color:#fff;
+                          border-radius:10px; padding:10px 18px; font-weight:600; font-size:.85rem;
+                          text-decoration:none; display:inline-flex; align-items:center; gap:7px;">
+                    <i class="bi bi-house-door"></i> Mes logements
+                </a>
+                <a href="{{ path('promotion_globale_appliquer_tous') }}" class="btn-apply-all">
+                    <i class="bi bi-lightning-fill"></i> Appliquer à tous les logements
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Stats ── #}
+<div class="stats-row">
+    <div class="inner">
+        <div class="stat-box">
+            <div class="sb-ico green"><i class="bi bi-lightning-fill"></i></div>
+            <div><div class="sb-val">{{ nbActives }}</div><div class="sb-lbl">En cours</div></div>
+        </div>
+        <div class="stat-box">
+            <div class="sb-ico gold"><i class="bi bi-clock-fill"></i></div>
+            <div><div class="sb-val">{{ nbFutures }}</div><div class="sb-lbl">À venir</div></div>
+        </div>
+        <div class="stat-box">
+            <div class="sb-ico red"><i class="bi bi-archive-fill"></i></div>
+            <div><div class="sb-val">{{ nbExpirees }}</div><div class="sb-lbl">Expirées</div></div>
+        </div>
+        <div class="stat-box">
+            <div class="sb-ico blue"><i class="bi bi-collection-fill"></i></div>
+            <div><div class="sb-val">{{ promotions|length }}</div><div class="sb-lbl">Total promos</div></div>
+        </div>
+        <div class="stat-box">
+            <div class="sb-ico dark"><i class="bi bi-house-door-fill"></i></div>
+            <div><div class="sb-val">{{ logements|length }}</div><div class="sb-lbl">Logements</div></div>
+        </div>
+    </div>
+</div>
+
+{# ── Body ── #}
+<div class="pg-body">
+    <div class="container">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-4 rounded-3">
+                <i class="bi bi-check-circle-fill"></i> {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 rounded-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {% if promotions is empty %}
+            <div class="empty-state">
+                <div class="es-icon">🏷️</div>
+                <h4>Aucune promotion créée</h4>
+                <p>Créez votre première promotion depuis la page d'un logement, ou appliquez-en une à tous vos logements d'un coup.</p>
+                <a href="{{ path('promotion_globale_appliquer_tous') }}" class="btn-apply-all" style="display:inline-flex;">
+                    <i class="bi bi-lightning-fill"></i> Appliquer une promo à tous
+                </a>
+            </div>
+        {% else %}
+
+            {# Filtres #}
+            <div class="filter-bar">
+                <span>Filtrer :</span>
+                <button class="filter-btn active" onclick="filterPromos('all', this)">Toutes ({{ promotions|length }})</button>
+                <button class="filter-btn f-active" onclick="filterPromos('active', this)">🟢 En cours ({{ nbActives }})</button>
+                <button class="filter-btn f-future" onclick="filterPromos('future', this)">🟡 À venir ({{ nbFutures }})</button>
+                <button class="filter-btn f-expiree" onclick="filterPromos('expiree', this)">⚫ Expirées ({{ nbExpirees }})</button>
+            </div>
+
+            <div class="promo-table-card">
+                <div class="table-header">
+                    <h3>
+                        <i class="bi bi-table"></i> Liste des promotions
+                        <span class="count-badge">{{ promotions|length }}</span>
+                    </h3>
+                </div>
+                <table class="promo-tbl">
+                    <thead>
+                        <tr>
+                            <th>Logement</th>
+                            <th>Promotion</th>
+                            <th>Réduction</th>
+                            <th>Prix</th>
+                            <th>Période</th>
+                            <th>Code</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promo-tbody">
+                        {% for promo in promotions %}
+                            {% set statut = promo.statutLabel %}
+                            <tr data-statut="{{ statut }}">
+
+                                {# Logement #}
+                                <td>
+                                    <a href="{{ path('promotion_list', {logementId: promo.logement.id}) }}"
+                                       class="logement-pill" title="{{ promo.logement.titre }}">
+                                        {% if promo.logement.photoPrincipale %}
+                                            <img src="{{ asset('uploads/logements/' ~ promo.logement.photoPrincipale) }}"
+                                                 alt="{{ promo.logement.titre }}">
+                                        {% else %}
+                                            <span class="lp-placeholder"><i class="bi bi-house"></i></span>
+                                        {% endif %}
+                                        {{ promo.logement.titre|slice(0,22) }}{% if promo.logement.titre|length > 22 %}…{% endif %}
+                                    </a>
+                                </td>
+
+                                {# Titre promo #}
+                                <td style="font-weight:600; max-width:160px;">
+                                    {{ promo.titre|slice(0,28) }}{% if promo.titre|length > 28 %}…{% endif %}
+                                </td>
+
+                                {# Réduction #}
+                                <td><span class="pct-pill">-{{ promo.pourcentage }}%</span></td>
+
+                                {# Prix #}
+                                <td>
+                                    <div class="prix-old">{{ promo.logement.prix }}€</div>
+                                    <div class="prix-new">{{ promo.prixPromo }}€/nuit</div>
+                                </td>
+
+                                {# Période #}
+                                <td style="white-space:nowrap; font-size:.8rem; color:var(--gray);">
+                                    <i class="bi bi-calendar-event" style="color:var(--green);"></i>
+                                    {{ promo.dateDebut|date('d/m/Y') }}<br>
+                                    <i class="bi bi-calendar-x" style="color:var(--red);"></i>
+                                    {{ promo.dateFin|date('d/m/Y') }}
+                                </td>
+
+                                {# Code promo #}
+                                <td>
+                                    {% if promo.codePromo %}
+                                        <span style="font-family:monospace; font-weight:700; font-size:.82rem;
+                                                     background:#1e293b; color:#fff; border-radius:6px; padding:3px 8px;">
+                                            {{ promo.codePromo }}
+                                        </span>
+                                    {% else %}
+                                        <span style="color:var(--gray); font-size:.8rem;">—</span>
+                                    {% endif %}
+                                </td>
+
+                                {# Statut #}
+                                <td>
+                                    <span class="st-badge st-{{ statut }}">
+                                        {% if statut == 'active' %}⚡ En cours
+                                        {% elseif statut == 'future' %}🕐 À venir
+                                        {% elseif statut == 'expiree' %}📦 Expirée
+                                        {% else %}⏸ Inactive{% endif %}
+                                    </span>
+                                </td>
+
+                                {# Actions #}
+                                <td>
+                                    <div class="tbl-actions">
+                                        {# Modifier — redirige vers la page promo du logement #}
+                                        <a href="{{ path('promotion_edit', {logementId: promo.logement.id, id: promo.id}) }}"
+                                           class="tbl-btn edit" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        {# Toggle #}
+                                        <form method="post"
+                                              action="{{ path('promotion_globale_toggle', {id: promo.id}) }}"
+                                              style="display:contents">
+                                            <button type="submit" class="tbl-btn toggle"
+                                                    title="{{ promo.active ? 'Désactiver' : 'Activer' }}">
+                                                <i class="bi bi-{{ promo.active ? 'pause-circle' : 'play-circle' }}"></i>
+                                            </button>
+                                        </form>
+
+                                        {# Supprimer #}
+                                        <form method="post"
+                                              action="{{ path('promotion_globale_delete', {id: promo.id}) }}"
+                                              style="display:contents"
+                                              onsubmit="return confirm('Supprimer cette promotion ?')">
+                                            <button type="submit" class="tbl-btn del" title="Supprimer">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+function filterPromos(statut, btn) {
+    // Mettre à jour les boutons
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Filtrer les lignes
+    document.querySelectorAll('#promo-tbody tr').forEach(function(row) {
+        if (statut === 'all') {
+            row.style.display = '';
+        } else {
+            row.style.display = row.dataset.statut === statut ? '' : 'none';
+        }
+    });
+}
+</script>
+{% endblock %}
