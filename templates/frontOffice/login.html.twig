@@ -194,7 +194,6 @@
 {% block javascripts %}
 {{ parent() }}
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
 <script>
 function togglePassword() {
     const pwd = document.getElementById('password');
@@ -211,76 +210,46 @@ function togglePassword() {
 // ===== FACE LOGIN =====
 let faceStream = null;
 let faceDetectionInterval = null;
-let modelsLoaded = false;
-
-async function loadFaceModels() {
-    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-    await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-    ]);
-    modelsLoaded = true;
-}
 
 async function startFaceLogin() {
     const modal = new bootstrap.Modal(document.getElementById('faceModal'));
     modal.show();
 
     document.getElementById('faceStatus').innerHTML =
-        '<i class="bi bi-hourglass me-2"></i>Chargement des modèles IA...';
-    document.getElementById('loadingFace').classList.remove('d-none');
-
-    if (!modelsLoaded) await loadFaceModels();
-
-    document.getElementById('loadingFace').classList.add('d-none');
-    document.getElementById('faceStatus').innerHTML =
         '<i class="bi bi-camera me-2"></i>Positionnez votre visage dans le cadre';
 
     faceStream = await navigator.mediaDevices.getUserMedia({ video: true });
     document.getElementById('faceVideo').srcObject = faceStream;
 
-    faceDetectionInterval = setInterval(detectAndLogin, 1000);
+    faceDetectionInterval = setInterval(detectAndLogin, 2000);
 }
 
 async function detectAndLogin() {
     const video = document.getElementById('faceVideo');
-    const canvas = document.getElementById('faceCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-    if (!detection) {
-        document.getElementById('faceStatus').className = 'alert alert-warning mb-3';
-        document.getElementById('faceStatus').innerHTML =
-            '<i class="bi bi-exclamation-triangle me-2"></i>Aucun visage détecté';
-        return;
-    }
-
-    const { x, y, width, height } = detection.detection.box;
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x, y, width, height);
-
-    document.getElementById('faceStatus').className = 'alert alert-success mb-3';
+    document.getElementById('faceStatus').className = 'alert alert-info mb-3';
     document.getElementById('faceStatus').innerHTML =
-        '<i class="bi bi-check-circle me-2"></i>Visage détecté! Vérification...';
+        '<i class="bi bi-hourglass me-2"></i>Analyse en cours...';
 
     clearInterval(faceDetectionInterval);
+
+    // Capturer l'image en base64
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
 
     const response = await fetch('/face/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+        body: JSON.stringify({ image: imageBase64 })
     });
 
     const result = await response.json();
 
     if (result.success) {
+        document.getElementById('faceStatus').className = 'alert alert-success mb-3';
         document.getElementById('faceStatus').innerHTML =
             '<i class="bi bi-check-circle-fill me-2"></i>Bienvenue ' + result.name + '! Redirection...';
         stopCamera();
@@ -288,9 +257,9 @@ async function detectAndLogin() {
     } else {
         document.getElementById('faceStatus').className = 'alert alert-danger mb-3';
         document.getElementById('faceStatus').innerHTML =
-            '<i class="bi bi-x-circle me-2"></i>Visage non reconnu. Réessayez.';
+            '<i class="bi bi-x-circle me-2"></i>' + (result.error || 'Visage non reconnu') + '. Réessayez.';
         setTimeout(() => {
-            faceDetectionInterval = setInterval(detectAndLogin, 1000);
+            faceDetectionInterval = setInterval(detectAndLogin, 2000);
         }, 2000);
     }
 }

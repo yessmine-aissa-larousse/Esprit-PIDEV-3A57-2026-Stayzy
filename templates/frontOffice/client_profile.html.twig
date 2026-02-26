@@ -241,7 +241,6 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
 <script>
 function previewImage(event) {
     const preview = document.getElementById('preview');
@@ -257,28 +256,11 @@ function previewImage(event) {
 
 // ===== FACE SAVE =====
 let saveStream = null;
-let saveModelsLoaded = false;
-
-async function loadSaveModels() {
-    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-    await Promise.all([
-        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-    ]);
-    saveModelsLoaded = true;
-}
 
 async function startFaceSave() {
     const modal = new bootstrap.Modal(document.getElementById('faceRegisterModal'));
     modal.show();
 
-    document.getElementById('saveStatus').innerHTML =
-        '<i class="bi bi-hourglass me-2"></i>Chargement des modèles IA...';
-
-    if (!saveModelsLoaded) await loadSaveModels();
-
-    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
     document.getElementById('saveStatus').innerHTML =
         '<i class="bi bi-camera me-2"></i>Positionnez votre visage et cliquez Capturer';
 
@@ -291,25 +273,19 @@ async function captureFace() {
     document.getElementById('loadingSave').classList.remove('d-none');
     document.getElementById('saveStatus').className = 'alert alert-info mb-3';
     document.getElementById('saveStatus').innerHTML =
-        '<i class="bi bi-hourglass me-2"></i>Analyse du visage...';
+        '<i class="bi bi-hourglass me-2"></i>Envoi à l\'API...';
 
-    const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-    if (!detection) {
-        document.getElementById('loadingSave').classList.add('d-none');
-        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
-        document.getElementById('saveStatus').innerHTML =
-            '<i class="bi bi-x-circle me-2"></i>Aucun visage détecté! Réessayez.';
-        return;
-    }
+    // Capturer l'image en base64
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
 
     const response = await fetch('/face/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ descriptor: Array.from(detection.descriptor) })
+        body: JSON.stringify({ image: imageBase64 })
     });
 
     const result = await response.json();

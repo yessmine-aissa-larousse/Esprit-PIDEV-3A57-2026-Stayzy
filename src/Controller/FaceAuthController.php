@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,7 +12,9 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class FaceAuthController extends AbstractController
 {
-    // Sauvegarder le descripteur facial lors de l'inscription
+    private string $flaskUrl = 'http://127.0.0.1:5000';
+
+    // ─── Sauvegarder le descripteur via Flask ─────────────
     #[Route('/face/save', name: 'face_save', methods: ['POST'])]
     public function saveFace(
         Request $request,
@@ -25,46 +26,75 @@ class FaceAuthController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        $descriptor = $data['descriptor'] ?? null;
+        $imageBase64 = $data['image'] ?? null;
 
-        if (!$descriptor) {
-            return new JsonResponse(['error' => 'Pas de visage détecté'], 400);
+        if (!$imageBase64) {
+            return new JsonResponse(['error' => 'Pas d\'image reçue'], 400);
         }
 
-        $user->setFaceDescriptor(json_encode($descriptor));
+        // Envoyer l'image à Flask pour extraire le descriptor
+        $flaskResponse = $this->callFlask('/extract-descriptor', [
+            'image' => $imageBase64
+        ]);
+
+        if (!($flaskResponse['success'] ?? false)) {
+            return new JsonResponse([
+                'error' => $flaskResponse['error'] ?? 'Visage non détecté'
+            ], 400);
+        }
+
+        // Sauvegarder le descriptor en base
+        $user->setFaceDescriptor(json_encode($flaskResponse['descriptor']));
         $em->flush();
 
         return new JsonResponse(['success' => true]);
     }
 
-    // Vérifier le visage lors du login
+    // ─── Login par visage via Flask ───────────────────────
     #[Route('/face/login', name: 'face_login', methods: ['POST'])]
     public function faceLogin(
         Request $request,
         UserRepository $userRepository,
-        EntityManagerInterface $em,
         Security $security
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
-        $descriptor = $data['descriptor'] ?? null;
+        $imageBase64 = $data['image'] ?? null;
 
-        if (!$descriptor) {
-            return new JsonResponse(['error' => 'Pas de visage détecté'], 400);
+        if (!$imageBase64) {
+            return new JsonResponse(['error' => 'Pas d\'image reçue'], 400);
         }
 
-        // Chercher tous les users avec un face descriptor
+        // Extraire le descriptor du visage en temps réel via Flask
+        $liveResponse = $this->callFlask('/extract-descriptor', [
+            'image' => $imageBase64
+        ]);
+
+        if (!($liveResponse['success'] ?? false)) {
+            return new JsonResponse(['error' => 'Visage non détecté'], 400);
+        }
+
+        $liveDescriptor = $liveResponse['descriptor'];
+
+        // Comparer avec tous les users en base
         $users = $userRepository->findAll();
         $bestMatch = null;
-        $bestDistance = 0.6; // seuil de similarité
+        $bestDistance = PHP_FLOAT_MAX;
 
         foreach ($users as $user) {
             if (!$user->getFaceDescriptor()) continue;
 
             $savedDescriptor = json_decode($user->getFaceDescriptor(), true);
-            $distance = $this->euclideanDistance($descriptor, $savedDescriptor);
 
-            if ($distance < $bestDistance) {
-                $bestDistance = $distance;
+            // Comparer via Flask
+            $compareResponse = $this->callFlask('/compare-faces', [
+                'descriptor1' => $liveDescriptor,
+                'descriptor2' => $savedDescriptor
+            ]);
+
+            if (!($compareResponse['success'] ?? false)) continue;
+
+            if ($compareResponse['verified'] && $compareResponse['distance'] < $bestDistance) {
+                $bestDistance = $compareResponse['distance'];
                 $bestMatch = $user;
             }
         }
@@ -90,18 +120,25 @@ class FaceAuthController extends AbstractController
         }
 
         return new JsonResponse([
-            'success' => true,
+            'success'  => true,
             'redirect' => $redirect,
-            'name' => $bestMatch->getPrenom()
+            'name'     => $bestMatch->getPrenom(),
+            'distance' => $bestDistance
         ]);
     }
 
-    private function euclideanDistance(array $a, array $b): float
+    // ─── Helper : appel HTTP vers Flask ──────────────────
+    private function callFlask(string $route, array $data): array
     {
-        $sum = 0;
-        foreach ($a as $i => $val) {
-            $sum += ($val - $b[$i]) ** 2;
-        }
-        return sqrt($sum);
+        $ch = curl_init($this->flaskUrl . $route);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return json_decode($response, true) ?? ['success' => false];
     }
 }
