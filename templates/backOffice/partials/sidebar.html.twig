@@ -21,6 +21,7 @@
                     <li class="nav-header text-uppercase text-muted small px-3 mt-2">
                         Administration
                     </li>
+
                     <li class="nav-item">
                         <a href="{{ path('admin_dashboard') }}"
                            class="nav-link {{ current == 'admin_dashboard' ? 'active' }}">
@@ -37,32 +38,17 @@
                         </a>
                     </li>
 
-                    
-                {% endif %}
-
-
-                {# ================= PROPRIETAIRE ================= #}
-                {% if isProp %}
-                    <li class="nav-header text-uppercase text-muted small px-3 mt-2">
-                        Propriétaire
-                    </li>
-
+                    {# 🔵 VISITES ADMIN #}
                     <li class="nav-item">
-                        <a href="{{ path('prop_reclamations') }}"
-                           class="nav-link {{ current == 'prop_reclamations' ? 'active' }}">
-                            <i class="nav-icon bi bi-exclamation-circle"></i>
-                            <p>Réclamations reçues</p>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="{{ path('prop_reponses') }}"
-                           class="nav-link {{ current == 'prop_reponses' ? 'active' }}">
-                            <i class="nav-icon bi bi-chat-left-text"></i>
-                            <p>Mes réponses</p>
+                        <a href="{{ path('admin_visites') }}"
+                           class="nav-link {{ current == 'admin_visites' ? 'active' }}">
+                            <i class="nav-icon bi bi-calendar-check"></i>
+                            <p>Toutes les visites</p>
                         </a>
                     </li>
                 {% endif %}
+
+
 
             </ul>
         </nav>

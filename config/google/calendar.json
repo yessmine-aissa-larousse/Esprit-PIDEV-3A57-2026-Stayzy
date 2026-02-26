@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "stayzycalendar",
+  "private_key_id": "c763719e8105854d83016a1633a6a7d1615831e9",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+K9xH85ptW9Na\nJGnXnuZTsrldZSc9HGNPHGKa7YkdQmRaAi1oqG0R8rFMbrE5MsHN0Z+3oO3fOV2U\nLu/iUaiawwRgSICCDwQAQrzYqGwSfo7V6id9NeMlrMeVmU4RRXjnTdnNmiBErVLX\n2xZLdGUP8bAM1AKOZ0OMA+z9XtHSUGnhGFw81UAnUVTWN0feFa5bUtidnMGPcr03\n+m5OaOAdGfsWZV/z2I/W4MtEB+nSdiJbmpQH6uC81fTofYll50uzTHSDh0hwGYIr\nUMgXbU/cfDjTUnUYuLc4HEf2DcLmiu3rXrTBptFJaHSug6alLW75XBpjvyo7VlqD\n1DeXHv+/AgMBAAECggEAUM1GDXReGzU2+kgaiLlFWC7KP/qoz3huYcDHzNg8uCfr\nh6sBLETUAxpBZx5pQspkOlVlLZq9N2mib0H6Pwk/QHK4O0jTAW/r3Uh+APie4sTP\nX+jb2oG4/9sH+nJnD0ObeXxEnO1t5IBYgMrgEDNmdX3Vtb2nUGZj9uv8GDPfpyI0\nOZvVSA7oBcPrIjPUCWKyNc11XXh77ysrZuaXMmUSWoHwJ94BjQMFsoyCxV2o0+2q\nAGxUWl3JQLEZtVsSLp+X3P5Qx6BEyGYgZoXnqou/99BhnaVX8IrX0t39LJD8d+ot\nhwFy1kCuTVQWSu/xoH4Cb7ZXbtO3XCOKRRY0vtxiEQKBgQDdvI43wyyBlRY5KpIA\nkagFELw5PxY97VocmD+QRQZA+XEMgAnn2fngqIQd0LKgAb/TLG3WkfmWB2xFhsvp\nVsRbyGRtzaELipsF7fZqgrFFyKAGLfg85oQ8/fXVbNHSKVilpvQL5uOPseE98YiX\n8fBQXmuOzgo7TyYJrwmw06Ed6wKBgQDbjqZI2GxXyFgKbCpXheFpAaHmvQkC1ihX\nywM8rt1F/EETtk/ov3Tci55AU2QpWRB/Vq9fF9Grgs8abPUzfNWdtGNBxQWoQEeq\nsn4lBNgvVVUdbV/B/PfHdF1ZoptEQx7Ha3YY/6ayRDIH8+GyYDUFU20RnTdnlBIa\nN26hai0sfQKBgETKdqS+HFSnWBmsJ1ed2K6Znot0EwZrWIV+hlnP0DzgJj5miqwv\nZ+JW5YYKdSBG6qgtJHZpGzF8ZA693w0pKgn/hYi7PrdB7Q5N4SDyIuUvdNX19QmP\nyn7Rmy73b7DvutzJivUWUIsH+IUrJeFd4dxNLrlDGtGDoJ1ofG0retS5AoGBAIDd\nr1feP2kenB4x8oBAglchsCdAGMPjcvZkn9fEQvfK4V9yiGBxz2OLRy02RPnH3tj+\nxhwoXNYwBuLZxOmdgbv4nrGBtJpWcDoOXd/YghL2IOkOwz+W/M/Cyu/LcxqT0sL1\nnfF6TBshz8O/L1+E/FnN55yJDHXtANsGYha3vR/5AoGAdPJiNPmyJO+rN+cfCru0\n26AUf3e9lnAPoIpUmGVqfEh9WyhVvrUHlQfA9mxyKX1v62K1I5HCxR3MEy5NNI0O\nVN09xzv0qeg5L2VMcspzO7+sJw32QXu3W9uyWHNjg8aWnnF3LIp00dQJidhxTOhL\nKDRXQw+GpSr1YhaURPnxgJM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "stayzy-calendar@stayzycalendar.iam.gserviceaccount.com",
+  "client_id": "117133438473678298263",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/stayzy-calendar%40stayzycalendar.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

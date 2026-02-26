@@ -55,9 +55,71 @@
                 <ul>
                     <li><a href="{{ path('app_home') }}" class="active">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
-                    <li><a href="{{ path('app_properties') }}">Nos Logements</a></li>
-                    <li><a href="#">Services</a></li>
-                    <li><a href="{{path('client_reclamation_new')}}"> Réclamtions</a></li>
+<!-- ===== MENU LOGEMENTS ===== -->
+<li class="dropdown">
+    <a href="#">Logements <i class="bi bi-chevron-down"></i></a>
+
+    <ul class="dropdown-menu-custom">
+
+        <!-- Tous les logements -->
+        <li>
+            <a href="{{ path('app_properties') }}">
+                🏠 Voir les logements
+            </a>
+        </li>
+
+        <!-- Client -->
+        <li>
+            <a href="{{ path('client_mes_visites') }}">
+                📅 Mes visites
+            </a>
+        </li>
+        <!-- Propriétaire -->
+        <li>
+            <a href="{{ path('prop_visites') }}">
+                🏡 Demandes reçues
+            </a>
+        </li>
+
+        
+
+    </ul>
+</li>                  
+  <li><a href="#">Services</a></li>
+<li class="dropdown">
+    <a href="#">Réclamations <i class="bi bi-chevron-down"></i></a>
+
+    <ul class="dropdown-menu-custom">
+
+        <!-- CLIENT -->
+        <li>
+            <a href="{{ path('client_reclamation_new') }}">
+                ➕ Ajouter réclamation
+            </a>
+        </li>
+        <li>
+            <a href="{{ path('client_mes_reclamations') }}">
+                📥 Mes Réclamations 
+            </a>
+        </li>
+
+        <!-- PROPRIETAIRE -->
+        <li>
+            <a href="{{ path('prop_reclamations') }}">
+                📥 Réclamations reçues
+            </a>
+        </li>
+
+        <!-- HISTORIQUE REPONSES -->
+        <li>
+            <a href="{{ path('prop_reponses') }}">
+                📝 Historique des réponses
+            </a>
+        </li>
+
+    </ul>
+</li>
+
                     <li><a href="#">se connecter</a></li>
                     <li><a href="#">s'inscrire</a></li>
                     <li><a href="#">Contact</a></li>
@@ -152,6 +214,11 @@
 
         <!-- Main JS File -->
         <script src="{{ asset('frontOffice/js/main.js') }}"></script>
+
+        <!-- Symfony UX Notifier -->
+<script src="https://unpkg.com/@symfony/ux-notifier"></script>
+
+<div {{ stimulus_controller('symfony/ux-notifier/notifier') }}></div>
     {% endblock %}
 
 </body>

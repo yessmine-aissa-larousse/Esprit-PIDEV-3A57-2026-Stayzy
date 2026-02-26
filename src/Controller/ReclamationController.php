@@ -2,6 +2,12 @@
 
 namespace App\Controller;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Knp\Component\Pager\PaginatorInterface;
+
+use App\Service\TranslateService;
+
+use App\Service\ReclamationIntelligenceService;
 use App\Entity\Reclamation;
 use App\Entity\User;
 use App\Form\ReclamationType;
@@ -22,8 +28,7 @@ class ReclamationController extends AbstractController
 
     // ➜ Ajouter réclamation
     #[Route('/client/new', name: 'client_reclamation_new')]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
+public function new(Request $request, EntityManagerInterface $em, ReclamationIntelligenceService $intelligenceService)    {
         $reclamation = new Reclamation();
 
         // client id = 1
@@ -35,6 +40,11 @@ class ReclamationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $risk = $intelligenceService->calculateRiskScore($reclamation);
+$reclamation->setRiskScore($risk);
+
+$abuse = $intelligenceService->detectAbuse($reclamation);
+$reclamation->setIsAbusive($abuse);
 
             $em->persist($reclamation);
             $em->flush();
@@ -99,22 +109,69 @@ class ReclamationController extends AbstractController
 
 
     /* =========================================================
-     * ================= PROPRIETAIRE BACK =====================
+     * ================= PROPRIETAIRE FRONT =====================
      * ========================================================= */
 
     // ➜ Réclamations reçues
-    #[Route('/proprietaire', name: 'prop_reclamations')]
-    public function reclamationsProprietaire(ReclamationRepository $repo): Response
-    {
-        $reclamations = $repo->createQueryBuilder('r')
-            ->leftJoin('r.reponses', 'rep')->addSelect('rep')
-            ->orderBy('r.id', 'DESC')
-            ->getQuery()->getResult();
+#[Route('/proprietaire', name: 'prop_reclamations')]
+public function reclamationsProprietaire(
+    Request $request,
+    ReclamationRepository $repo,
+    ReclamationIntelligenceService $intelligenceService,
+    PaginatorInterface $paginator
+): Response
+{
+    $allReclamations = $repo->findAll();
+    $reclamations = [];
 
-        return $this->render('backOffice/reclamation/proprietaire/index.html.twig', [
-            'reclamations' => $reclamations
-        ]);
+    foreach ($allReclamations as $reclamation) {
+
+        // 1️⃣ Detect orientation
+        $target = $intelligenceService->detectTargetRole($reclamation);
+
+        if ($target === 'PROPRIETAIRE') {
+
+            // 2️⃣ Calcul risk score si مازال موش محسوب
+            if ($reclamation->getRiskScore() === null) {
+                $score = $intelligenceService->calculateRiskScore($reclamation);
+                $reclamation->setRiskScore($score);
+            }
+
+            $reclamations[] = $reclamation;
+        }
     }
+
+    // ✅ زدنا Pagination فقط هنا
+    $pagination = $paginator->paginate(
+        $reclamations,
+        $request->query->getInt('page', 1),
+        5
+    );
+
+    return $this->render('frontOffice/reclamation/proprietaire/index.html.twig', [
+        'reclamations' => $reclamations, // خليتها كيف ما هي
+        'pagination' => $pagination,     // الجديدة
+        'intelligenceService' => $intelligenceService
+    ]);
+}
+#[Route('/api/{id}/translate', name: 'reclamation_translate', methods: ['GET'])]
+public function translate(
+    Reclamation $reclamation,
+    Request $request,
+    TranslateService $translateService
+): JsonResponse
+{
+    $lang = $request->query->get('lang', 'en'); 
+
+    $translated = $translateService->translate(
+        $reclamation->getDescription(),
+        $lang
+    );
+
+    return $this->json([
+        'translated' => $translated
+    ]);
+}
 
 
     /* =========================================================
@@ -122,8 +179,13 @@ class ReclamationController extends AbstractController
      * ========================================================= */
 
     // ➜ Supervision globale
-   #[Route('/admin', name: 'admin_reclamations')]
-public function admin(Request $request, ReclamationRepository $repo): Response
+ #[Route('/admin', name: 'admin_reclamations')]
+public function admin(
+    Request $request,
+    ReclamationRepository $repo,
+    ReclamationIntelligenceService $intelligenceService,
+    PaginatorInterface $paginator
+): Response
 {
     $sujet = $request->query->get('sujet');
     $statut = $request->query->get('statut');
@@ -132,26 +194,32 @@ public function admin(Request $request, ReclamationRepository $repo): Response
     $qb = $repo->createQueryBuilder('r')
         ->leftJoin('r.reponses', 'rep')->addSelect('rep');
 
-    // 🔎 recherche sujet
+    // 🔎 Recherche sujet
     if ($sujet) {
         $qb->andWhere('r.sujet LIKE :sujet')
            ->setParameter('sujet', '%'.$sujet.'%');
     }
 
-    // 🎯 filtre statut
+    // 🎯 Filtre statut
     if ($statut) {
         $qb->andWhere('r.statut = :statut')
            ->setParameter('statut', $statut);
     }
 
-    // 🔼🔽 tri
-    $qb->orderBy('r.id', $tri);
+    // 🔼🔽 Tri par date
+    $qb->orderBy('r.dateReclamation', $tri);
 
-    $reclamations = $qb->getQuery()->getResult();
+    // ✅ Pagination ajoutée فقط
+    $pagination = $paginator->paginate(
+        $qb,
+        $request->query->getInt('page', 1),
+        5
+    );
 
     return $this->render('backOffice/reclamation/admin/index.html.twig', [
-        'reclamations' => $reclamations
+        'reclamations' => $pagination, // خليتها بنفس الاسم
+        'pagination' => $pagination,   // كان تحب تستعملها مباشرة
+        'intelligenceService' => $intelligenceService
     ]);
 }
-
 }

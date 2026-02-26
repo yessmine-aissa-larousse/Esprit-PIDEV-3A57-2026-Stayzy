@@ -1,0 +1,123 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+{% block title %}Supervision Visites{% endblock %}
+
+{% block admin_content %}
+
+<div class="app-content-header">
+    <div class="container-fluid">
+        <h3 class="mb-3">Supervision des visites</h3>
+    </div>
+</div>
+
+<div class="app-content">
+<div class="container-fluid">
+<div class="card mb-3 shadow-sm">
+<div class="card-body">
+<form method="get" class="row g-2">
+
+<div class="col-md-3">
+<select name="statut" class="form-select">
+<option value="">Tous statuts</option>
+<option value="EN_ATTENTE">En attente</option>
+<option value="ACCEPTEE">Acceptée</option>
+<option value="REFUSEE">Refusée</option>
+</select>
+</div>
+
+<div class="col-md-3">
+<input type="date" name="date" class="form-control">
+</div>
+
+<div class="col-md-3">
+<select name="tri" class="form-select">
+<option value="DESC">Plus récentes</option>
+<option value="ASC">Plus anciennes</option>
+</select>
+</div>
+
+<div class="col-md-3 d-grid">
+<button class="btn btn-primary">Filtrer</button>
+</div>
+
+</form>
+</div>
+</div>
+
+
+
+<!-- ===== TABLE ===== -->
+<div class="card shadow-sm">
+
+    <div class="card-header">
+        <h3 class="card-title">Liste des visites</h3>
+    </div>
+
+    <div class="card-body table-responsive p-0">
+
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Logement</th>
+                    <th>Client</th>
+                    <th>Propriétaire</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for v in visites %}
+                <tr>
+
+                    <td>#{{ v.id }}</td>
+
+                    <td>
+                        <strong>{{ v.logement.titre }}</strong>
+                    </td>
+
+                    <td>
+                        {{ v.client.nom }} {{ v.client.prenom }}
+                    </td>
+
+                    <td>
+                        {{ v.proprietaire.nom }} {{ v.proprietaire.prenom }}
+                    </td>
+
+                    <td>{{ v.dateVisite|date('d/m/Y') }}</td>
+                    <td>{{ v.heureVisite|date('H:i') }}</td>
+
+                    <td>
+                        {% if v.statut == 'EN_ATTENTE' %}
+                            <span class="badge bg-warning text-dark">En attente</span>
+
+                        {% elseif v.statut == 'ACCEPTEE' %}
+                            <span class="badge bg-success">Acceptée</span>
+
+                        {% else %}
+                            <span class="badge bg-danger">Refusée</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted p-4">
+                        Aucune visite enregistrée
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+
+</div>
+</div>
+
+{% endblock %}

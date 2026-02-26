@@ -1,113 +1,169 @@
 {% extends 'backOffice/base_admin.html.twig' %}
-
 {% block title %}Dashboard - BackOffice{% endblock %}
 
 {% block admin_content %}
 
-<div class="app-content-header">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-sm-6">
-                <h3 class="mb-0">Dashboard</h3>
+<style>
+:root {
+    --primary-soft: #5a6acf;
+    --primary-light: #eef1ff;
+
+    --warning-soft: #e6a23c;
+    --warning-light: #fff6e5;
+
+    --success-soft: #2eae7b;
+    --success-light: #e9f8f1;
+
+    --danger-soft: #d64545;
+    --danger-light: #fdecec;
+
+    --dark-soft: #495057;
+    --dark-light: #f1f3f5;
+
+    --purple-soft: #9b59b6;
+    --purple-light: #f4ecf7;
+}
+
+.dashboard-card {
+    border-radius: 18px;
+    padding: 25px;
+    transition: 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+}
+
+.dashboard-number {
+    font-size: 28px;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.chart-card {
+    border-radius: 18px;
+    padding: 20px;
+}
+
+.chart-card .card-header {
+    font-weight: 600;
+    font-size: 15px;
+}
+</style>
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="mb-5">
+        <h3 class="fw-bold text-dark">Tableau de Bord</h3>
+        <small class="text-muted">Analyse & Monitoring des Réclamations</small>
+    </div>
+
+   <!-- ================== STAT CARDS ================== -->
+<div class="row g-4">
+
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--warning-light);">
+            <h6 class="text-muted small">En Attente</h6>
+            <div class="dashboard-number" style="color: var(--warning-soft);">
+                {{ enAttente }}
             </div>
         </div>
     </div>
+
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--success-light);">
+            <h6 class="text-muted small">Traitées</h6>
+            <div class="dashboard-number" style="color: var(--success-soft);">
+                {{ traitee }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--danger-light);">
+            <h6 class="text-muted small">Urgentes</h6>
+            <div class="dashboard-number" style="color: var(--danger-soft);">
+                {{ urgentCount }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--purple-light);">
+            <h6 class="text-muted small">+48h Non Traitées</h6>
+            <div class="dashboard-number" style="color: var(--purple-soft);">
+                {{ lateCount|default(0) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Suspects -->
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--dark-light);">
+            <h6 class="text-muted small">Users Suspects</h6>
+            <div class="dashboard-number" style="color: var(--dark-soft);">
+                {{ abuseCount }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Normaux -->
+    <div class="col-md-6 col-lg">
+        <div class="card dashboard-card shadow-sm border-0"
+             style="background: var(--primary-light);">
+            <h6 class="text-muted small">Users Normaux</h6>
+            <div class="dashboard-number" style="color: var(--primary-soft);">
+                {{ normalUsers }}
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<div class="app-content">
-    <div class="container-fluid">
+    <!-- ================== CHARTS ================== -->
+    <div class="row mt-5 g-4">
 
-        <!-- Info Boxes -->
-        <div class="row">
-
-            <!-- Total -->
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="info-box shadow-sm">
-                    <span class="info-box-icon text-bg-primary">
-                        <i class="bi bi-list-ul"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Réclamations</span>
-                        <span class="info-box-number">
-                            {{ total }}
-                        </span>
-                    </div>
+        <div class="col-lg-4">
+            <div class="card chart-card shadow-sm border-0">
+                <div class="card-header bg-white border-0 text-center">
+                    Répartition par Statut
                 </div>
-            </div>
-
-            <!-- En attente -->
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="info-box shadow-sm">
-                    <span class="info-box-icon text-bg-warning">
-                        <i class="bi bi-clock-history"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">En attente</span>
-                        <span class="info-box-number">
-                            {{ enAttente }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Traitées -->
-            <div class="col-12 col-sm-6 col-md-4">
-                <div class="info-box shadow-sm">
-                    <span class="info-box-icon text-bg-success">
-                        <i class="bi bi-check-circle"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Traitées</span>
-                        <span class="info-box-number">
-                            {{ traitee }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Chart -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow-lg">
-                    <div class="card-header text-center">
-                        <h4 class="mb-0">Statistiques Réclamations</h4>
-                    </div>
-                    <div class="card-body">
-                        <div id="reclamationChart"></div>
-                    </div>
+                <div class="card-body">
+                    {{ render_chart(statutChart) }}
                 </div>
             </div>
         </div>
-        
-        
+
+        <div class="col-lg-4">
+            <div class="card chart-card shadow-sm border-0">
+                <div class="card-header bg-white border-0 text-center">
+                    Analyse du Niveau de Risque
+                </div>
+                <div class="card-body">
+                    {{ render_chart(riskChart) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card chart-card shadow-sm border-0">
+                <div class="card-header bg-white border-0 text-center">
+                    Monitoring Sécurité
+                </div>
+                <div class="card-body">
+                    {{ render_chart(securityChart) }}
+                </div>
+            </div>
+        </div>
 
     </div>
+
 </div>
 
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var options = {
-                series: [{{ enAttente }}, {{ traitee }}],
-                chart: {
-                    type: 'pie',
-                    height: 300
-                },
-                labels: ['En attente', 'Traitée'],
-                colors: ['#ffc107', '#28a745'],
-                legend: {
-                    position: 'bottom'
-                }
-            };
-
-            var chart = new ApexCharts(document.querySelector("#reclamationChart"), options);
-            chart.render();
-        });
-    </script>
 {% endblock %}

@@ -189,6 +189,53 @@
                         </div><!-- End Property Item -->
 
                         {# Vous pouvez copier les autres propriétés ici (Property Item 2, 3, 4, etc.) #}
+
+                        {% for logement in logements %}
+<div class="col-lg-4 col-md-6">
+    <div class="property-item">
+
+        <div class="property-image-wrapper">
+            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-1.webp') }}" class="img-fluid">
+        </div>
+
+        <div class="property-details">
+
+            <div class="property-header">
+                <div class="property-price">{{ logement.prix }} DT</div>
+                <div class="property-type">Logement</div>
+            </div>
+
+            <h4 class="property-title">{{ logement.titre }}</h4>
+
+            <p class="property-address">
+                <i class="bi bi-geo-alt"></i>
+                {{ logement.adresse.ville ?? 'Ville inconnue' }}
+            </p>
+
+            <div class="property-specs">
+                <div class="spec-item">
+                    <i class="bi bi-house-door"></i>
+                    <span>{{ logement.nombreChambres }} chambres</span>
+                </div>
+                <div class="spec-item">
+                    <i class="bi bi-droplet"></i>
+                    <span>{{ logement.nombreSalleDeBain }} sdb</span>
+                </div>
+                <div class="spec-item">
+                    <i class="bi bi-arrows-angle-expand"></i>
+                    <span>{{ logement.superficie }} m²</span>
+                </div>
+            </div>
+
+            <a href="{{ path('client_visite_new', {'id': logement.id}) }}" class="btn btn-primary mt-3 w-100">
+                Réserver une visite
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
                         {# Pour l'instant, je mets juste la première pour l'exemple #}
 
                     </div>

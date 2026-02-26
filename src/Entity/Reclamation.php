@@ -47,9 +47,9 @@ class Reclamation
     private ?string $statut = null;
 
     //  Relation obligatoire avec User
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reclamations')]
+#[ORM\JoinColumn(nullable: false)]
+private ?User $user = null;
 
     //  Relation avec Reponse (OneToMany)
     #[ORM\OneToMany(mappedBy: 'reclamation', targetEntity: Reponse::class, orphanRemoval: true)]
@@ -62,7 +62,36 @@ class Reclamation
         $this->reponses = new ArrayCollection();
     }
 
+    #[ORM\Column(nullable: true)]
+private ?int $riskScore = 0;
+
+#[ORM\Column(nullable: true)]
+private ?bool $isAbusive = false;
+
     // Getters & Setters
+
+    public function getRiskScore(): ?int
+{
+    return $this->riskScore;
+}
+
+public function setRiskScore(?int $riskScore): self
+{
+    $this->riskScore = $riskScore;
+    return $this;
+}
+
+
+public function isAbusive(): ?bool
+{
+    return $this->isAbusive;
+}
+
+public function setIsAbusive(?bool $isAbusive): self
+{
+    $this->isAbusive = $isAbusive;
+    return $this;
+}
 
     public function getId(): ?int
     {

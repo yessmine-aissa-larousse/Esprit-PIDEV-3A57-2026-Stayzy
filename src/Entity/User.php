@@ -83,6 +83,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    /* #[ORM\OneToMany(targetEntity: Visite::class, mappedBy: 'user')]
     private Collection $visites;*/
 
+    /**
+ * @var Collection<int, Logement>
+ */
+#[ORM\OneToMany(mappedBy: 'proprietaire', targetEntity: Logement::class)]
+private Collection $logements;
+
+/**
+ * @var Collection<int, Logement>
+ */
+#[ORM\ManyToMany(targetEntity: Logement::class, inversedBy: 'utilisateursFavoris')]
+#[ORM\JoinTable(name: 'user_favoris')]
+private Collection $favoris;
+
+/**
+ * @var Collection<int, Visite>
+ */
+#[ORM\OneToMany(mappedBy: 'client', targetEntity: Visite::class)]
+private Collection $visitesClient;
+
+/**
+ * @var Collection<int, Visite>
+ */
+#[ORM\OneToMany(mappedBy: 'proprietaire', targetEntity: Visite::class)]
+private Collection $visitesProprietaire;
     
    
 
@@ -94,6 +118,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
         $this->reclamations = new ArrayCollection();
        /* $this->visites = new ArrayCollection();*/
+       $this->logements = new ArrayCollection();
+       $this->favoris = new ArrayCollection();
+       $this->visitesClient = new ArrayCollection();
+$this->visitesProprietaire = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -307,6 +335,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 */
-    
+    public function getLogements(): Collection
+{
+    return $this->logements;
+}
+
+public function addLogement(Logement $logement): self
+{
+    if (!$this->logements->contains($logement)) {
+        $this->logements->add($logement);
+        $logement->setProprietaire($this);
+    }
+
+    return $this;
+}
+
+public function removeLogement(Logement $logement): self
+{
+    if ($this->logements->removeElement($logement)) {
+        if ($logement->getProprietaire() === $this) {
+            $logement->setProprietaire(null);
+        }
+    }
+
+    return $this;
+}
+
+public function getFavoris(): Collection
+{
+    return $this->favoris;
+}
+
+public function addFavori(Logement $logement): self
+{
+    if (!$this->favoris->contains($logement)) {
+        $this->favoris->add($logement);
+        $logement->addUtilisateurFavori($this);
+    }
+
+    return $this;
+}
+
+public function removeFavori(Logement $logement): self
+{
+    if ($this->favoris->removeElement($logement)) {
+        $logement->removeUtilisateurFavori($this);
+    }
+
+    return $this;
+}
+
+public function getVisitesClient(): Collection
+{
+    return $this->visitesClient;
+}
+
+public function getVisitesProprietaire(): Collection
+{
+    return $this->visitesProprietaire;
+}
     
 }
