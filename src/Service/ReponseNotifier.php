@@ -4,28 +4,23 @@ namespace App\Service;
 
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\Recipient\Recipient;
+use App\Entity\User;
 
 class ReponseNotifier
 {
-    private NotifierInterface $notifier;
+    public function __construct(private NotifierInterface $notifier) {}
 
-    public function __construct(NotifierInterface $notifier)
+    public function notifyReponse(User $client): void
     {
-        $this->notifier = $notifier;
-    }
-
-    public function notifyReponse(): void
-    {
-        $notification = new Notification(
-            'Nouvelle réponse',
+        $notification = (new Notification(
+            'Nouvelle réponse à votre réclamation',
             ['browser']
-        );
+        ))->content('Votre réclamation a reçu une réponse ✅');
 
-        $notification->content(
-            'Votre réclamation a reçu une réponse ✅'
+        $this->notifier->send(
+            $notification,
+            new Recipient($client->getEmail())
         );
-
-        // ✅ sans User
-        $this->notifier->send($notification);
     }
 }

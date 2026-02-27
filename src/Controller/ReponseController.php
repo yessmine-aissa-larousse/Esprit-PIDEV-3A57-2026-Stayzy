@@ -6,6 +6,7 @@ use App\Entity\Reponse;
 use App\Service\ReponseNotifier;
 use App\Repository\ReclamationRepository;
 use App\Service\ReclamationIntelligenceService;
+use App\Service\MLScoringService;                  // ← AJOUT
 use App\Entity\Reclamation;
 use App\Form\ReponseType;
 use App\Repository\ReponseRepository;
@@ -23,57 +24,45 @@ class ReponseController extends AbstractController
      * ================== ADMIN AJOUTER REPONSE =================
      * ========================================================= */
 
-   #[Route('/admin/new/{id}', name: 'admin_reponse_new')]
-public function newAdmin(
-    Reclamation $reclamation,
-    Request $request,
-    EntityManagerInterface $em,
-    ReclamationIntelligenceService $intelligenceService,
-    ReponseNotifier $reponseNotifier
+    #[Route('/admin/new/{id}', name: 'admin_reponse_new')]
+    public function newAdmin(
+        Reclamation $reclamation,
+        Request $request,
+        EntityManagerInterface $em,
+        ReclamationIntelligenceService $intelligenceService,
+        ReponseNotifier $reponseNotifier
+    ): Response {
 
-): Response {
+        if ($intelligenceService->detectTargetRole($reclamation) !== 'ADMIN') {
+            throw $this->createAccessDeniedException('Cette réclamation n est pas destinée à l administration.');
+        }
 
-    // 🔒 Vérification orientation
-    if ($intelligenceService->detectTargetRole($reclamation) !== 'ADMIN') {
-        throw $this->createAccessDeniedException(
-            'Cette réclamation n’est pas destinée à l’administration.'
-        );
+        if (!$reclamation->getReponses()->isEmpty()) {
+            return $this->redirectToRoute('admin_reclamations');
+        }
+
+        $reponse = new Reponse();
+        $reponse->setReclamation($reclamation);
+
+        $suggestion = $intelligenceService->generateSmartReply($reclamation);
+        $reponse->setContenu($suggestion);
+
+        $form = $this->createForm(ReponseType::class, $reponse);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $reclamation->setStatut('TRAITEE');
+            $em->persist($reponse);
+            $em->flush();
+            $reponseNotifier->notifyReponse($reclamation->getUser());
+            return $this->redirectToRoute('admin_reclamations');
+        }
+
+        return $this->render('backOffice/reponse/admin/new.html.twig', [
+            'form'        => $form->createView(),
+            'reclamation' => $reclamation,
+        ]);
     }
-
-    // 🔒 Une seule réponse
-    if (!$reclamation->getReponses()->isEmpty()) {
-        return $this->redirectToRoute('admin_reclamations');
-    }
-
-$reponse = new Reponse();
-$reponse->setReclamation($reclamation);
-
-// 🔥 Smart suggestion
-$suggestion = $intelligenceService->generateSmartReply($reclamation);
-$reponse->setContenu($suggestion);    $reponse->setReclamation($reclamation);
-
-    $form = $this->createForm(ReponseType::class, $reponse);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-
-        $reclamation->setStatut('TRAITEE');
-
-        $em->persist($reponse);
-        $em->flush();
-
-        $client = $reclamation->getUser();
-
-$reponseNotifier->notifyReponse($client);
-
-        return $this->redirectToRoute('admin_reclamations');
-    }
-
-    return $this->render('backOffice/reponse/admin/new.html.twig', [
-        'form' => $form->createView(),
-        'reclamation' => $reclamation
-    ]);
-}
 
 
     /* =========================================================
@@ -85,43 +74,34 @@ $reponseNotifier->notifyReponse($client);
         Reclamation $reclamation,
         Request $request,
         EntityManagerInterface $em,
-            ReclamationIntelligenceService $intelligenceService,
-    ReponseNotifier $reponseNotifier
-
-
+        ReclamationIntelligenceService $intelligenceService,
+        ReponseNotifier $reponseNotifier
     ): Response {
 
         if (!$reclamation->getReponses()->isEmpty()) {
             return $this->redirectToRoute('prop_reclamations');
         }
 
-$reponse = new Reponse();
-$reponse->setReclamation($reclamation);
+        $reponse = new Reponse();
+        $reponse->setReclamation($reclamation);
 
-// 🔥 Smart suggestion
-$suggestion = $intelligenceService->generateSmartReply($reclamation);
-$reponse->setContenu($suggestion);        $reponse->setReclamation($reclamation);
+        $suggestion = $intelligenceService->generateSmartReply($reclamation);
+        $reponse->setContenu($suggestion);
 
         $form = $this->createForm(ReponseType::class, $reponse);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $reclamation->setStatut('TRAITEE');
-
             $em->persist($reponse);
             $em->flush();
-
-$client = $reclamation->getUser();
-
-$reponseNotifier->notifyReponse($client);
-
+            $reponseNotifier->notifyReponse($reclamation->getUser());
             return $this->redirectToRoute('prop_reclamations');
         }
 
         return $this->render('frontOffice/reponse/proprietaire/new.html.twig', [
-            'form' => $form->createView(),
-            'reclamation' => $reclamation
+            'form'        => $form->createView(),
+            'reclamation' => $reclamation,
         ]);
     }
 
@@ -130,33 +110,33 @@ $reponseNotifier->notifyReponse($client);
      * ================= ADMIN EDIT =============================
      * ========================================================= */
 
-  #[Route('/admin/edit/{id}', name: 'admin_reponse_edit')]
-public function editAdmin(
-    Request $request,
-    Reponse $reponse,
-    EntityManagerInterface $em,
-    ReclamationIntelligenceService $intelligenceService
-): Response {
+    #[Route('/admin/edit/{id}', name: 'admin_reponse_edit')]
+    public function editAdmin(
+        Request $request,
+        Reponse $reponse,
+        EntityManagerInterface $em,
+        ReclamationIntelligenceService $intelligenceService
+    ): Response {
 
-    $reclamation = $reponse->getReclamation();
+        $reclamation = $reponse->getReclamation();
 
-    if ($intelligenceService->detectTargetRole($reclamation) !== 'ADMIN') {
-        return $this->redirectToRoute('admin_reclamations');
+        if ($intelligenceService->detectTargetRole($reclamation) !== 'ADMIN') {
+            return $this->redirectToRoute('admin_reclamations');
+        }
+
+        $form = $this->createForm(ReponseType::class, $reponse);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            return $this->redirectToRoute('admin_reclamations');
+        }
+
+        return $this->render('backOffice/reponse/admin/edit.html.twig', [
+            'form'    => $form->createView(),
+            'reponse' => $reponse,
+        ]);
     }
-
-    $form = $this->createForm(ReponseType::class, $reponse);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $em->flush();
-        return $this->redirectToRoute('admin_reclamations');
-    }
-
-    return $this->render('backOffice/reponse/admin/edit.html.twig', [
-        'form' => $form->createView(),
-        'reponse' => $reponse
-    ]);
-}
 
 
     /* =========================================================
@@ -179,8 +159,8 @@ public function editAdmin(
         }
 
         return $this->render('frontOffice/reponse/proprietaire/edit.html.twig', [
-            'form' => $form->createView(),
-            'reponse' => $reponse
+            'form'    => $form->createView(),
+            'reponse' => $reponse,
         ]);
     }
 
@@ -190,67 +170,69 @@ public function editAdmin(
      * ========================================================= */
 
     #[Route('/admin/delete/{id}', name: 'admin_reponse_delete')]
-    public function deleteAdmin(
-        Reponse $reponse,
-        EntityManagerInterface $em
-    ): Response {
-
+    public function deleteAdmin(Reponse $reponse, EntityManagerInterface $em): Response
+    {
         $em->remove($reponse);
         $em->flush();
-
         return $this->redirectToRoute('admin_reclamations');
     }
 
     #[Route('/delete/{id}', name: 'prop_reponse_delete')]
-    public function deleteProprietaire(
-        Reponse $reponse,
-        EntityManagerInterface $em
-    ): Response {
-
+    public function deleteProprietaire(Reponse $reponse, EntityManagerInterface $em): Response
+    {
         $em->remove($reponse);
         $em->flush();
-
         return $this->redirectToRoute('prop_reclamations');
     }
 
 
+    /* =========================================================
+     * ================= LISTE PROPRIÉTAIRE ✨ ML ==============
+     * ========================================================= */
+
     #[Route('/liste', name: 'prop_reponses')]
-public function reponsesProprietaire(
-    Request $request,
-    ReponseRepository $repo,
-    ReclamationRepository $reclamationRepo,
-    ReclamationIntelligenceService $intelligenceService
-): Response {
+    public function reponsesProprietaire(
+        Request $request,
+        ReponseRepository $repo,
+        ReclamationRepository $reclamationRepo,
+        ReclamationIntelligenceService $intelligenceService,
+        MLScoringService $mlScoring                         // ← AJOUT
+    ): Response {
 
-    $idReclamation = $request->query->get('id_reclamation');
+        $idReclamation = $request->query->get('id_reclamation');
 
-    $allReclamations = $reclamationRepo->findAll();
+        $allReclamations = $reclamationRepo->findAll();
+        $reclamationsProp = [];
 
-    $reclamationsProp = [];
-
-    foreach ($allReclamations as $reclamation) {
-        $target = $intelligenceService->detectTargetRole($reclamation);
-
-        if ($target === 'PROPRIETAIRE') {
-            $reclamationsProp[] = $reclamation;
+        foreach ($allReclamations as $reclamation) {
+            if ($intelligenceService->detectTargetRole($reclamation) === 'PROPRIETAIRE') {
+                $reclamationsProp[] = $reclamation;
+            }
         }
+
+        $qb = $repo->createQueryBuilder('r')
+            ->join('r.reclamation', 'rec')
+            ->where('rec IN (:recs)')
+            ->setParameter('recs', $reclamationsProp)
+            ->orderBy('r.id', 'DESC');
+
+        if ($idReclamation) {
+            $qb->andWhere('rec.id = :idRec')
+               ->setParameter('idRec', $idReclamation);
+        }
+
+        $reponses = $qb->getQuery()->getResult();
+
+        // ── Score ML pour chaque réponse ──────────────────────
+        $scores = [];
+        foreach ($reponses as $reponse) {
+            $scores[$reponse->getId()] = $mlScoring->scoreReponse($reponse);
+        }
+        // ──────────────────────────────────────────────────────
+
+        return $this->render('frontOffice/reponse/proprietaire/liste.html.twig', [
+            'reponses' => $reponses,
+            'scores'   => $scores,           // ← AJOUT
+        ]);
     }
-
-    $qb = $repo->createQueryBuilder('r')
-        ->join('r.reclamation', 'rec')
-        ->where('rec IN (:recs)')
-        ->setParameter('recs', $reclamationsProp)
-        ->orderBy('r.id', 'DESC');
-
-    if ($idReclamation) {
-        $qb->andWhere('rec.id = :idRec')
-           ->setParameter('idRec', $idReclamation);
-    }
-
-    $reponses = $qb->getQuery()->getResult();
-
-    return $this->render('frontOffice/reponse/proprietaire/liste.html.twig', [
-        'reponses' => $reponses
-    ]);
-}
 }

@@ -222,7 +222,7 @@ public function admin(
     // 🔼🔽 Tri par date
     $qb->orderBy('r.dateReclamation', $tri);
 
-    // ✅ Pagination ajoutée فقط
+    // ✅ Pagination ajoutée 
     $pagination = $paginator->paginate(
         $qb,
         $request->query->getInt('page', 1),

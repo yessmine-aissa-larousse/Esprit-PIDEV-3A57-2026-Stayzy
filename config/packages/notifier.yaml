@@ -1,4 +1,10 @@
+# config/packages/notifier.yaml
 framework:
     notifier:
-        chatter_transports: { }
-        texter_transports: { }
+        chatter_transports:
+        texter_transports:
+        channel_policy:
+            urgent: ['browser']
+            high: ['browser']
+            medium: ['browser']
+            low: ['browser']

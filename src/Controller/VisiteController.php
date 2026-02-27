@@ -12,7 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\GoogleCalendarService;
 
 #[Route('/visite')]
 class VisiteController extends AbstractController
@@ -28,13 +27,13 @@ public function new(Logement $logement, Request $request, EntityManagerInterface
 {
     $visite = new Visite();
 
-   $client = $this->getUser();
+    $client = $this->getUser();
 
-if (!$client instanceof User) {
-    throw $this->createAccessDeniedException();
-}
+    if (!$client instanceof User) {
+        throw $this->createAccessDeniedException();
+    }
 
-$visite->setClient($client);
+    $visite->setClient($client);
     $visite->setProprietaire($logement->getProprietaire());
     $visite->setLogement($logement);
     $visite->setStatut('EN_ATTENTE');
@@ -51,13 +50,15 @@ $visite->setClient($client);
         $dateVisite  = $visite->getDateVisite();
         $heureVisite = $visite->getHeureVisite();
 
-        // Date passée
+        // date passée
         if ($dateVisite < $today) {
-            $this->addFlash('danger', 'La date doit être aujourd’hui ou future.');
-            return $this->redirectToRoute('client_visite_new', ['id'=>$logement->getId()]);
+            $this->addFlash('danger', 'La date doit être future.');
+            return $this->redirectToRoute('client_visite_new', [
+                'id'=>$logement->getId()
+            ]);
         }
 
-        // Aujourd’hui mais heure passée
+        // heure passée aujourd’hui
         if ($dateVisite->format('Y-m-d') === $today->format('Y-m-d')) {
 
             $datetimeVisite = new \DateTime(
@@ -66,11 +67,13 @@ $visite->setClient($client);
 
             if ($datetimeVisite <= $now) {
                 $this->addFlash('danger', 'Choisissez une heure future.');
-                return $this->redirectToRoute('client_visite_new', ['id'=>$logement->getId()]);
+                return $this->redirectToRoute('client_visite_new', [
+                    'id'=>$logement->getId()
+                ]);
             }
         }
 
-        // Double réservation
+        // double réservation
         $exists = $em->getRepository(Visite::class)->findOneBy([
             'logement' => $logement,
             'dateVisite' => $dateVisite,
@@ -78,8 +81,10 @@ $visite->setClient($client);
         ]);
 
         if ($exists) {
-            $this->addFlash('danger', 'Ce créneau est déjà réservé.');
-            return $this->redirectToRoute('client_visite_new', ['id'=>$logement->getId()]);
+            $this->addFlash('danger', 'Créneau déjà réservé.');
+            return $this->redirectToRoute('client_visite_new', [
+                'id'=>$logement->getId()
+            ]);
         }
 
         $em->persist($visite);
@@ -95,28 +100,26 @@ $visite->setClient($client);
 }
 
 
-
 // ➜ Mes visites
 #[Route('/client/mes-visites', name: 'client_mes_visites')]
 public function mesVisites(VisiteRepository $repo): Response
 {
-$visites = $repo->findBy(
-    ['client' => $this->getUser()],
-    ['id' => 'DESC']
-);
+    $visites = $repo->findBy(
+        ['client' => $this->getUser()],
+        ['id' => 'DESC']
+    );
+
     return $this->render('frontOffice/visite/client/mes_visites.html.twig', [
         'visites' => $visites
     ]);
 }
 
 
-
-// ➜ Modifier visite (seulement si EN_ATTENTE)
+// ➜ Modifier
 #[Route('/client/edit/{id}', name: 'client_visite_edit')]
 public function edit(Request $request, Visite $visite, EntityManagerInterface $em): Response
 {
     if ($visite->getStatut() !== 'EN_ATTENTE') {
-        $this->addFlash('error', 'Modification impossible.');
         return $this->redirectToRoute('client_mes_visites');
     }
 
@@ -134,8 +137,7 @@ public function edit(Request $request, Visite $visite, EntityManagerInterface $e
 }
 
 
-
-// ➜ Supprimer visite (si EN_ATTENTE uniquement)
+// ➜ Supprimer
 #[Route('/client/delete/{id}', name: 'client_visite_delete')]
 public function delete(Visite $visite, EntityManagerInterface $em): Response
 {
@@ -148,21 +150,19 @@ public function delete(Visite $visite, EntityManagerInterface $em): Response
 }
 
 
-
 /* =========================================================
- * ================= PROPRIETAIRE FRONT =====================
+ * ================= PROPRIETAIRE ==========================
  * ========================================================= */
 
-// ➜ Liste des demandes reçues
+// demandes reçues
 #[Route('/proprietaire', name: 'prop_visites')]
 public function demandes(VisiteRepository $repo): Response
 {
-    // ⚠ ID fixe propriétaire = 2
     $visites = $repo->createQueryBuilder('v')
         ->join('v.logement', 'l')
-->where('l.proprietaire = :prop')
-->setParameter('prop', $this->getUser())   
-     ->orderBy('v.id', 'DESC')
+        ->where('l.proprietaire = :prop')
+        ->setParameter('prop', $this->getUser())
+        ->orderBy('v.id', 'DESC')
         ->getQuery()
         ->getResult();
 
@@ -172,56 +172,34 @@ public function demandes(VisiteRepository $repo): Response
 }
 
 
-
-// ➜ Accepter visite
+// accepter visite ✅
 #[Route('/proprietaire/accepter/{id}', name: 'prop_visite_accepter')]
 public function accepter(
     Visite $visite,
-    EntityManagerInterface $em,
-    GoogleCalendarService $calendarService
+    EntityManagerInterface $em
 ): Response
 {
     if ($visite->getStatut() !== 'EN_ATTENTE') {
-        $this->addFlash('error', 'Déjà traitée.');
         return $this->redirectToRoute('prop_visites');
     }
 
     $visite->setStatut('ACCEPTEE');
-
-    // ===============================
-    // GOOGLE CALENDAR EVENT
-    // ===============================
-
-    $date = $visite->getDateVisite();
-    $heure = $visite->getHeureVisite();
-
-    $dateDebut = new \DateTime(
-        $date->format('Y-m-d').' '.$heure->format('H:i:s')
-    );
-
-    // visite = 1h
-    $dateFin = (clone $dateDebut)->modify('+1 hour');
-
-    $calendarService->createEvent(
-        'Visite logement - Stayzy',
-        $dateDebut,
-        $dateFin
-    );
-
     $em->flush();
 
-    $this->addFlash('success', 'Visite acceptée + ajoutée au calendrier ✅');
+    $this->addFlash('success', 'Visite acceptée ✅');
 
     return $this->redirectToRoute('prop_visites');
 }
 
 
-// ➜ Refuser visite
+// refuser visite
 #[Route('/proprietaire/refuser/{id}', name: 'prop_visite_refuser')]
-public function refuser(Visite $visite, EntityManagerInterface $em): Response
+public function refuser(
+    Visite $visite,
+    EntityManagerInterface $em
+): Response
 {
     if ($visite->getStatut() !== 'EN_ATTENTE') {
-        $this->addFlash('error', 'Déjà traitée.');
         return $this->redirectToRoute('prop_visites');
     }
 
@@ -234,12 +212,10 @@ public function refuser(Visite $visite, EntityManagerInterface $em): Response
 }
 
 
-
 /* =========================================================
  * ====================== ADMIN =============================
  * ========================================================= */
 
-// ➜ Dashboard admin
 #[Route('/admin', name: 'admin_visites')]
 public function admin(Request $request, VisiteRepository $repo): Response
 {
@@ -251,16 +227,6 @@ public function admin(Request $request, VisiteRepository $repo): Response
     if ($request->get('statut')) {
         $qb->andWhere('v.statut = :statut')
            ->setParameter('statut', $request->get('statut'));
-    }
-
-    if ($request->get('date')) {
-        $qb->andWhere('v.dateVisite = :date')
-           ->setParameter('date', $request->get('date'));
-    }
-
-    if ($request->get('prop')) {
-        $qb->andWhere('p.id = :prop')
-           ->setParameter('prop', $request->get('prop'));
     }
 
     $order = $request->get('tri') === 'ASC' ? 'ASC' : 'DESC';
