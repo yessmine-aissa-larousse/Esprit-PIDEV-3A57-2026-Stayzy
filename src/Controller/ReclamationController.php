@@ -62,19 +62,31 @@ $reclamation->setIsAbusive($abuse);
 
     // ➜ Mes réclamations + réponses
     #[Route('/client/mes-reclamations', name: 'client_mes_reclamations')]
-    public function mesReclamations(ReclamationRepository $repo): Response
-    {
-        $reclamations = $repo->createQueryBuilder('r')
-            ->leftJoin('r.reponses', 'rep')->addSelect('rep')
-->where('r.user = :user')
-->setParameter('user', $this->getUser())       
-     ->orderBy('r.id', 'DESC')
-            ->getQuery()->getResult();
+public function mesReclamations(
+    Request $request,
+    ReclamationRepository $repo,
+    PaginatorInterface $paginator
+): Response {
 
-        return $this->render('frontOffice/reclamation/client/mes_reclamations.html.twig', [
+    $query = $repo->createQueryBuilder('r')
+        ->leftJoin('r.reponses', 'rep')->addSelect('rep')
+        ->where('r.user = :user')
+        ->setParameter('user', $this->getUser())
+        ->orderBy('r.id', 'DESC');
+
+    $reclamations = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        5
+    );
+
+    return $this->render(
+        'frontOffice/reclamation/client/mes_reclamations.html.twig',
+        [
             'reclamations' => $reclamations
-        ]);
-    }
+        ]
+    );
+}
 
     // ➜ Modifier (si EN_ATTENTE)
     #[Route('/client/edit/{id}', name: 'client_reclamation_edit')]
@@ -132,7 +144,7 @@ public function reclamationsProprietaire(
 
         if ($target === 'PROPRIETAIRE') {
 
-            // 2️⃣ Calcul risk score si مازال موش محسوب
+            // 2️⃣ Calcul risk score si   
             if ($reclamation->getRiskScore() === null) {
                 $score = $intelligenceService->calculateRiskScore($reclamation);
                 $reclamation->setRiskScore($score);
@@ -142,7 +154,7 @@ public function reclamationsProprietaire(
         }
     }
 
-    // ✅ زدنا Pagination فقط هنا
+    // ✅  Pagination  
     $pagination = $paginator->paginate(
         $reclamations,
         $request->query->getInt('page', 1),
@@ -150,8 +162,8 @@ public function reclamationsProprietaire(
     );
 
     return $this->render('frontOffice/reclamation/proprietaire/index.html.twig', [
-        'reclamations' => $reclamations, // خليتها كيف ما هي
-        'pagination' => $pagination,     // الجديدة
+        'reclamations' => $reclamations, //    
+        'pagination' => $pagination,     // 
         'intelligenceService' => $intelligenceService
     ]);
 }
@@ -218,8 +230,8 @@ public function admin(
     );
 
     return $this->render('backOffice/reclamation/admin/index.html.twig', [
-        'reclamations' => $pagination, // خليتها بنفس الاسم
-        'pagination' => $pagination,   // كان تحب تستعملها مباشرة
+        'reclamations' => $pagination,    
+        'pagination' => $pagination,       
         'intelligenceService' => $intelligenceService
     ]);
 }

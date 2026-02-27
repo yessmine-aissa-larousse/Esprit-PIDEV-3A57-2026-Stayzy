@@ -4,11 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-<<<<<<< HEAD
     "content-hash": "82202925dec3b2b95c75db7ddf07fe47",
-=======
-    "content-hash": "8d7da747ba02e7725896bd102a78dc72",
->>>>>>> module-user_logement_reservation
     "packages": [
         {
             "name": "composer/semver",

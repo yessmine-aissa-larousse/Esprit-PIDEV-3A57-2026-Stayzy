@@ -29,7 +29,7 @@ public function newAdmin(
     Request $request,
     EntityManagerInterface $em,
     ReclamationIntelligenceService $intelligenceService,
-        ReponseNotifier $notifier
+    ReponseNotifier $reponseNotifier
 
 ): Response {
 
@@ -62,7 +62,9 @@ $reponse->setContenu($suggestion);    $reponse->setReclamation($reclamation);
         $em->persist($reponse);
         $em->flush();
 
-        $notifier->notifyReponse();
+        $client = $reclamation->getUser();
+
+$reponseNotifier->notifyReponse($client);
 
         return $this->redirectToRoute('admin_reclamations');
     }
@@ -84,7 +86,7 @@ $reponse->setContenu($suggestion);    $reponse->setReclamation($reclamation);
         Request $request,
         EntityManagerInterface $em,
             ReclamationIntelligenceService $intelligenceService,
-                ReponseNotifier $notifier
+    ReponseNotifier $reponseNotifier
 
 
     ): Response {
@@ -110,8 +112,9 @@ $reponse->setContenu($suggestion);        $reponse->setReclamation($reclamation)
             $em->persist($reponse);
             $em->flush();
 
-                    $notifier->notifyReponse();
+$client = $reclamation->getUser();
 
+$reponseNotifier->notifyReponse($client);
 
             return $this->redirectToRoute('prop_reclamations');
         }
@@ -137,7 +140,6 @@ public function editAdmin(
 
     $reclamation = $reponse->getReclamation();
 
-    // 🔒 إذا موش ADMIN نرجعو للقائمة بصمت
     if ($intelligenceService->detectTargetRole($reclamation) !== 'ADMIN') {
         return $this->redirectToRoute('admin_reclamations');
     }
@@ -222,7 +224,6 @@ public function reponsesProprietaire(
 
     $idReclamation = $request->query->get('id_reclamation');
 
-    // 1️⃣ نجيبوا réclamations اللي target متاعهم PROPRIETAIRE
     $allReclamations = $reclamationRepo->findAll();
 
     $reclamationsProp = [];
@@ -235,7 +236,6 @@ public function reponsesProprietaire(
         }
     }
 
-    // 2️⃣ نجيبوا réponses اللي مربوطين بهالرéclamations
     $qb = $repo->createQueryBuilder('r')
         ->join('r.reclamation', 'rec')
         ->where('rec IN (:recs)')
