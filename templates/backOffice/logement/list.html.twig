@@ -131,11 +131,14 @@
                                         </td>
                                         
                                         <td>
-                                            {% if logement.adresse %}
-                                                <small>{{ logement.adresse.ville }}, {{ logement.adresse.codePostal }}</small>
-                                            {% else %}
-                                                <small class="text-muted">-</small>
-                                            {% endif %}
+                                            {% if logement.adresse is iterable %}
+    <small>
+        {{ logement.adresse.ville ?? '-' }},
+        {{ logement.adresse.codePostal ?? '-' }}
+    </small>
+{% else %}
+    <small class="text-muted">-</small>
+{% endif %}
                                         </td>
                                         
                                         <td><strong class="text-success">{{ logement.prix|number_format(0) }}€</strong></td>

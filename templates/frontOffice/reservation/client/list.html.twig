@@ -3,16 +3,10 @@
 {% block title %}Mes Réservations{% endblock %}
 
 {% block body %}
-
 <div class="container-fluid">
-
-   <div class="mb-4 mt-5 text-center">
-    <h2 class="fw-semibold text-secondary">
-        Mes Réservations
-    </h2>
-</div>
-
-
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="fw-semibold text-secondary">Mes Réservations</h2>
+    </div>
 
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show small" role="alert">
@@ -21,9 +15,49 @@
         </div>
     {% endfor %}
 
+    {# ══════════════════════════════════════ #}
+    {# BLOC IA : DATES OPTIMALES             #}
+    {# ══════════════════════════════════════ #}
+    {% if datesOptimales is not empty %}
+    <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #6c63ff !important;">
+        <div class="card-body py-3">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span style="font-size:1.2rem;">📅</span>
+                <span class="fw-semibold text-secondary small">Suggestions IA — Meilleures dates pour réserver</span>
+            </div>
+            <div class="row g-2">
+                {% for s in datesOptimales %}
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 border
+                        {% if s.badge == 'success' %}border-success bg-success bg-opacity-10
+                        {% elseif s.badge == 'info' %}border-info bg-info bg-opacity-10
+                        {% else %}border-warning bg-warning bg-opacity-10{% endif %}">
+                        <div class="fw-semibold small">{{ s.semaine }}</div>
+                        <div class="small text-muted">{{ s.disponible }}</div>
+                        <div class="mt-1">
+                            {% if s.reduction > 0 %}
+                                <span class="badge bg-success bg-opacity-25 text-success fw-normal">
+                                    📅 {{ s.reduction }}% moins cher — {{ s.prix_estime }} DT/nuit
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-normal">
+                                    🔥 Période très demandée
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ══════════════════════════════════════ #}
+    {# TABLEAU RÉSERVATIONS                  #}
+    {# ══════════════════════════════════════ #}
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
-
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light text-muted small">
                     <tr>
@@ -33,66 +67,106 @@
                         <th>Date Fin</th>
                         <th>Personnes</th>
                         <th>Prix</th>
+                        <th>Analyse Prix IA</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
-
                 <tbody class="small">
                 {% for reservation in reservations %}
-                    <tr>
+                    {# Récupérer les données IA pour cette réservation #}
+                    {% set alerte = alertes24h[reservation.id] ?? {'niveau': 'ok', 'message': null, 'peut_modifier': true} %}
+                    {% set prix   = analysesPrix[reservation.id] ?? {'badge': 'info', 'message': 'N/A', 'diff_pct': 0} %}
+
+                    <tr {% if alerte.niveau == 'danger' %}style="background: rgba(220,53,69,0.04);"
+                        {% elseif alerte.niveau == 'warning' %}style="background: rgba(255,193,7,0.04);"
+                        {% endif %}>
+
                         <td class="fw-medium">#{{ reservation.id }}</td>
                         <td>{{ reservation.logement.titre }}</td>
                         <td>{{ reservation.dateDebut|date('d/m/Y') }}</td>
                         <td>{{ reservation.dateFin|date('d/m/Y') }}</td>
                         <td>{{ reservation.nombrePersonnes }}</td>
-                        <td>{{ reservation.prixTotal }} DT</td>
 
+                        {# Prix + Badge IA #}
+                        <td>
+                            <div>{{ reservation.prixTotal }} DT</div>
+                            <small class="
+                                {% if prix.badge == 'success' %}text-success
+                                {% elseif prix.badge == 'warning' %}text-warning
+                                {% elseif prix.badge == 'danger' %}text-danger
+                                {% else %}text-muted{% endif %}">
+                                {% if prix.badge == 'success' %}💚
+                                {% elseif prix.badge == 'warning' %}🟡
+                                {% elseif prix.badge == 'danger' %}🔴
+                                {% else %}{% endif %}
+                                {{ prix.message }}
+                            </small>
+                        </td>
+
+                        {# Analyse Prix IA #}
+                        <td>
+                            <span class="badge
+                                {% if prix.badge == 'success' %}bg-success bg-opacity-25 text-success
+                                {% elseif prix.badge == 'warning' %}bg-warning bg-opacity-25 text-warning-emphasis
+                                {% elseif prix.badge == 'danger' %}bg-danger bg-opacity-25 text-danger
+                                {% else %}bg-secondary bg-opacity-25 text-secondary{% endif %}
+                                fw-normal">
+                                {{ prix.message }}
+                            </span>
+                        </td>
+
+                        {# Status + Alerte 24h #}
                         <td>
                             {% if reservation.status == 'EN_ATTENTE' %}
-                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-normal">
-    En attente
-</span>
-
-
+                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-normal">En attente</span>
                             {% elseif reservation.status == 'CONFIRMÉE' %}
-                                <span class="badge bg-success bg-opacity-25 text-success fw-normal">
-                                    Confirmée
-                                </span>
+                                <span class="badge bg-success bg-opacity-25 text-success fw-normal">Confirmée</span>
                             {% else %}
-                                <span class="badge bg-danger bg-opacity-25 text-danger fw-normal">
-                                    Annulée
-                                </span>
+                                <span class="badge bg-danger bg-opacity-25 text-danger fw-normal">Annulée</span>
+                            {% endif %}
+
+                            {# Badge alerte 24h #}
+                            {% if alerte.niveau == 'danger' %}
+                                <div class="mt-1">
+                                    <span class="badge bg-danger fw-normal" style="font-size:0.65rem;">
+                                        🚨 {{ alerte.message }}
+                                    </span>
+                                </div>
+                            {% elseif alerte.niveau == 'warning' %}
+                                <div class="mt-1">
+                                    <span class="badge bg-warning text-dark fw-normal" style="font-size:0.65rem;">
+                                        ⚠️ {{ alerte.message }}
+                                    </span>
+                                </div>
                             {% endif %}
                         </td>
 
+                        {# Actions — contrôlées par IA 24h #}
                         <td class="text-end">
                             {% if reservation.status == 'EN_ATTENTE' %}
-                                <a href="{{ path('front_reservation_edit', {'id': reservation.id}) }}"
-                                   class="btn btn-sm btn-outline-primary">
-                                    Modifier
-                                </a>
+                                {% if alerte.peut_modifier %}
+                                    <a href="{{ path('front_reservation_edit', {'id': reservation.id}) }}"
+                                       class="btn btn-sm btn-outline-primary">Modifier</a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled
+                                            title="Délai de modification dépassé">
+                                        🔒 Modifier
+                                    </button>
+                                {% endif %}
                             {% endif %}
                             <a href="{{ path('front_reservation_cancel', {'id': reservation.id}) }}"
-                               class="btn btn-sm btn-outline-danger ms-1">
-                                Annuler
-                            </a>
+                               class="btn btn-sm btn-outline-danger ms-1">Annuler</a>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            Aucune réservation trouvée
-                        </td>
+                        <td colspan="9" class="text-center text-muted py-4">Aucune réservation trouvée</td>
                     </tr>
                 {% endfor %}
                 </tbody>
-
             </table>
-
         </div>
     </div>
-
 </div>
-
 {% endblock %}
