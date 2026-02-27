@@ -1,0 +1,384 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Modifier un logement{% endblock %}
+
+{% block admin_content %}
+    {# App Content Header #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Modifier le logement</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('admin_logement_list') }}">Logements</a></li>
+                        <li class="breadcrumb-item active">Modifier</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# App Content #}
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+
+                    {# Messages Flash #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                    {% for message in app.flashes('error') %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {# Résumé des erreurs en haut #}
+                    {% if errors is defined and errors|length > 0 %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong><i class="bi bi-exclamation-triangle"></i> Le formulaire contient {{ errors|length }} erreur(s). Veuillez les corriger.</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+
+                        {# CARD 1 : Informations de base #}
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Informations de base</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="titre" class="form-label">Titre du logement *</label>
+                                            <input type="text"
+                                                   class="form-control {% if errors.titre is defined %}is-invalid{% endif %}"
+                                                   id="titre"
+                                                   name="titre"
+                                                   value="{{ logement.titre }}"
+                                                   placeholder="Ex: Appartement cosy au centre-ville">
+                                            {% if errors.titre is defined %}
+                                                <div class="invalid-feedback">
+                                                    <i class="bi bi-exclamation-circle"></i> {{ errors.titre }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="categorie" class="form-label">Catégorie *</label>
+                                            <select class="form-select {% if errors.categorie is defined %}is-invalid{% endif %}"
+                                                    id="categorie"
+                                                    name="categorie">
+                                                <option value="">Choisir une catégorie...</option>
+                                                {% for cat in categories %}
+                                                    <option value="{{ cat.id }}"
+                                                        {% if logement.categorie and logement.categorie.id == cat.id %}selected{% endif %}>
+                                                        {{ cat.nom }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if errors.categorie is defined %}
+                                                <div class="invalid-feedback">
+                                                    <i class="bi bi-exclamation-circle"></i> {{ errors.categorie }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control"
+                                              id="description"
+                                              name="description"
+                                              rows="4"
+                                              placeholder="Décrivez les caractéristiques du logement...">{{ logement.description }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 2 : Caractéristiques #}
+                        <div class="card card-success card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Caractéristiques</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="prix" class="form-label">Prix par nuit (€) *</label>
+                                            <div class="input-group has-validation">
+                                                <input type="number"
+                                                       class="form-control {% if errors.prix is defined %}is-invalid{% endif %}"
+                                                       id="prix"
+                                                       name="prix"
+                                                       value="{{ logement.prix }}"
+                                                       step="0.01"
+                                                       placeholder="150.00">
+                                                <span class="input-group-text">€</span>
+                                                {% if errors.prix is defined %}
+                                                    <div class="invalid-feedback">
+                                                        <i class="bi bi-exclamation-circle"></i> {{ errors.prix }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="superficie" class="form-label">Superficie (m²) *</label>
+                                            <div class="input-group has-validation">
+                                                <input type="number"
+                                                       class="form-control {% if errors.superficie is defined %}is-invalid{% endif %}"
+                                                       id="superficie"
+                                                       name="superficie"
+                                                       value="{{ logement.superficie }}"
+                                                       placeholder="75">
+                                                <span class="input-group-text">m²</span>
+                                                {% if errors.superficie is defined %}
+                                                    <div class="invalid-feedback">
+                                                        <i class="bi bi-exclamation-circle"></i> {{ errors.superficie }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="nombreChambres" class="form-label">Chambres *</label>
+                                            <input type="number"
+                                                   class="form-control {% if errors.nombreChambres is defined %}is-invalid{% endif %}"
+                                                   id="nombreChambres"
+                                                   name="nombreChambres"
+                                                   value="{{ logement.nombreChambres }}"
+                                                   placeholder="2">
+                                            {% if errors.nombreChambres is defined %}
+                                                <div class="invalid-feedback">
+                                                    <i class="bi bi-exclamation-circle"></i> {{ errors.nombreChambres }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="nombreSalleDeBain" class="form-label">Salles de bain *</label>
+                                            <input type="number"
+                                                   class="form-control {% if errors.nombreSalleDeBain is defined %}is-invalid{% endif %}"
+                                                   id="nombreSalleDeBain"
+                                                   name="nombreSalleDeBain"
+                                                   value="{{ logement.nombreSalleDeBain }}"
+                                                   placeholder="1">
+                                            {% if errors.nombreSalleDeBain is defined %}
+                                                <div class="invalid-feedback">
+                                                    <i class="bi bi-exclamation-circle"></i> {{ errors.nombreSalleDeBain }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 3 : Adresse #}
+                        <div class="card card-warning card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Adresse</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="rue" class="form-label">Rue *</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="rue"
+                                                   name="rue"
+                                                   value="{{ logement.adresse.rue|default('') }}"
+                                                   placeholder="123 Avenue des Champs-Élysées">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ville" class="form-label">Ville *</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="ville"
+                                                   name="ville"
+                                                   value="{{ logement.adresse.ville|default('') }}"
+                                                   placeholder="Paris">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="codePostal" class="form-label">Code postal *</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="codePostal"
+                                                   name="codePostal"
+                                                   value="{{ logement.adresse.codePostal|default('') }}"
+                                                   placeholder="75008">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="pays" class="form-label">Pays *</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="pays"
+                                                   name="pays"
+                                                   value="{{ logement.adresse.pays|default('France') }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 4 : Photos #}
+                        <div class="card card-danger card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Photos du logement</div>
+                            </div>
+                            <div class="card-body">
+                                {# Photo principale actuelle #}
+                                {% if logement.photoPrincipale %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Photo principale actuelle</label>
+                                        <div>
+                                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
+                                                 alt="Photo principale"
+                                                 class="img-thumbnail"
+                                                 style="max-width: 200px;">
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="photoPrincipale" class="form-label">
+                                        {% if logement.photoPrincipale %}Changer la photo principale{% else %}Photo principale{% endif %}
+                                    </label>
+                                    <input type="file"
+                                           class="form-control"
+                                           id="photoPrincipale"
+                                           name="photoPrincipale"
+                                           accept="image/*">
+                                    <div class="form-text">Formats acceptés : JPG, PNG, WEBP</div>
+                                </div>
+
+                                {# Photos supplémentaires actuelles #}
+                                {% if logement.photos and logement.photos|length > 0 %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Photos supplémentaires ({{ logement.photos|length }})</label>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for photo in logement.photos %}
+                                                <div style="position: relative; display: inline-block;">
+                                                    <img src="{{ asset('uploads/logements/' ~ photo) }}"
+                                                         alt="Photo {{ loop.index }}"
+                                                         class="img-thumbnail"
+                                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                                    <a href="{{ path('admin_logement_photo_delete', {id: logement.id, photoName: photo}) }}"
+                                                       style="position: absolute; top: 5px; right: 5px; background: red; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; font-size: 16px;">
+                                                        ×
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <label for="photos" class="form-label">Ajouter d'autres photos</label>
+                                    <input type="file"
+                                           class="form-control"
+                                           id="photos"
+                                           name="photos[]"
+                                           accept="image/*"
+                                           multiple>
+                                    <div class="form-text">Les nouvelles photos seront ajoutées aux photos existantes</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 5 : Aménités et Disponibilité #}
+                        <div class="card card-info card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Aménités et Disponibilité</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Aménités</label>
+                                    <div class="row">
+                                        {% set amenitesList = ['wifi', 'parking', 'climatisation', 'piscine', 'cuisine', 'lave_linge', 'balcon', 'jardin'] %}
+                                        {% set amenitesLabels = {
+                                            'wifi': 'WiFi',
+                                            'parking': 'Parking',
+                                            'climatisation': 'Climatisation',
+                                            'piscine': 'Piscine',
+                                            'cuisine': 'Cuisine équipée',
+                                            'lave_linge': 'Lave-linge',
+                                            'balcon': 'Balcon/Terrasse',
+                                            'jardin': 'Jardin'
+                                        } %}
+                                        {% for amenite in amenitesList %}
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           name="amenites[]"
+                                                           value="{{ amenite }}"
+                                                           id="{{ amenite }}"
+                                                           {% if logement.amenites and amenite in logement.amenites %}checked{% endif %}>
+                                                    <label class="form-check-label" for="{{ amenite }}">
+                                                        {{ amenitesLabels[amenite] }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="disponible"
+                                           value="1"
+                                           id="disponible"
+                                           {% if logement.disponible %}checked{% endif %}>
+                                    <label class="form-check-label" for="disponible">
+                                        Logement disponible à la location
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Boutons d'action #}
+                        <div class="card">
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                                </button>
+                                <a href="{{ path('admin_logement_list') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Annuler
+                                </a>
+                            </div>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,399 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Promotions — {{ logement.titre }}{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+:root {
+    --green:      #077f46;
+    --green-dark: #055c32;
+    --green-soft: #e8f5ee;
+    --red:        #e53935;
+    --red-soft:   #fff0f0;
+    --gold:       #f59e0b;
+    --gold-soft:  #fffbeb;
+    --blue:       #3b82f6;
+    --blue-soft:  #eff6ff;
+    --gray:       #6b7280;
+    --border:     #e5e7eb;
+    --bg:         #f7f8fa;
+    --white:      #ffffff;
+    --radius:     14px;
+    --shadow:     0 2px 16px rgba(0,0,0,.07);
+    --shadow-lg:  0 8px 32px rgba(0,0,0,.12);
+}
+.page-title { display: none !important; }
+
+.promo-page-header {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    padding: 40px 0 32px; color: #fff;
+}
+.promo-page-header .breadcrumb-bar {
+    font-size: .82rem; opacity: .75; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+}
+.promo-page-header .breadcrumb-bar a { color: #fff; text-decoration: none; }
+.promo-page-header h1 { font-size: 1.75rem; font-weight: 700; margin: 0 0 6px; }
+.promo-page-header p  { opacity: .8; margin: 0; font-size: .93rem; }
+
+.btn-new-promo {
+    background: #fff; color: var(--green);
+    border: none; border-radius: 10px;
+    padding: 11px 22px; font-weight: 700; font-size: .9rem;
+    cursor: pointer; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.btn-new-promo:hover { transform: translateY(-2px); color: var(--green-dark); }
+.btn-new-promo.disabled {
+    background: rgba(255,255,255,.35); color: rgba(255,255,255,.7);
+    cursor: not-allowed; pointer-events: none; box-shadow: none;
+}
+
+.btn-back-logements {
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
+    color: #fff; border-radius: 10px;
+    padding: 10px 18px; font-weight: 600; font-size: .85rem;
+    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s;
+    backdrop-filter: blur(6px);
+}
+.btn-back-logements:hover { background: rgba(255,255,255,.25); color: #fff; }
+
+.promo-stats { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 0; }
+.promo-stats .inner { display: flex; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.ps-item {
+    flex: 1; padding: 8px 20px; border-right: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+}
+.ps-item:last-child { border-right: none; }
+.ps-item .ps-ico {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.ps-item .ps-ico.green { background: var(--green-soft); color: var(--green); }
+.ps-item .ps-ico.gold  { background: var(--gold-soft); color: var(--gold); }
+.ps-item .ps-ico.red   { background: var(--red-soft); color: var(--red); }
+.ps-item .ps-ico.blue  { background: var(--blue-soft); color: var(--blue); }
+.ps-item .ps-val { font-size: 1.3rem; font-weight: 700; line-height: 1; }
+.ps-item .ps-lbl { font-size: .72rem; color: var(--gray); margin-top: 2px; }
+
+.promo-body { padding: 36px 0 60px; background: var(--bg); min-height: 60vh; }
+
+/* Alerte promo en cours */
+.alert-promo-encours {
+    background: linear-gradient(135deg, #fff7ed, #fffbeb);
+    border: 2px solid #f59e0b;
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    display: flex; align-items: flex-start; gap: 14px;
+}
+.alert-promo-encours .alert-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: #fef3c7; color: #d97706;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+}
+.alert-promo-encours h5 { font-weight: 700; color: #92400e; margin: 0 0 4px; font-size: .95rem; }
+.alert-promo-encours p  { color: #a16207; margin: 0; font-size: .84rem; }
+
+.empty-promos {
+    text-align: center; padding: 64px 20px;
+    background: var(--white); border-radius: var(--radius);
+    border: 2px dashed var(--border);
+}
+.empty-promos .ep-icon { font-size: 3.5rem; margin-bottom: 16px; }
+.empty-promos h4 { font-weight: 700; margin-bottom: 8px; }
+.empty-promos p  { color: var(--gray); margin-bottom: 24px; }
+
+.promo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+.promo-card {
+    background: var(--white); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    overflow: hidden; transition: transform .2s, box-shadow .2s;
+}
+.promo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.promo-card .card-stripe { height: 5px; }
+.promo-card.active   .card-stripe { background: linear-gradient(90deg, #10b981, #059669); }
+.promo-card.future   .card-stripe { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.promo-card.expiree  .card-stripe { background: #d1d5db; }
+.promo-card.inactive .card-stripe { background: #d1d5db; }
+.promo-card .card-body { padding: 20px 22px; }
+
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.promo-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: .72rem; font-weight: 700;
+    padding: 4px 12px; border-radius: 50px;
+    text-transform: uppercase; letter-spacing: .04em;
+}
+.badge-active   { background: #d1fae5; color: #065f46; }
+.badge-future   { background: #fef3c7; color: #92400e; }
+.badge-expiree  { background: #f3f4f6; color: #6b7280; }
+.badge-inactive { background: #f3f4f6; color: #6b7280; }
+.promo-pct { font-size: 2rem; font-weight: 800; color: var(--red); line-height: 1; }
+.promo-pct span { font-size: 1rem; font-weight: 600; }
+.promo-titre { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+
+.promo-prix-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.prix-original { text-decoration: line-through; color: var(--gray); font-size: .9rem; }
+.prix-promo { font-size: 1.25rem; font-weight: 800; color: var(--green); }
+.prix-economie { background: var(--red-soft); color: var(--red); font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 50px; }
+
+.promo-dates { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.date-chip {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 5px 10px; font-size: .78rem; color: #374151;
+}
+.date-chip i { color: var(--green); }
+
+.code-promo-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #1e293b; color: #fff;
+    border-radius: 8px; padding: 6px 12px;
+    font-family: monospace; font-size: .85rem; font-weight: 700;
+    margin-bottom: 14px; letter-spacing: .08em;
+}
+.code-promo-chip i { color: var(--gold); }
+
+.countdown-bar {
+    background: var(--green-soft); border-radius: 8px; padding: 8px 12px;
+    font-size: .78rem; color: var(--green-dark);
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 14px; font-weight: 600;
+}
+.countdown-bar.urgent { background: var(--red-soft); color: var(--red); }
+
+.card-actions { display: flex; gap: 8px; padding-top: 14px; border-top: 1px solid var(--border); }
+.btn-edit {
+    flex: 1; border: 1.5px solid var(--border); background: var(--white);
+    border-radius: 9px; padding: 9px; font-size: .83rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; color: #374151;
+    display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s;
+}
+.btn-edit:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+.btn-toggle {
+    border: 1.5px solid var(--border); background: var(--white);
+    border-radius: 9px; padding: 9px 14px; font-size: .83rem; font-weight: 600;
+    cursor: pointer; color: #374151;
+    display: flex; align-items: center; gap: 5px; transition: all .15s;
+}
+.btn-toggle.is-active:hover  { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+.btn-toggle.is-inactive:hover { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+.btn-delete {
+    border: 1.5px solid var(--border); background: var(--white);
+    border-radius: 9px; padding: 9px 12px; font-size: .83rem;
+    cursor: pointer; color: var(--gray);
+    display: flex; align-items: center; transition: all .15s;
+}
+.btn-delete:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+
+@media (max-width: 575px) {
+    .promo-grid { grid-template-columns: 1fr; }
+    .promo-stats .inner { flex-wrap: wrap; }
+    .ps-item { flex: 1 1 45%; border-bottom: 1px solid var(--border); }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="promo-page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <div class="breadcrumb-bar">
+                    <a href="{{ path('proprietaire_logement_list') }}">Mes logements</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <a href="{{ path('proprietaire_logement_details', {id: logement.id}) }}">{{ logement.titre|slice(0,30) }}</a>
+                    <i class="bi bi-chevron-right"></i>
+                    <span>Promotions</span>
+                </div>
+                <h1><i class="bi bi-tag-fill me-2"></i>Gérer les promotions</h1>
+                <p>{{ logement.titre }} · {{ logement.prix }}€/nuit prix de base</p>
+            </div>
+
+            {# Boutons header #}
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+
+                {# ← NOUVEAU : Bouton retour liste logements #}
+                <a href="{{ path('proprietaire_logement_list') }}" class="btn-back-logements">
+                    <i class="bi bi-house-door"></i> Mes logements
+                </a>
+
+                {# ← FIX : désactivé si promo en cours #}
+                {% if promoEnCoursExiste %}
+                    <span class="btn-new-promo disabled" title="Une promotion est déjà en cours">
+                        <i class="bi bi-lock"></i> Promo en cours
+                    </span>
+                {% else %}
+                    <a href="{{ path('promotion_new', {logementId: logement.id}) }}" class="btn-new-promo">
+                        <i class="bi bi-plus-lg"></i> Nouvelle promotion
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Stats bar #}
+{% set nbActives  = promotions|filter(p => p.enCours)|length %}
+{% set nbFutures  = promotions|filter(p => p.future)|length %}
+{% set nbExpirees = promotions|filter(p => p.expiree)|length %}
+{% set nbTotal    = promotions|length %}
+
+<div class="promo-stats">
+    <div class="inner">
+        <div class="ps-item">
+            <div class="ps-ico green"><i class="bi bi-lightning-fill"></i></div>
+            <div><div class="ps-val">{{ nbActives }}</div><div class="ps-lbl">En cours</div></div>
+        </div>
+        <div class="ps-item">
+            <div class="ps-ico gold"><i class="bi bi-clock"></i></div>
+            <div><div class="ps-val">{{ nbFutures }}</div><div class="ps-lbl">À venir</div></div>
+        </div>
+        <div class="ps-item">
+            <div class="ps-ico red"><i class="bi bi-archive"></i></div>
+            <div><div class="ps-val">{{ nbExpirees }}</div><div class="ps-lbl">Expirées</div></div>
+        </div>
+        <div class="ps-item">
+            <div class="ps-ico blue"><i class="bi bi-collection"></i></div>
+            <div><div class="ps-val">{{ nbTotal }}</div><div class="ps-lbl">Total</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="promo-body">
+    <div class="container">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-4 rounded-3">
+                <i class="bi bi-check-circle-fill"></i> {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4 rounded-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {# Alerte promo en cours #}
+        {% if promoEnCoursExiste %}
+            <div class="alert-promo-encours">
+                <div class="alert-icon"><i class="bi bi-lightning-fill"></i></div>
+                <div>
+                    <h5>Une promotion est actuellement en cours</h5>
+                    <p>Vous ne pouvez pas créer une nouvelle promotion tant qu'une est active. Modifiez-la, désactivez-la ou attendez qu'elle expire.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if promotions is empty %}
+            <div class="empty-promos">
+                <div class="ep-icon">🏷️</div>
+                <h4>Aucune promotion créée</h4>
+                <p>Créez votre première promotion pour attirer plus de clients !</p>
+                <a href="{{ path('promotion_new', {logementId: logement.id}) }}" class="btn-new-promo" style="display:inline-flex;">
+                    <i class="bi bi-plus-lg"></i> Créer ma première promotion
+                </a>
+            </div>
+        {% else %}
+            <div class="promo-grid">
+                {% for promo in promotions %}
+                    {% set statut = promo.statutLabel %}
+                    <div class="promo-card {{ statut }}">
+                        <div class="card-stripe"></div>
+                        <div class="card-body">
+
+                            <div class="card-head">
+                                <span class="promo-badge badge-{{ statut }}">
+                                    {% if statut == 'active' %}<i class="bi bi-lightning-fill"></i> En cours
+                                    {% elseif statut == 'future' %}<i class="bi bi-clock-fill"></i> À venir
+                                    {% elseif statut == 'expiree' %}<i class="bi bi-archive-fill"></i> Expirée
+                                    {% else %}<i class="bi bi-pause-circle-fill"></i> Inactive{% endif %}
+                                </span>
+                                <div class="promo-pct">-{{ promo.pourcentage }}<span>%</span></div>
+                            </div>
+
+                            <div class="promo-titre">{{ promo.titre }}</div>
+
+                            <div class="promo-prix-row">
+                                <span class="prix-original">{{ logement.prix }}€</span>
+                                <span class="prix-promo">{{ promo.prixPromo }}€/nuit</span>
+                                <span class="prix-economie">-{{ promo.economie }}€</span>
+                            </div>
+
+                            <div class="promo-dates">
+                                <span class="date-chip"><i class="bi bi-calendar-event"></i> Du {{ promo.dateDebut|date('d/m/Y') }}</span>
+                                <span class="date-chip"><i class="bi bi-calendar-x"></i> Au {{ promo.dateFin|date('d/m/Y') }}</span>
+                            </div>
+
+                            {% if promo.codePromo %}
+                                <div class="code-promo-chip">
+                                    <i class="bi bi-ticket-perforated-fill"></i> {{ promo.codePromo }}
+                                </div>
+                            {% endif %}
+
+                            {% if statut == 'active' %}
+                                <div class="countdown-bar" data-fin="{{ promo.dateFin|date('Y-m-d H:i:s') }}">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    <span class="countdown-text">Calcul en cours...</span>
+                                </div>
+                            {% endif %}
+
+                            <div class="card-actions">
+                                <a href="{{ path('promotion_edit', {logementId: logement.id, id: promo.id}) }}" class="btn-edit">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </a>
+                                <form method="post" action="{{ path('promotion_toggle', {logementId: logement.id, id: promo.id}) }}" style="display:contents">
+                                    <button type="submit" class="btn-toggle {{ promo.active ? 'is-active' : 'is-inactive' }}"
+                                            title="{{ promo.active ? 'Désactiver' : 'Activer' }}">
+                                        <i class="bi bi-{{ promo.active ? 'pause-circle' : 'play-circle' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('promotion_delete', {logementId: logement.id, id: promo.id}) }}"
+                                      style="display:contents" onsubmit="return confirm('Supprimer cette promotion ?')">
+                                    <button type="submit" class="btn-delete">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+document.querySelectorAll('.countdown-bar[data-fin]').forEach(function(bar) {
+    const fin = new Date(bar.dataset.fin);
+    const txt = bar.querySelector('.countdown-text');
+    function update() {
+        const diff = fin - new Date();
+        if (diff <= 0) { txt.textContent = 'Promotion expirée'; return; }
+        const j = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        txt.textContent = j > 0
+            ? 'Se termine dans ' + j + 'j ' + h + 'h'
+            : 'Se termine dans ' + h + 'h ' + m + 'min';
+        if (j === 0 && h < 6) bar.classList.add('urgent');
+    }
+    update(); setInterval(update, 60000);
+});
+</script>
+{% endblock %}

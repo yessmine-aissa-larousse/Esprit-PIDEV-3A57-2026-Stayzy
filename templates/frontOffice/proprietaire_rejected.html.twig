@@ -1,0 +1,105 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Compte rejeté - Stayzy{% endblock %}
+
+{% block body %}
+<section style="padding: 80px 0; background: #f8f9fa; min-height: 80vh; display: flex; align-items: center;">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-7 col-md-9">
+
+    <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+
+        {# En-tête rouge #}
+        <div class="text-center py-5" style="background: linear-gradient(135deg, #c62828, #e53935);">
+            <div style="width: 90px; height: 90px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="bi bi-x-circle text-white" style="font-size: 2.5rem;"></i>
+            </div>
+            <h2 class="text-white fw-bold mb-1">Demande non approuvée</h2>
+            <p class="mb-0" style="color: rgba(255,255,255,0.85); font-size: 15px;">
+                Bonjour <strong>{{ user.prenom }}</strong>, votre dossier a été examiné.
+            </p>
+        </div>
+
+        <div class="card-body p-5">
+
+            {# Message principal #}
+            <div class="alert border-0 mb-4" style="background: #ffebee; border-left: 4px solid #c62828 !important; border-radius: 10px;">
+                <p class="mb-0" style="color: #5d1c1c; font-size: 15px;">
+                    <i class="bi bi-exclamation-triangle me-2 text-danger"></i>
+                    Après examen de votre dossier, votre demande d'accès en tant que propriétaire a été <strong>refusée</strong>.
+                    Vous ne pouvez pas accéder à l'espace propriétaire.
+                </p>
+            </div>
+
+            {# Raison du rejet si disponible #}
+            {% if user.rejectionReason %}
+            <div class="card border-0 mb-4" style="background: #fff3f3; border-radius: 12px; border: 1px solid #ffcdd2;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-2 text-danger">
+                        <i class="bi bi-chat-square-text me-2"></i>Motif communiqué par l'équipe
+                    </h6>
+                    <p class="mb-0 text-muted">{{ user.rejectionReason }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Raisons communes #}
+            <div class="card border-0 mb-4" style="background: #f8f9fa; border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-list-check me-2 text-danger"></i>Raisons fréquentes de refus
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-dash-circle text-danger me-2"></i>
+                            Informations de profil incomplètes ou incorrectes
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-dash-circle text-danger me-2"></i>
+                            Non-conformité aux conditions générales de la plateforme
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-dash-circle text-danger me-2"></i>
+                            Compte déjà existant sous une autre adresse email
+                        </li>
+                        <li>
+                            <i class="bi bi-dash-circle text-danger me-2"></i>
+                            Activité suspecte détectée lors de l'examen du dossier
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {# Que faire ? #}
+            <div class="card border-0 mb-4" style="background: #e8f5e9; border-radius: 12px;">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-3 text-success">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Que pouvez-vous faire ?
+                    </h6>
+                    <p class="text-muted small mb-0">
+                        Si vous pensez que cette décision est une erreur, contactez notre équipe support en expliquant
+                        votre situation. Nous réexaminerons votre dossier dans les plus brefs délais.
+                    </p>
+                </div>
+            </div>
+
+            {# Actions #}
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary flex-grow-1" style="border-radius: 10px;">
+                    <i class="bi bi-box-arrow-right me-2"></i>Se déconnecter
+                </a>
+                <a href="mailto:contact@stayzy.com?subject=Contestation refus compte propriétaire - {{ user.email }}"
+                   class="btn text-white flex-grow-1" style="background: #c62828; border-radius: 10px;">
+                    <i class="bi bi-envelope me-2"></i>Contester la décision
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+</div>
+</div>
+</section>
+{% endblock %}

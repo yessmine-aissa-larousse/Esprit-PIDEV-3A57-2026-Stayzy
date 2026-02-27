@@ -1,0 +1,102 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Commandes{% endblock %}
+
+{% block body %}
+
+<div class="container-fluid mb-5">
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="fw-semibold text-success" style="font-size:32px;">Mes Commandes</h2>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show small" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm mx-auto" style="max-width: 1400px;">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-success text-dark small">
+                    <tr>
+                        <th>#</th>
+                        <th>Logement</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>Personnes</th>
+                        <th>Prix</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    {% for commande in commandes %}
+                        <tr>
+                            <td>#{{ commande.id }}</td>
+                            <td>{{ commande.reservation.logement.titre }}</td>
+                            <td>{{ commande.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ commande.dateFin|date('d/m/Y') }}</td>
+                            <td>{{ commande.reservation.nombrePersonnes }}</td>
+                            <td>{{ commande.prixTotal }} DT</td>
+                            <td>
+                                {% set status = commande.paymentStatus %}
+                                {% if status == 'EN_ATTENTE' %}
+                                    <span class="badge bg-warning bg-opacity-25 text-warning-emphasis">En attente</span>
+                                {% elseif status == 'PAYÉ' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success">Payé</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger">Annulé</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if status == 'EN_ATTENTE' %}
+                                    <button class="btn btn-sm btn-success checkout-button"
+                                            data-stripe-key="{{ stripe_public_key }}"
+                                            data-commande-id="{{ commande.id }}">
+                                        Payer
+                                    </button>
+                                {% elseif status == 'PAYÉ' %}
+                                    <a href="{{ path('commande_commande_facture', {'id': commande.id}) }}" class="btn btn-sm btn-success" target="_blank">
+                                        Imprimer Facture
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">Aucune commande trouvée</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.checkout-button').forEach(button => {
+        button.addEventListener('click', async () => {
+            const stripe = Stripe(button.dataset.stripeKey);
+            const commandeId = button.dataset.commandeId;
+
+            try {
+                const res = await fetch(`/stripe/create-session/${commandeId}`, { method: 'POST' });
+                const session = await res.json();
+                if (session.id) {
+                    stripe.redirectToCheckout({ sessionId: session.id });
+                } else {
+                    alert('Erreur lors de la création du paiement');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Impossible de contacter le serveur.');
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
