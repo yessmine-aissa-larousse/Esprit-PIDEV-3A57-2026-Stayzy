@@ -1,0 +1,42 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Nouvelle réservation{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background py-5">
+    <div class="container text-center">
+        <h1 class="fw-bold">Nouvelle réservation</h1>
+
+    </div>
+</div>
+
+<div class="container my-5">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 600px;">
+        {{ form_start(form) }}
+            <div class="mb-3">
+                {{ form_label(form.dateDebut) }}
+                {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.dateFin) }}
+                {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.nombrePersonnes) }}
+                {{ form_widget(form.nombrePersonnes, {'attr': {'class': 'form-control'}}) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.messageDemande) }}
+                {{ form_widget(form.messageDemande, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+            </div>
+<button type="submit" class="btn btn-success w-100">Réserver</button>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+{% endblock %}

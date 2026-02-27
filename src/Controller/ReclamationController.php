@@ -31,8 +31,8 @@ class ReclamationController extends AbstractController
 public function new(Request $request, EntityManagerInterface $em, ReclamationIntelligenceService $intelligenceService)    {
         $reclamation = new Reclamation();
 
-        // client id = 1
-        $client = $em->getRepository(User::class)->find(1);
+        // client 
+        $client = $this->getUser();
         $reclamation->setUser($client);
         $reclamation->setStatut('EN_ATTENTE');
 
@@ -66,8 +66,9 @@ $reclamation->setIsAbusive($abuse);
     {
         $reclamations = $repo->createQueryBuilder('r')
             ->leftJoin('r.reponses', 'rep')->addSelect('rep')
-            ->where('r.user = 1')
-            ->orderBy('r.id', 'DESC')
+->where('r.user = :user')
+->setParameter('user', $this->getUser())       
+     ->orderBy('r.id', 'DESC')
             ->getQuery()->getResult();
 
         return $this->render('frontOffice/reclamation/client/mes_reclamations.html.twig', [

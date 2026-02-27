@@ -1,0 +1,314 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Favoris de mes clients - Stayzy{% endblock %}
+
+{% block body %}
+
+    {# ── Hero / Breadcrumb ── #}
+    <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 60px 0 40px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-1">
+                        <i class="bi bi-star-fill text-warning me-2"></i>Favoris de mes clients
+                    </h2>
+                    <p class="text-muted mb-0">Découvrez quels logements intéressent le plus vos clients</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_proprietaire_profile') }}">Mon Espace</a></li>
+                            <li class="breadcrumb-item active">Favoris clients</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ── Contenu principal ── #}
+    <section style="padding: 50px 0 80px;">
+        <div class="container">
+
+            {# ── Statistiques ── #}
+            <div class="row g-4 mb-5">
+
+                {# Logements publiés #}
+                <div class="col-lg-4 col-md-6">
+                    <div class="p-4 rounded-4 text-white d-flex align-items-center gap-4"
+                         style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 6px 20px rgba(245,158,11,0.35);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-25"
+                             style="width: 60px; height: 60px; flex-shrink: 0;">
+                            <i class="bi bi-house-fill fs-3 text-white"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 2rem; line-height: 1;">{{ statistiques|length }}</div>
+                            <div class="opacity-90">Logements publiés</div>
+                            <a href="{{ path('proprietaire_logement_list') }}"
+                               class="text-white opacity-75 small text-decoration-none">
+                                Voir mes annonces <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                {# Total favoris #}
+                <div class="col-lg-4 col-md-6">
+                    <div class="p-4 rounded-4 text-white d-flex align-items-center gap-4"
+                         style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 20px rgba(16,185,129,0.35);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-25"
+                             style="width: 60px; height: 60px; flex-shrink: 0;">
+                            <i class="bi bi-star-fill fs-3 text-white"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold" style="font-size: 2rem; line-height: 1;">
+                                {{ statistiques|reduce((carry, s) => carry + s.nombre_favoris, 0) }}
+                            </div>
+                            <div class="opacity-90">Total favoris reçus</div>
+                            <span class="opacity-75 small">Toutes propriétés confondues</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Logement le plus populaire #}
+                <div class="col-lg-4 col-md-6">
+                    <div class="p-4 rounded-4 text-white d-flex align-items-center gap-4"
+                         style="background: linear-gradient(135deg, #3b82f6, #2563eb); box-shadow: 0 6px 20px rgba(59,130,246,0.35);">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-white bg-opacity-25"
+                             style="width: 60px; height: 60px; flex-shrink: 0;">
+                            <i class="bi bi-heart-fill fs-3 text-white"></i>
+                        </div>
+                        <div style="min-width: 0;">
+                            <div class="fw-bold text-truncate" style="font-size: 1.1rem; line-height: 1.3;">
+                                {% if statistiques|length > 0 and statistiques[0].nombre_favoris > 0 %}
+                                    {{ statistiques[0].logement.titre }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                            <div class="opacity-90">Logement le plus populaire</div>
+                            <span class="opacity-75 small">Par nombre de favoris</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {# ── Tableau / Liste ── #}
+            {% if statistiques is empty %}
+
+                <div class="text-center py-5">
+                    <i class="bi bi-star" style="font-size: 80px; color: #dee2e6;"></i>
+                    <h4 class="mt-4 fw-semibold">Aucun logement publié</h4>
+                    <p class="text-muted mb-4">
+                        Vous n'avez pas encore de logements ou aucun client ne les a mis en favoris.
+                    </p>
+                    <a href="{{ path('proprietaire_logement_add') }}" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-plus-lg me-2"></i>Ajouter un logement
+                    </a>
+                </div>
+
+            {% else %}
+
+                <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+
+                    {# En-tête tableau #}
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
+                        <h5 class="mb-0 fw-semibold">
+                            <i class="bi bi-house-heart-fill text-danger me-2"></i>
+                            Popularité de vos logements
+                        </h5>
+                        <span class="badge bg-secondary">{{ statistiques|length }} logement(s)</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background: #f8f9fa;">
+                                <tr>
+                                    <th class="text-center ps-4" style="width: 50px;">#</th>
+                                    <th>Logement</th>
+                                    <th class="text-center" style="width: 110px;">
+                                        <i class="bi bi-star-fill text-warning me-1"></i>Favoris
+                                    </th>
+                                    <th>Clients intéressés</th>
+                                    <th style="width: 160px;">Popularité</th>
+                                    <th class="text-center pe-4" style="width: 110px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set maxFavoris = statistiques[0].nombre_favoris %}
+
+                                {% for item in statistiques %}
+                                <tr style="border-bottom: 1px solid #f0f0f0;">
+
+                                    {# Rang #}
+                                    <td class="text-center ps-4 fw-bold text-muted">
+                                        {% if loop.index == 1 and item.nombre_favoris > 0 %}
+                                            <i class="bi bi-trophy-fill text-warning fs-5"></i>
+                                        {% else %}
+                                            {{ loop.index }}
+                                        {% endif %}
+                                    </td>
+
+                                    {# Photo + infos #}
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center gap-3">
+
+                                            {# Photo #}
+                                            {% if item.logement.photoPrincipale %}
+                                                <img src="{{ asset('uploads/logements/' ~ item.logement.photoPrincipale) }}"
+                                                     alt="{{ item.logement.titre }}"
+                                                     class="rounded-3 shadow-sm"
+                                                     style="width: 68px; height: 68px; object-fit: cover; flex-shrink: 0;">
+                                            {% elseif item.logement.photos and item.logement.photos|length > 0 %}
+                                                <img src="{{ asset('uploads/logements/' ~ item.logement.photos[0]) }}"
+                                                     alt="{{ item.logement.titre }}"
+                                                     class="rounded-3 shadow-sm"
+                                                     style="width: 68px; height: 68px; object-fit: cover; flex-shrink: 0;">
+                                            {% else %}
+                                                <div class="rounded-3 bg-light d-flex align-items-center justify-content-center shadow-sm"
+                                                     style="width: 68px; height: 68px; flex-shrink: 0;">
+                                                    <i class="bi bi-house-fill text-muted fs-3"></i>
+                                                </div>
+                                            {% endif %}
+
+                                            <div>
+                                                <div class="fw-semibold">{{ item.logement.titre }}</div>
+
+                                                {% if item.logement.categorie %}
+                                                    <span class="badge bg-light border text-dark me-1"
+                                                          style="font-size: 0.7rem; border-radius: 6px;">
+                                                        {{ item.logement.categorie.nom }}
+                                                    </span>
+                                                {% endif %}
+
+                                                {% if item.logement.adresse %}
+                                                    <div class="text-muted mt-1" style="font-size: 0.78rem;">
+                                                        <i class="bi bi-geo-alt me-1 text-danger"></i>
+                                                        {{- item.logement.adresse.ville
+                                                            ?? item.logement.adresse.rue
+                                                            ?? item.logement.adresse.pays
+                                                            ?? 'Adresse non précisée' -}}
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="mt-1" style="font-size: 0.82rem;">
+                                                    <span class="text-success fw-semibold">{{ item.logement.prix }} €</span>
+                                                    <span class="text-muted">/ nuit</span>
+                                                    {% if item.logement.disponible %}
+                                                        <span class="badge bg-success ms-1" style="font-size: 0.65rem;">Disponible</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Indisponible</span>
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="text-muted mt-1" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-door-closed me-1"></i>{{ item.logement.nombreChambres }} ch.
+                                                    &nbsp;·&nbsp;
+                                                    <i class="bi bi-arrows-angle-expand me-1"></i>{{ item.logement.superficie }} m²
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    {# Compteur favoris #}
+                                    <td class="text-center">
+                                        {% if item.nombre_favoris > 0 %}
+                                            <span class="badge bg-warning text-dark fs-6 px-3 py-2" style="border-radius: 10px;">
+                                                <i class="bi bi-star-fill me-1"></i>{{ item.nombre_favoris }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary px-3 py-2" style="border-radius: 10px;">
+                                                <i class="bi bi-star me-1"></i>0
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    {# Clients #}
+                                    <td>
+                                        {% if item.utilisateurs|length > 0 %}
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for user in item.utilisateurs|slice(0, 4) %}
+                                                    <span class="badge bg-light border text-dark"
+                                                          style="border-radius: 8px; font-size: 0.75rem;"
+                                                          title="{{ user.email }}">
+                                                        <i class="bi bi-person-circle me-1"></i>
+                                                        {{ user.prenom ~ ' ' ~ user.nom }}
+                                                    </span>
+                                                {% endfor %}
+                                                {% if item.utilisateurs|length > 4 %}
+                                                    <span class="badge bg-secondary" style="border-radius: 8px;">
+                                                        +{{ item.utilisateurs|length - 4 }} autres
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted fst-italic small">Aucun pour l'instant</span>
+                                        {% endif %}
+                                    </td>
+
+                                    {# Popularité #}
+                                    <td>
+                                        {% if maxFavoris > 0 %}
+                                            {% set pct = (item.nombre_favoris / maxFavoris * 100)|round %}
+                                            <div class="progress mb-1" style="height: 8px; border-radius: 8px;">
+                                                <div class="progress-bar
+                                                    {% if pct >= 75 %}bg-success
+                                                    {% elseif pct >= 40 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}"
+                                                     role="progressbar"
+                                                     style="width: {{ pct }}%;"
+                                                     aria-valuenow="{{ pct }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">{{ pct }}% du max</small>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    {# Actions #}
+                                    <td class="text-center pe-4">
+                                        <a href="{{ path('app_property_details', {id: item.logement.id}) }}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Voir le logement"
+                                           style="border-radius: 8px;">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_logement_edit', {id: item.logement.id}) }}"
+                                           class="btn btn-sm btn-outline-secondary ms-1"
+                                           title="Modifier"
+                                           style="border-radius: 8px;">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-footer bg-white border-top text-muted small px-4 py-3">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Classement par nombre de favoris décroissant.
+                        <i class="bi bi-trophy-fill text-warning ms-2 me-1"></i> = logement le plus apprécié de vos clients.
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+    </section>
+
+    <style>
+        .table tbody tr:hover { background-color: #fafafa; }
+        .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
+        .breadcrumb-item a:hover { text-decoration: underline; }
+    </style>
+
+{% endblock %}

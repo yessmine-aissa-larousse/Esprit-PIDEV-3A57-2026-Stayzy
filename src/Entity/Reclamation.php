@@ -47,8 +47,8 @@ class Reclamation
     private ?string $statut = null;
 
     //  Relation obligatoire avec User
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'reclamations')]
-#[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'reclamations')]
+#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
 private ?User $user = null;
 
     //  Relation avec Reponse (OneToMany)

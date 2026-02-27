@@ -1,0 +1,12 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block body %}
+<div class="container text-center mt-5">
+    <h2 class="text-success">Paiement réussi ✅</h2>
+    <p>Votre paiement a été effectué avec succès.</p>
+
+    <a href="{{ path('commande_list') }}" class="btn btn-primary mt-3">
+        Retour à mes commandes
+    </a>
+</div>
+{% endblock %}

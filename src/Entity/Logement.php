@@ -82,10 +82,17 @@ class Logement
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
-
     // ⭐ NOUVEAU : Utilisateurs qui ont mis ce logement en favori
+ 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoris')]
-    private Collection $utilisateursFavoris;
+private Collection $utilisateursFavoris;
+
+    #[ORM\OneToMany(targetEntity: Promotion::class, mappedBy: 'logement', orphanRemoval: true)]
+    private Collection $promotions;
+
+    #[ORM\OneToMany(mappedBy: 'logement', targetEntity: Reservation::class, orphanRemoval: true)]
+    private Collection $reservations;
+
 
     public function __construct()
     {
@@ -94,228 +101,117 @@ class Logement
         $this->noteMoyenne = null;
         $this->totalAvis = 0;
         $this->utilisateursFavoris = new ArrayCollection();
+
+        $this->promotions = new ArrayCollection();
+        $this->reservations = new ArrayCollection();
     }
 
-    // ========== Getters/Setters existants ==========
+    // ====== GETTERS / SETTERS ======
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getTitre(): ?string { return $this->titre; }
+    public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
-    public function getTitre(): ?string
-    {
-        return $this->titre;
-    }
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $description): static { $this->description = $description; return $this; }
 
-    public function setTitre(string $titre): static
-    {
-        $this->titre = $titre;
-        return $this;
-    }
+    public function getAdresse(): ?array { return $this->adresse; }
+    public function setAdresse(?array $adresse): static { $this->adresse = $adresse; return $this; }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+    public function getPrix(): ?float { return $this->prix; }
+    public function setPrix(float $prix): static { $this->prix = $prix; return $this; }
 
-    public function setDescription(?string $description): static
-    {
-        $this->description = $description;
-        return $this;
-    }
+    public function getSuperficie(): ?int { return $this->superficie; }
+    public function setSuperficie(int $superficie): static { $this->superficie = $superficie; return $this; }
 
-    public function getAdresse(): ?array
-    {
-        return $this->adresse;
-    }
+    public function getNombreChambres(): ?int { return $this->nombreChambres; }
+    public function setNombreChambres(int $nombreChambres): static { $this->nombreChambres = $nombreChambres; return $this; }
 
-    public function setAdresse(?array $adresse): static
-    {
-        $this->adresse = $adresse;
-        return $this;
-    }
+    public function getNombreSalleDeBain(): ?int { return $this->nombreSalleDeBain; }
+    public function setNombreSalleDeBain(int $nombreSalleDeBain): static { $this->nombreSalleDeBain = $nombreSalleDeBain; return $this; }
 
-    public function getPrix(): ?float
-    {
-        return $this->prix;
-    }
+    public function getAmenites(): ?array { return $this->amenites; }
+    public function setAmenites(?array $amenites): static { $this->amenites = $amenites; return $this; }
 
-    public function setPrix(float $prix): static
-    {
-        $this->prix = $prix;
-        return $this;
-    }
+    public function isDisponible(): ?bool { return $this->disponible; }
+    public function setDisponible(bool $disponible): static { $this->disponible = $disponible; return $this; }
 
-    public function getSuperficie(): ?int
-    {
-        return $this->superficie;
-    }
+    public function getPhotos(): ?array { return $this->photos; }
+    public function setPhotos(?array $photos): static { $this->photos = $photos; return $this; }
 
-    public function setSuperficie(int $superficie): static
-    {
-        $this->superficie = $superficie;
-        return $this;
-    }
+    public function getPhotoPrincipale(): ?string { return $this->photoPrincipale; }
+    public function setPhotoPrincipale(?string $photoPrincipale): static { $this->photoPrincipale = $photoPrincipale; return $this; }
 
-    public function getNombreChambres(): ?int
-    {
-        return $this->nombreChambres;
-    }
+    public function getNoteMoyenne(): ?float { return $this->noteMoyenne; }
+    public function setNoteMoyenne(?float $noteMoyenne): static { $this->noteMoyenne = $noteMoyenne; return $this; }
 
-    public function setNombreChambres(int $nombreChambres): static
-    {
-        $this->nombreChambres = $nombreChambres;
-        return $this;
-    }
+    public function getTotalAvis(): ?int { return $this->totalAvis; }
+    public function setTotalAvis(?int $totalAvis): static { $this->totalAvis = $totalAvis; return $this; }
 
-    public function getNombreSalleDeBain(): ?int
-    {
-        return $this->nombreSalleDeBain;
-    }
+    public function getCategorie(): ?Categorie { return $this->categorie; }
+    public function setCategorie(?Categorie $categorie): static { $this->categorie = $categorie; return $this; }
 
-    public function setNombreSalleDeBain(int $nombreSalleDeBain): static
-    {
-        $this->nombreSalleDeBain = $nombreSalleDeBain;
-        return $this;
-    }
+    public function getProprietaire(): ?User { return $this->proprietaire; }
+    public function setProprietaire(?User $proprietaire): static { $this->proprietaire = $proprietaire; return $this; }
 
-    public function getAmenites(): ?array
-    {
-        return $this->amenites;
-    }
+    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-    public function setAmenites(?array $amenites): static
-    {
-        $this->amenites = $amenites;
-        return $this;
-    }
+    // ⭐ Favoris
+    public function getUtilisateursFavoris(): Collection { return $this->utilisateursFavoris; }
+    public function addUtilisateurFavori(User $user): static { if (!$this->utilisateursFavoris->contains($user)) { $this->utilisateursFavoris->add($user); } return $this; }
+    public function removeUtilisateurFavori(User $user): static { $this->utilisateursFavoris->removeElement($user); return $this; }
+    public function estEnFavoriPour(User $user): bool { return $this->utilisateursFavoris->contains($user); }
 
-    public function isDisponible(): ?bool
-    {
-        return $this->disponible;
-    }
-
-    public function setDisponible(bool $disponible): static
-    {
-        $this->disponible = $disponible;
-        return $this;
-    }
-
-    public function getPhotos(): ?array
-    {
-        return $this->photos;
-    }
-
-    public function setPhotos(?array $photos): static
-    {
-        $this->photos = $photos;
-        return $this;
-    }
-
-    public function getPhotoPrincipale(): ?string
-    {
-        return $this->photoPrincipale;
-    }
-
-    public function setPhotoPrincipale(?string $photoPrincipale): static
-    {
-        $this->photoPrincipale = $photoPrincipale;
-        return $this;
-    }
-
-    public function getNoteMoyenne(): ?float
-    {
-        return $this->noteMoyenne;
-    }
-
-    public function setNoteMoyenne(?float $noteMoyenne): static
-    {
-        $this->noteMoyenne = $noteMoyenne;
-        return $this;
-    }
-
-    public function getTotalAvis(): ?int
-    {
-        return $this->totalAvis;
-    }
-
-    public function setTotalAvis(?int $totalAvis): static
-    {
-        $this->totalAvis = $totalAvis;
-        return $this;
-    }
-
-    public function getCategorie(): ?Categorie
-    {
-        return $this->categorie;
-    }
-
-    public function setCategorie(?Categorie $categorie): static
-    {
-        $this->categorie = $categorie;
-        return $this;
-    }
-
-    public function getProprietaire(): ?User
-    {
-        return $this->proprietaire;
-    }
-
-    public function setProprietaire(?User $proprietaire): static
-    {
-        $this->proprietaire = $proprietaire;
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
-    // ========== ⭐ NOUVEAUX : Gestion des favoris ==========
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUtilisateursFavoris(): Collection
-    {
-        return $this->utilisateursFavoris;
-    }
-
-    public function addUtilisateurFavori(User $user): static
-    {
-        if (!$this->utilisateursFavoris->contains($user)) {
-            $this->utilisateursFavoris->add($user);
+    // ⭐ Promotions
+    public function getPromotions(): Collection { return $this->promotions; }
+    public function addPromotion(Promotion $promotion): static {
+        if (!$this->promotions->contains($promotion)) {
+            $this->promotions->add($promotion);
+            $promotion->setLogement($this);
         }
         return $this;
     }
+    public function removePromotion(Promotion $promotion): static {
+        if ($this->promotions->removeElement($promotion) && $promotion->getLogement() === $this) {
+            $promotion->setLogement(null);
 
-    public function removeUtilisateurFavori(User $user): static
-    {
-        $this->utilisateursFavoris->removeElement($user);
+        }
         return $this;
     }
-
-    /**
-     * Nombre d'utilisateurs qui ont mis ce logement en favori
-     */
-    public function getNombreFavoris(): int
+    public function getPromoActive(): ?Promotion
     {
-        return $this->utilisateursFavoris->count();
+        $now = new \DateTime();
+        foreach ($this->promotions as $promo) {
+            if ($promo->isActive() && $promo->getDateDebut() && $promo->getDateFin()) {
+                if ($promo->getDateDebut() <= $now && $now <= $promo->getDateFin()) {
+                    return $promo;
+                }
+            }
+        }
+        return null;
     }
 
-    /**
-     * Vérifier si un user spécifique a ce logement en favori
-     */
-    public function estEnFavoriPour(User $user): bool
+    public function getPrixFinal(): float
     {
-        return $this->utilisateursFavoris->contains($user);
+        $promo = $this->getPromoActive();
+        return $promo ? $promo->getPrixPromo() : (float)$this->prix;
+    }
+
+    // ⭐ Réservations
+    public function getReservations(): Collection { return $this->reservations; }
+    public function addReservation(Reservation $reservation): static {
+        if (!$this->reservations->contains($reservation)) {
+            $this->reservations->add($reservation);
+            $reservation->setLogement($this);
+        }
+        return $this;
+    }
+    public function removeReservation(Reservation $reservation): static {
+        if ($this->reservations->removeElement($reservation) && $reservation->getLogement() === $this) {
+            $reservation->setLogement(null);
+        }
+        return $this;
+
     }
 }

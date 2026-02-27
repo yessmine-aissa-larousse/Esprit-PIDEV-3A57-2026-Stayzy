@@ -28,10 +28,13 @@ public function new(Logement $logement, Request $request, EntityManagerInterface
 {
     $visite = new Visite();
 
-    // ⚠ USER FIXE POUR TEST (sera remplacé par getUser() plus tard)
-    $client = $em->getRepository(User::class)->find(1);
+   $client = $this->getUser();
 
-    $visite->setClient($client);
+if (!$client instanceof User) {
+    throw $this->createAccessDeniedException();
+}
+
+$visite->setClient($client);
     $visite->setProprietaire($logement->getProprietaire());
     $visite->setLogement($logement);
     $visite->setStatut('EN_ATTENTE');
@@ -97,9 +100,10 @@ public function new(Logement $logement, Request $request, EntityManagerInterface
 #[Route('/client/mes-visites', name: 'client_mes_visites')]
 public function mesVisites(VisiteRepository $repo): Response
 {
-    // ⚠ ID fixe pour test
-    $visites = $repo->findBy(['client' => 1], ['id' => 'DESC']);
-
+$visites = $repo->findBy(
+    ['client' => $this->getUser()],
+    ['id' => 'DESC']
+);
     return $this->render('frontOffice/visite/client/mes_visites.html.twig', [
         'visites' => $visites
     ]);
@@ -156,8 +160,9 @@ public function demandes(VisiteRepository $repo): Response
     // ⚠ ID fixe propriétaire = 2
     $visites = $repo->createQueryBuilder('v')
         ->join('v.logement', 'l')
-        ->where('l.proprietaire = 2')
-        ->orderBy('v.id', 'DESC')
+->where('l.proprietaire = :prop')
+->setParameter('prop', $this->getUser())   
+     ->orderBy('v.id', 'DESC')
         ->getQuery()
         ->getResult();
 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; }
+        .header { background: #c62828; padding: 30px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .body { padding: 30px; }
+        .reason { background: #fff3e0; border-left: 4px solid #f57f17; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .footer { background: #f4f4f4; padding: 15px; text-align: center; color: #999; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>❌ Demande Rejetée</h1>
+        </div>
+        <div class="body">
+            <p>Bonjour <strong>{{ user.prenom }} {{ user.nom }}</strong>,</p>
+            <p>Nous vous informons que votre demande d'inscription en tant que <strong>propriétaire</strong> sur <strong>Stayzy</strong> a été <strong style="color: #c62828;">rejetée</strong>.</p>
+            {% if reason %}
+            <div class="reason">
+                <strong>Motif du rejet:</strong><br>
+                {{ reason }}
+            </div>
+            {% endif %}
+            <p>Pour toute question, n'hésitez pas à nous contacter.</p>
+            <p style="color: #999; font-size: 13px;">Cordialement,<br>L'équipe Stayzy</p>
+        </div>
+        <div class="footer">© 2026 Stayzy - Tous droits réservés</div>
+    </div>
+</body>
+</html>
