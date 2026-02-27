@@ -4,7 +4,6 @@
 
 {% block admin_content %}
 
-{# ================= HEADER ================= #}
 <div class="app-content-header">
     <div class="container-fluid">
         <div class="row">
@@ -30,112 +29,80 @@
 </div>
 
 
-{# ================= CONTENT ================= #}
 <div class="app-content">
 <div class="container-fluid">
 
-    {# ═══════════════════════════════ #}
-    {# STAT CARDS                     #}
-    {# ═══════════════════════════════ #}
-    <div class="row g-3 mb-4">
+{# ================= STATS ================= #}
+<div class="row g-3 mb-4">
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm"
-                 style="border-left:4px solid #5a6acf;border-radius:12px;">
-                <div class="card-body d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Total Réclamations</h6>
-                        <h2 class="fw-bold">{{ total }}</h2>
-                    </div>
-                    <i class="bi bi-collection fs-1 text-primary"></i>
-                </div>
-            </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h6>Total Réclamations</h6>
+            <h2>{{ total }}</h2>
         </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm"
-                 style="border-left:4px solid #e6a23c;border-radius:12px;">
-                <div class="card-body d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">En Attente</h6>
-                        <h2 class="fw-bold text-warning">{{ enAttente }}</h2>
-                    </div>
-                    <i class="bi bi-hourglass-split fs-1 text-warning"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm"
-                 style="border-left:4px solid #2eae7b;border-radius:12px;">
-                <div class="card-body d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Traitées</h6>
-                        <h2 class="fw-bold text-success">{{ traitee }}</h2>
-                    </div>
-                    <i class="bi bi-check-circle-fill fs-1 text-success"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm"
-                 style="border-left:4px solid #d64545;border-radius:12px;">
-                <div class="card-body d-flex justify-content-between">
-                    <div>
-                        <h6 class="text-muted">Urgentes</h6>
-                        <h2 class="fw-bold text-danger">{{ urgentCount }}</h2>
-                    </div>
-                    <i class="bi bi-exclamation-triangle-fill fs-1 text-danger"></i>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-
-    {# ═══════════════════════════════ #}
-    {# CHARTS                         #}
-    {# ═══════════════════════════════ #}
-    <div class="row g-3">
-
-        <div class="col-lg-4">
-            <div class="card card-outline card-primary">
-                <div class="card-header fw-bold">
-                    <i class="bi bi-pie-chart-fill me-2"></i>
-                    Statut Réclamations
-                </div>
-                <div class="card-body">
-                    {{ render_chart(statutChart) }}
-                </div>
-            </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h6>En Attente</h6>
+            <h2 class="text-warning">{{ enAttente }}</h2>
         </div>
-
-        <div class="col-lg-4">
-            <div class="card card-outline card-warning">
-                <div class="card-header fw-bold">
-                    <i class="bi bi-bar-chart-fill me-2"></i>
-                    Analyse des Risques
-                </div>
-                <div class="card-body">
-                    {{ render_chart(riskChart) }}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card card-outline card-danger">
-                <div class="card-header fw-bold">
-                    <i class="bi bi-shield-lock-fill me-2"></i>
-                    Security Monitoring
-                </div>
-                <div class="card-body">
-                    {{ render_chart(securityChart) }}
-                </div>
-            </div>
-        </div>
-
     </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h6>Traitées</h6>
+            <h2 class="text-success">{{ traitee }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center p-3">
+            <h6>Urgentes</h6>
+            <h2 class="text-danger">{{ urgentCount }}</h2>
+        </div>
+    </div>
+
+</div>
+
+
+{# ================= CHARTS ================= #}
+<div class="row">
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">
+                Statut Réclamations
+            </div>
+            <div class="card-body text-center">
+                {{ render_chart(statutChart) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">
+                Analyse des Risques
+            </div>
+            <div class="card-body text-center">
+                {{ render_chart(riskChart) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold">
+                Security Monitoring
+            </div>
+            <div class="card-body text-center">
+                {{ render_chart(securityChart) }}
+            </div>
+        </div>
+    </div>
+
+</div>
 
 </div>
 </div>

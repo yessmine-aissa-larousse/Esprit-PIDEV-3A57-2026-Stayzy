@@ -7,15 +7,16 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/dbal": "*",
         "doctrine/doctrine-bundle": "^2.18",
         "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^3.6",
+        "dompdf/dompdf": "*",
         "google/apiclient": "^2.19",
         "knplabs/knp-paginator-bundle": "^6.10",
         "phpdocumentor/reflection-docblock": "5.2",
         "phpstan/phpdoc-parser": "^2.3",
         "stichoza/google-translate-php": "^5.3",
-        "dompdf/dompdf": "*",
         "stripe/stripe-php": "^19.3",
         "symfony/asset": "6.4.*",
         "symfony/asset-mapper": "6.4.*",
@@ -29,6 +30,7 @@
         "symfony/http-client": "6.4.*",
         "symfony/intl": "6.4.*",
         "symfony/mailer": "6.4.*",
+        "symfony/mercure-bundle": "^0.4.2",
         "symfony/mime": "6.4.*",
         "symfony/monolog-bundle": "^3.0|^4.0",
         "symfony/notifier": "6.4.*",
@@ -41,6 +43,7 @@
         "symfony/stimulus-bundle": "^2.32",
         "symfony/string": "6.4.*",
         "symfony/translation": "6.4.*",
+        "symfony/twig-bridge": "6.4.*",
         "symfony/twig-bundle": "6.4.*",
         "symfony/ux-chartjs": "^2.32",
         "symfony/ux-turbo": "^2.32",
@@ -80,8 +83,8 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd",
-            "importmap:install": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            
         },
         "post-install-cmd": [
             "@auto-scripts"
