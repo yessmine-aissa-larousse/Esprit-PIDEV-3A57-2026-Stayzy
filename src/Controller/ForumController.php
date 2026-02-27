@@ -53,6 +53,7 @@ final class ForumController extends AbstractController
         $posts = $this->postRepository->searchPublished($q, self::POSTS_PER_PAGE, $offset);
         $total = $this->postRepository->countSearchPublished($q);
         $totalPages = max(1, (int) ceil($total / self::POSTS_PER_PAGE));
+        $currentAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
 
         return $this->render('frontOffice/forum/index.html.twig', [
             'posts' => $posts,
@@ -60,6 +61,7 @@ final class ForumController extends AbstractController
             'total_pages' => $totalPages,
             'total' => $total,
             'search' => $q,
+            'current_author' => $currentAuthor,
         ]);
     }
 
@@ -74,6 +76,7 @@ final class ForumController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->entityManager->persist($post);
             $this->entityManager->flush();
+            $request->getSession()->set(self::SESSION_AUTHOR_KEY, $post->getAuthor());
             $this->addFlash('success', 'Votre post a été créé.');
             return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
         }
@@ -130,15 +133,44 @@ final class ForumController extends AbstractController
         ]);
     }
 
+    #[Route('/post/{id}/edit', name: 'forum_post_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function editPost(Request $request, Post $post): Response
+    {
+        if (!$post->isPublished()) {
+            throw $this->createNotFoundException('Ce post n\'existe pas ou n\'est pas publié.');
+        }
+
+        $form = $this->createForm(PostType::class, $post);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Post modifié.');
+            return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
+        }
+
+        return $this->render('frontOffice/forum/post_edit.html.twig', [
+            'post' => $post,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/post/{id}/delete', name: 'forum_post_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function deletePost(Request $request, Post $post): Response
+    {
+        if ($this->isCsrfTokenValid('delete_post' . $post->getId(), (string) $request->request->get('_token'))) {
+            $this->entityManager->remove($post);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Post supprimé.');
+            return $this->redirectToRoute('forum_index');
+        }
+
+        return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
+    }
+
     #[Route('/comment/{id}/edit', name: 'forum_comment_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editComment(Request $request, Comment $comment): Response
     {
-        $sessionAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
-        if ($sessionAuthor !== $comment->getAuthor()) {
-            $this->addFlash('error', 'Vous ne pouvez modifier que vos propres commentaires.');
-            return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
-        }
-
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
 
@@ -157,11 +189,6 @@ final class ForumController extends AbstractController
     #[Route('/comment/{id}/delete', name: 'forum_comment_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function deleteComment(Request $request, Comment $comment): Response
     {
-        $sessionAuthor = $request->getSession()->get(self::SESSION_AUTHOR_KEY);
-        if ($sessionAuthor !== $comment->getAuthor()) {
-            $this->addFlash('error', 'Vous ne pouvez supprimer que vos propres commentaires.');
-            return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
-        }
         if ($this->isCsrfTokenValid('delete_comment' . $comment->getId(), (string) $request->request->get('_token'))) {
             $this->entityManager->remove($comment);
             $this->entityManager->flush();
