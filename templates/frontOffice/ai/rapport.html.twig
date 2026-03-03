@@ -511,6 +511,9 @@
 
 </div>
 </section>
+{% if rapport %}
+    {{ include('frontOffice/ai/_ai_assistant_section.html.twig') }}
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}{{ parent() }}

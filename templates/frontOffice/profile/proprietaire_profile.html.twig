@@ -4,7 +4,6 @@
 
 {% block body %}
 
-    {# ── Hero / Breadcrumb ── #}
     <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 60px 0 40px;">
         <div class="container">
             <div class="row align-items-center">
@@ -26,11 +25,9 @@
         </div>
     </section>
 
-    {# ── Contenu principal ── #}
     <section style="padding: 50px 0 80px;">
         <div class="container">
 
-            {# Messages Flash #}
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
@@ -46,14 +43,10 @@
 
             <div class="row g-4">
 
-                {# ══════════════════════════════ #}
-                {# COLONNE GAUCHE — Carte identité #}
-                {# ══════════════════════════════ #}
                 <div class="col-lg-3">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 90px;">
                         <div class="card-body text-center p-4">
 
-                            {# Photo + badge statut #}
                             <div class="position-relative d-inline-block mb-3">
                                 {% if user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}"
@@ -92,7 +85,6 @@
 
                             <hr class="my-3">
 
-                            {# Stats rapides #}
                             <div class="row g-2 text-center">
                                 <div class="col-6">
                                     <div class="rounded-3 p-2" style="background: #f0fdf4;">
@@ -110,7 +102,6 @@
 
                             <hr class="my-3">
 
-                            {# Score de confiance #}
                             {% include 'components/trust_score.html.twig' %}
 
                             <p class="text-muted small mt-3 mb-0">
@@ -118,18 +109,33 @@
                                 Membre depuis {{ user.createdAt|date('M Y') }}
                             </p>
 
+                            {# ===== FACE ID ===== #}
+                            <hr style="margin: 15px 0;">
+                            <button type="button" onclick="startFaceSave()"
+                                    class="btn w-100"
+                                    style="background: #1565c0; color: white; border-radius: 10px; padding: 12px; border: none;">
+                                <i class="bi bi-camera me-2"></i> Enregistrer mon visage
+                            </button>
+
+                            {% if user.faceDescriptor %}
+                                <div class="mt-2 text-center">
+                                    <small style="color: #2e7d32;"><i class="bi bi-check-circle-fill me-1"></i>Visage enregistré ✅</small>
+                                </div>
+                            {% else %}
+                                <div class="mt-2 text-center">
+                                    <small class="text-muted"><i class="bi bi-x-circle me-1"></i>Aucun visage enregistré</small>
+                                </div>
+                            {% endif %}
+                            {# ===== FIN FACE ID ===== #}
+
                         </div>
                     </div>
                 </div>
 
-                {# ════════════════════════════════════ #}
-                {# COLONNE DROITE — Formulaire + Logements #}
-                {# ════════════════════════════════════ #}
                 <div class="col-lg-9">
 
                     {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
 
-                    {# CARD 1 : Photo de profil #}
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -160,7 +166,6 @@
                         </div>
                     </div>
 
-                    {# CARD 2 : Informations personnelles #}
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -201,7 +206,6 @@
                         </div>
                     </div>
 
-                    {# CARD 3 : Mot de passe #}
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -217,7 +221,6 @@
                         </div>
                     </div>
 
-                    {# Boutons d'action #}
                     <div class="d-flex gap-3 mb-5">
                         <button type="submit" class="btn btn-warning fw-semibold px-4"
                                 style="border-radius: 10px;">
@@ -231,10 +234,8 @@
 
                     {{ form_end(form) }}
 
-                    {# Suggestions Trust Score #}
                     {% include 'components/trust_suggestions.html.twig' %}
 
-                    {# CARD 4 : Mes propriétés #}
                     <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; overflow: hidden;">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-4 py-3">
                             <h6 class="mb-0 fw-semibold">
@@ -306,11 +307,40 @@
                     </div>
 
                 </div>
-                {# fin col droite #}
 
             </div>
         </div>
     </section>
+
+    {# ===== MODAL FACE ID ===== #}
+    <div class="modal fade" id="faceRegisterModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Enregistrer mon visage</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopFaceCamera()"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div id="saveStatus" class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer
+                    </div>
+                    <div style="position: relative; display: inline-block;">
+                        <video id="saveVideo" width="300" height="225" autoplay muted
+                               style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                        <canvas id="saveCanvas" width="300" height="225"
+                                style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <button onclick="captureFace()" class="btn btn-primary" style="border-radius: 10px;">
+                            <i class="bi bi-camera me-2"></i> Capturer mon visage
+                        </button>
+                    </div>
+                    <div id="loadingSave" class="spinner-border text-primary d-none mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# ===== FIN MODAL ===== #}
 
     <style>
         .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
@@ -319,18 +349,83 @@
         .table tbody tr:hover { background-color: #fafafa; }
     </style>
 
-    <script>
-    function previewImage(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('preview').innerHTML =
-                `<img src="${e.target.result}" class="rounded-circle"
-                      style="width:72px;height:72px;object-fit:cover;border:3px solid #f59e0b;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-    </script>
+{% endblock %}
 
+{% block javascripts %}
+{{ parent() }}
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('preview').innerHTML =
+            `<img src="${e.target.result}" class="rounded-circle"
+                  style="width:72px;height:72px;object-fit:cover;border:3px solid #f59e0b;">`;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ===== FACE SAVE =====
+let saveStream = null;
+
+async function startFaceSave() {
+    const modal = new bootstrap.Modal(document.getElementById('faceRegisterModal'));
+    modal.show();
+
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage et cliquez Capturer';
+
+    saveStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('saveVideo').srcObject = saveStream;
+}
+
+async function captureFace() {
+    const video = document.getElementById('saveVideo');
+    document.getElementById('loadingSave').classList.remove('d-none');
+    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Envoi à l\'API...';
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+
+    const response = await fetch('/face/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+    });
+
+    const result = await response.json();
+    document.getElementById('loadingSave').classList.add('d-none');
+
+    if (result.success) {
+        document.getElementById('saveStatus').className = 'alert alert-success mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Visage enregistré avec succès!';
+        stopFaceCamera();
+        setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('faceRegisterModal')).hide();
+            location.reload();
+        }, 1500);
+    } else {
+        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>Erreur: ' + result.error;
+    }
+}
+
+function stopFaceCamera() {
+    if (saveStream) {
+        saveStream.getTracks().forEach(t => t.stop());
+        saveStream = null;
+    }
+}
+
+document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
+// ===== FIN FACE SAVE =====
+</script>
 {% endblock %}

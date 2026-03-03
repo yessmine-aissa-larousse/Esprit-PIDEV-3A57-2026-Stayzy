@@ -1,0 +1,907 @@
+{#
+    ═══════════════════════════════════════════════════════════
+    SECTION IA AVANCÉE — À inclure en bas de rapport.html.twig
+    Avant {% endblock %} du body, après la boucle des logements
+
+    Usage :
+        {{ include('frontOffice/ai/_ai_assistant_section.html.twig') }}
+    ═══════════════════════════════════════════════════════════
+#}
+
+<style>
+/* ═══════════════════════════════════════
+   STYLES SECTION IA AVANCÉE
+═══════════════════════════════════════ */
+.ai-section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 48px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ai-section-title::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, #077f46, transparent);
+    border-radius: 2px;
+}
+
+/* ── TABS ── */
+.ai-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0;
+    border-bottom: 2px solid #e8edf2;
+    flex-wrap: wrap;
+}
+.ai-tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    font-weight: 700;
+    font-size: .88rem;
+    color: #94a3b8;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px 8px 0 0;
+}
+.ai-tab-btn:hover { color: #077f46; background: #f0fdf4; }
+.ai-tab-btn.active {
+    color: #077f46;
+    border-bottom-color: #077f46;
+    background: #f0fdf4;
+}
+.ai-tab-content { display: none; }
+.ai-tab-content.active { display: block; }
+
+/* ── CHAT ── */
+.chat-container {
+    background: #fff;
+    border-radius: 0 16px 16px 16px;
+    border: 1.5px solid #e8edf2;
+    box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    overflow: hidden;
+}
+.chat-messages {
+    height: 380px;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #f8fafc;
+}
+.chat-msg {
+    display: flex;
+    gap: 12px;
+    animation: msgIn .25s ease;
+}
+@keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.chat-msg.user { flex-direction: row-reverse; }
+.chat-avatar {
+    width: 36px; height: 36px; min-width: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+}
+.chat-msg.ai   .chat-avatar { background: linear-gradient(135deg, #077f46, #34d399); color: #fff; }
+.chat-msg.user .chat-avatar { background: linear-gradient(135deg, #1e40af, #60a5fa); color: #fff; }
+.chat-bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: .88rem;
+    line-height: 1.6;
+}
+.chat-msg.ai   .chat-bubble { background: #fff; border: 1.5px solid #e8edf2; color: #1e293b; border-radius: 4px 16px 16px 16px; }
+.chat-msg.user .chat-bubble { background: linear-gradient(135deg, #077f46, #059669); color: #fff; border-radius: 16px 4px 16px 16px; }
+.chat-input-row {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1.5px solid #e8edf2;
+    background: #fff;
+}
+.chat-input {
+    flex: 1;
+    border: 1.5px solid #e8edf2;
+    border-radius: 50px;
+    padding: 11px 18px;
+    font-size: .88rem;
+    outline: none;
+    transition: border-color .15s;
+}
+.chat-input:focus { border-color: #077f46; box-shadow: 0 0 0 3px rgba(7,127,70,.08); }
+.btn-send {
+    background: linear-gradient(135deg, #077f46, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 11px 22px;
+    font-weight: 700;
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex; align-items: center; gap: 6px;
+}
+.btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(7,127,70,.35); }
+.btn-send:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.chat-suggestions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+    background: #f8fafc;
+}
+.chat-sug-btn {
+    background: #fff;
+    border: 1.5px solid #e8edf2;
+    border-radius: 50px;
+    padding: 5px 14px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all .15s;
+}
+.chat-sug-btn:hover { border-color: #077f46; color: #077f46; background: #f0fdf4; }
+.typing-indicator {
+    display: flex; gap: 4px; align-items: center; padding: 4px 0;
+}
+.typing-dot {
+    width: 7px; height: 7px; background: #94a3b8; border-radius: 50%;
+    animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30%            { transform: translateY(-6px); }
+}
+
+/* ── DESCRIPTION ── */
+.desc-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8edf2;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    padding: 28px;
+}
+.logement-select {
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: .9rem;
+    background: #f8fafc;
+    width: 100%;
+    max-width: 400px;
+    transition: border-color .15s;
+}
+.logement-select:focus { border-color: #077f46; outline: none; }
+.desc-result {
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+}
+.desc-result.show { display: block; animation: msgIn .3s ease; }
+.desc-text {
+    font-size: .92rem;
+    line-height: 1.8;
+    color: #1e293b;
+    margin-bottom: 16px;
+}
+.desc-meta {
+    font-size: .78rem;
+    color: #6b7280;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.btn-copy {
+    background: #fff;
+    border: 1.5px solid #077f46;
+    color: #077f46;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 700;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-copy:hover { background: #077f46; color: #fff; }
+.btn-copy.copied { background: #077f46; color: #fff; }
+
+/* ── PRIX ── */
+.prix-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8edf2;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    padding: 28px;
+}
+.prix-result { display: none; }
+.prix-result.show { display: block; animation: msgIn .3s ease; }
+.prix-gauge-wrap {
+    background: #f1f5f9;
+    border-radius: 50px;
+    height: 12px;
+    overflow: hidden;
+    margin: 10px 0;
+    position: relative;
+}
+.prix-gauge-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #077f46, #34d399);
+    transition: width 1s ease;
+}
+.prix-marker {
+    position: absolute;
+    top: -4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    transform: translateX(-50%);
+}
+.prix-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+.prix-box {
+    background: #f8fafc;
+    border: 1.5px solid #e8edf2;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+.prix-box .val { font-size: 1.6rem; font-weight: 900; }
+.prix-box .lbl { font-size: .72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; }
+.saison-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 16px 0;
+}
+.saison-box {
+    background: #f8fafc;
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    font-size: .82rem;
+}
+.saison-box .saison-icon { font-size: 1.4rem; margin-bottom: 4px; }
+.saison-box .saison-val  { font-weight: 800; color: #1e293b; font-size: .95rem; }
+.saison-box .saison-lbl  { color: #94a3b8; font-size: .7rem; }
+
+/* ── PÉRIODES ── */
+.periodes-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid #e8edf2;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    padding: 28px;
+}
+.periodes-result { display: none; }
+.periodes-result.show { display: block; animation: msgIn .3s ease; }
+.periode-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+.periode-item.creuse { background: #fff7f7; border: 1.5px solid #fecaca; }
+.periode-item.forte  { background: #f0fdf4; border: 1.5px solid #bbf7d0; }
+.periode-badge {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: .75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.periode-badge.creuse { background: #fee2e2; color: #dc2626; }
+.periode-badge.forte  { background: #dcfce7; color: #166534; }
+.promo-recommandation {
+    background: linear-gradient(135deg, #fff7ed, #fffbeb);
+    border: 2px solid #f59e0b;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.promo-reco-badge {
+    font-size: 2rem;
+    font-weight: 900;
+    color: #d97706;
+    background: #fef3c7;
+    border-radius: 12px;
+    padding: 10px 18px;
+    min-width: 90px;
+    text-align: center;
+}
+
+/* ── BTN GÉNÉRER ── */
+.btn-ai-action {
+    background: linear-gradient(135deg, #077f46, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 22px;
+    font-weight: 700;
+    font-size: .88rem;
+    cursor: pointer;
+    transition: all .18s;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 3px 12px rgba(7,127,70,.3);
+}
+.btn-ai-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(7,127,70,.4); }
+.btn-ai-action:disabled { opacity: .6; transform: none; cursor: not-allowed; }
+
+.ai-loader-inline {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    color: #077f46;
+    font-weight: 600;
+    font-size: .88rem;
+}
+.ai-loader-inline.show { display: flex; }
+.ai-spin-sm {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 3px solid #e5e7eb;
+    border-top-color: #077f46;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 576px) {
+    .saison-grid { grid-template-columns: repeat(2, 1fr); }
+    .prix-grid   { grid-template-columns: 1fr; }
+    .chat-bubble { max-width: 90%; }
+}
+</style>
+
+{# ═══════════════════════════════════════════════════════════ #}
+{# SECTION IA AVANCÉE                                         #}
+{# ═══════════════════════════════════════════════════════════ #}
+<div class="ai-section-title">
+    <i class="bi bi-stars text-success"></i>
+    Assistant IA Avancé
+</div>
+
+{# ── TABS ── #}
+<div class="ai-tabs">
+    <button class="ai-tab-btn active" onclick="switchTab('chat')">
+        <i class="bi bi-chat-dots-fill"></i> Chat IA
+    </button>
+    <button class="ai-tab-btn" onclick="switchTab('description')">
+        <i class="bi bi-pencil-square"></i> Générateur de description
+    </button>
+    <button class="ai-tab-btn" onclick="switchTab('prix')">
+        <i class="bi bi-cash-coin"></i> Prix optimal
+    </button>
+    <button class="ai-tab-btn" onclick="switchTab('periodes')">
+        <i class="bi bi-calendar-check"></i> Meilleures périodes
+    </button>
+</div>
+
+{# ══════════════════════
+   TAB 1 — CHAT IA
+══════════════════════ #}
+<div id="tab-chat" class="ai-tab-content active">
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg ai">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-bubble">
+                    Bonjour ! Je suis votre assistant IA Stayzy. Je connais tous vos logements et leurs performances.
+                    Posez-moi n'importe quelle question : revenus, promotions, prix, conseils d'optimisation...
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-suggestions">
+            <span style="font-size:.72rem;color:#94a3b8;font-weight:700;align-self:center;">Suggestions :</span>
+            <button class="chat-sug-btn" onclick="envoyerSuggestion(this)">💰 Quels sont mes revenus ?</button>
+            <button class="chat-sug-btn" onclick="envoyerSuggestion(this)">🏠 Quel est mon meilleur logement ?</button>
+            <button class="chat-sug-btn" onclick="envoyerSuggestion(this)">📸 Manque-t-il des photos ?</button>
+            <button class="chat-sug-btn" onclick="envoyerSuggestion(this)">🏷️ Dois-je créer une promotion ?</button>
+            <button class="chat-sug-btn" onclick="envoyerSuggestion(this)">💡 Donne-moi des conseils</button>
+        </div>
+
+        <div class="chat-input-row">
+            <input type="text" class="chat-input" id="chatInput"
+                   placeholder="Ex: Comment améliorer mon taux de réservation ?"
+                   onkeydown="if(event.key==='Enter') envoyerChat()">
+            <button class="btn-send" id="btnSend" onclick="envoyerChat()">
+                <i class="bi bi-send-fill"></i> Envoyer
+            </button>
+        </div>
+    </div>
+</div>
+
+{# ══════════════════════════════════
+   TAB 2 — GÉNÉRATEUR DE DESCRIPTION
+══════════════════════════════════ #}
+<div id="tab-description" class="ai-tab-content">
+    <div class="desc-card">
+        <h5 class="fw-700 mb-2"><i class="bi bi-magic text-success me-2"></i>Générer une description professionnelle</h5>
+        <p class="text-muted mb-20" style="font-size:.88rem;">
+            Sélectionnez un logement et l'IA génère une description optimisée pour attirer plus de clients.
+        </p>
+
+        <div class="d-flex gap-3 align-items-center flex-wrap mb-3">
+            <select class="logement-select" id="descLogementSelect">
+                <option value="">-- Choisir un logement --</option>
+                {% if rapport is defined and rapport %}
+                    {% for item in rapport.logements %}
+                        <option value="{{ item.logement.id }}">{{ item.logement.titre }} ({{ item.logement.prix }}€/nuit)</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+
+            <button class="btn-ai-action" id="btnGenDesc" onclick="genererDescription()">
+                <i class="bi bi-stars"></i> Générer
+            </button>
+
+            <div class="ai-loader-inline" id="descLoader">
+                <div class="ai-spin-sm"></div> Génération en cours...
+            </div>
+        </div>
+
+        <div class="desc-result" id="descResult">
+            <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                <h6 class="fw-700 text-success mb-0"><i class="bi bi-check-circle-fill me-2"></i>Description générée !</h6>
+                <div class="d-flex gap-2">
+                    <button class="btn-copy" id="btnCopyDesc" onclick="copierDescription('desc-longue')">
+                        <i class="bi bi-clipboard"></i> Copier (complète)
+                    </button>
+                    <button class="btn-copy" onclick="copierDescription('desc-courte')">
+                        <i class="bi bi-clipboard-minus"></i> Copier (courte)
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:6px;">
+                    Description complète
+                </div>
+                <div class="desc-text" id="desc-longue"></div>
+            </div>
+
+            <div style="border-top:1px solid #bbf7d0;padding-top:14px;">
+                <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:6px;">
+                    Version courte (accroche)
+                </div>
+                <div class="desc-text" id="desc-courte" style="font-style:italic;color:#475569;"></div>
+            </div>
+
+            <div class="desc-meta" id="descMeta"></div>
+        </div>
+    </div>
+</div>
+
+{# ════════════════════════
+   TAB 3 — PRIX OPTIMAL
+════════════════════════ #}
+<div id="tab-prix" class="ai-tab-content">
+    <div class="prix-card">
+        <h5 class="fw-700 mb-2"><i class="bi bi-cash-coin text-success me-2"></i>Suggestion de prix optimal par IA</h5>
+        <p class="text-muted mb-20" style="font-size:.88rem;">
+            L'IA analyse vos données et le marché pour vous suggérer le prix idéal par logement et par saison.
+        </p>
+
+        <div class="d-flex gap-3 align-items-center flex-wrap mb-3">
+            <select class="logement-select" id="prixLogementSelect">
+                <option value="">-- Choisir un logement --</option>
+                {% if rapport is defined and rapport %}
+                    {% for item in rapport.logements %}
+                        <option value="{{ item.logement.id }}">{{ item.logement.titre }} ({{ item.logement.prix }}€/nuit)</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+
+            <button class="btn-ai-action" id="btnGenPrix" onclick="analyserPrix()">
+                <i class="bi bi-graph-up-arrow"></i> Analyser
+            </button>
+
+            <div class="ai-loader-inline" id="prixLoader">
+                <div class="ai-spin-sm"></div> Analyse en cours...
+            </div>
+        </div>
+
+        <div class="prix-result" id="prixResult">
+            <div class="prix-grid">
+                <div class="prix-box">
+                    <div class="val text-muted" id="prix-actuel-val">--</div>
+                    <div class="lbl">Prix actuel</div>
+                </div>
+                <div class="prix-box" style="border-color:#077f46;background:#f0fdf4;">
+                    <div class="val text-success" id="prix-suggere-val">--</div>
+                    <div class="lbl">Prix optimal suggéré</div>
+                </div>
+            </div>
+
+            <div id="prix-conseil-zone" class="mb-3"></div>
+
+            <div class="mb-3">
+                <div style="font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:8px;">
+                    FOURCHETTE RECOMMANDÉE
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:.78rem;color:#475569;margin-bottom:4px;">
+                    <span id="prix-min-lbl">--€</span>
+                    <span id="prix-max-lbl">--€</span>
+                </div>
+                <div class="prix-gauge-wrap">
+                    <div class="prix-gauge-fill" id="prix-gauge" style="width:50%;"></div>
+                </div>
+                <div style="font-size:.72rem;color:#94a3b8;text-align:center;" id="prix-marche-lbl">
+                    Prix moyen du marché : --€
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:10px;">
+                    💡 PRIX PAR SAISON
+                </div>
+                <div class="saison-grid">
+                    <div class="saison-box">
+                        <div class="saison-icon">🌸</div>
+                        <div class="saison-val" id="prix-printemps">--€</div>
+                        <div class="saison-lbl">Printemps</div>
+                    </div>
+                    <div class="saison-box" style="border-color:#f59e0b;background:#fffbeb;">
+                        <div class="saison-icon">☀️</div>
+                        <div class="saison-val text-warning" id="prix-ete">--€</div>
+                        <div class="saison-lbl">Été</div>
+                    </div>
+                    <div class="saison-box">
+                        <div class="saison-icon">🍂</div>
+                        <div class="saison-val" id="prix-automne">--€</div>
+                        <div class="saison-lbl">Automne</div>
+                    </div>
+                    <div class="saison-box" style="border-color:#bfdbfe;background:#eff6ff;">
+                        <div class="saison-icon">❄️</div>
+                        <div class="saison-val text-primary" id="prix-hiver">--€</div>
+                        <div class="saison-lbl">Hiver</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════════════════════════
+   TAB 4 — MEILLEURES PÉRIODES PROMOS
+═══════════════════════════════════ #}
+<div id="tab-periodes" class="ai-tab-content">
+    <div class="periodes-card">
+        <h5 class="fw-700 mb-2"><i class="bi bi-calendar-check text-success me-2"></i>Quand créer vos promotions ?</h5>
+        <p class="text-muted mb-20" style="font-size:.88rem;">
+            L'IA analyse vos historiques de réservations pour identifier les périodes creuses où une promotion maximisera votre taux d'occupation.
+        </p>
+
+        <div class="d-flex gap-3 align-items-center flex-wrap mb-3">
+            <select class="logement-select" id="periodesLogementSelect">
+                <option value="">-- Choisir un logement --</option>
+                {% if rapport is defined and rapport %}
+                    {% for item in rapport.logements %}
+                        <option value="{{ item.logement.id }}">{{ item.logement.titre }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+
+            <button class="btn-ai-action" id="btnGenPeriodes" onclick="analyserPeriodes()">
+                <i class="bi bi-calendar2-range"></i> Analyser
+            </button>
+
+            <div class="ai-loader-inline" id="periodesLoader">
+                <div class="ai-spin-sm"></div> Analyse en cours...
+            </div>
+        </div>
+
+        <div class="periodes-result" id="periodesResult">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h6 class="fw-700" style="color:#dc2626;">
+                        <i class="bi bi-arrow-down-circle-fill me-2"></i>Périodes creuses — Créez des promos
+                    </h6>
+                    <div id="periodesCreuses"></div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-700" style="color:#077f46;">
+                        <i class="bi bi-arrow-up-circle-fill me-2"></i>Périodes fortes — Pas de promo nécessaire
+                    </h6>
+                    <div id="periodesFortes"></div>
+                </div>
+            </div>
+
+            <div class="promo-recommandation" id="promoReco">
+                <div class="promo-reco-badge" id="promoPct">--% </div>
+                <div>
+                    <div style="font-weight:800;font-size:1rem;color:#92400e;">Promotion recommandée</div>
+                    <div style="font-size:.88rem;color:#78350f;" id="promoRecoTexte">--</div>
+                    <div style="font-size:.75rem;color:#92400e;margin-top:4px;" id="promoAnalyse">--</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ═══════════════ JAVASCRIPT ═══════════════ #}
+<script>
+// ── URLS des routes Symfony ──
+const URL_CHAT       = '{{ path("ai_chat") }}';
+const URL_DESCRIPTION = id => `/proprietaire/ai/description/${id}`;
+const URL_PRIX        = id => `/proprietaire/ai/prix/${id}`;
+const URL_PERIODES    = id => `/proprietaire/ai/periodes/${id}`;
+
+// ─────────────────────────────────
+// TABS
+// ─────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll('.ai-tab-btn').forEach((b, i) => {
+        const tabs = ['chat','description','prix','periodes'];
+        b.classList.toggle('active', tabs[i] === tab);
+    });
+    document.querySelectorAll('.ai-tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ─────────────────────────────────
+// CHAT IA
+// ─────────────────────────────────
+let chatHistory = [];
+
+function ajouterMessage(texte, role) {
+    const messages = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    const avatar = role === 'ai' ? '🤖' : '👤';
+    div.innerHTML = `
+        <div class="chat-avatar">${avatar}</div>
+        <div class="chat-bubble">${texte}</div>
+    `;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function afficherTyping() {
+    const messages = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ai';
+    div.id = 'typing-indicator';
+    div.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">
+            <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+    `;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function supprimerTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+}
+
+async function envoyerChat() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    ajouterMessage(question, 'user');
+    input.value = '';
+    document.getElementById('btnSend').disabled = true;
+    afficherTyping();
+
+    try {
+        const response = await fetch(URL_CHAT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await response.json();
+        supprimerTyping();
+
+        if (data.erreur) {
+            ajouterMessage('❌ ' + data.erreur, 'ai');
+        } else {
+            ajouterMessage(data.reponse, 'ai');
+        }
+    } catch (e) {
+        supprimerTyping();
+        ajouterMessage('❌ Erreur de connexion. Réessayez.', 'ai');
+    }
+
+    document.getElementById('btnSend').disabled = false;
+    input.focus();
+}
+
+function envoyerSuggestion(btn) {
+    document.getElementById('chatInput').value = btn.textContent.replace(/^[^\s]+\s/, '');
+    envoyerChat();
+}
+
+// ─────────────────────────────────
+// GÉNÉRATEUR DE DESCRIPTION
+// ─────────────────────────────────
+async function genererDescription() {
+    const select = document.getElementById('descLogementSelect');
+    const id = select.value;
+    if (!id) { alert('Veuillez sélectionner un logement.'); return; }
+
+    document.getElementById('btnGenDesc').disabled = true;
+    document.getElementById('descLoader').classList.add('show');
+    document.getElementById('descResult').classList.remove('show');
+
+    try {
+        const response = await fetch(URL_DESCRIPTION(id));
+        const data = await response.json();
+
+        if (data.erreur) {
+            alert('Erreur : ' + data.erreur);
+        } else {
+            document.getElementById('desc-longue').textContent  = data.description;
+            document.getElementById('desc-courte').textContent  = data.description_courte;
+            document.getElementById('descMeta').innerHTML =
+                `<span>📝 ${data.nb_mots} mots</span>
+                 <span>✅ Optimisée pour les moteurs de recherche</span>`;
+            document.getElementById('descResult').classList.add('show');
+        }
+    } catch (e) {
+        alert('Erreur de connexion.');
+    }
+
+    document.getElementById('btnGenDesc').disabled = false;
+    document.getElementById('descLoader').classList.remove('show');
+}
+
+function copierDescription(id) {
+    const texte = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(texte).then(() => {
+        const btn = document.getElementById('btnCopyDesc');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copié !';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+// ─────────────────────────────────
+// PRIX OPTIMAL
+// ─────────────────────────────────
+async function analyserPrix() {
+    const select = document.getElementById('prixLogementSelect');
+    const id = select.value;
+    if (!id) { alert('Veuillez sélectionner un logement.'); return; }
+
+    document.getElementById('btnGenPrix').disabled = true;
+    document.getElementById('prixLoader').classList.add('show');
+    document.getElementById('prixResult').classList.remove('show');
+
+    try {
+        const response = await fetch(URL_PRIX(id));
+        const data = await response.json();
+
+        if (data.erreur) {
+            alert('Erreur : ' + data.erreur);
+        } else {
+            document.getElementById('prix-actuel-val').textContent  = data.prix_actuel + '€';
+            document.getElementById('prix-suggere-val').textContent = data.prix_suggere + '€';
+            document.getElementById('prix-min-lbl').textContent     = data.prix_min + '€';
+            document.getElementById('prix-max-lbl').textContent     = data.prix_max + '€';
+            document.getElementById('prix-marche-lbl').textContent  = `Prix moyen du marché : ${data.prix_marche}€/nuit`;
+
+            // Jauge
+            const pct = Math.min(Math.max(((data.prix_actuel - data.prix_min) / (data.prix_max - data.prix_min + 1)) * 100, 5), 95);
+            document.getElementById('prix-gauge').style.width = pct + '%';
+
+            // Prix par saison
+            const saisons = data.prix_par_saison || {};
+            document.getElementById('prix-printemps').textContent = (saisons.printemps || '--') + '€';
+            document.getElementById('prix-ete').textContent       = (saisons.ete       || '--') + '€';
+            document.getElementById('prix-automne').textContent   = (saisons.automne   || '--') + '€';
+            document.getElementById('prix-hiver').textContent     = (saisons.hiver     || '--') + '€';
+
+            // Conseils
+            const conseils = data.conseils || [];
+            document.getElementById('prix-conseil-zone').innerHTML = conseils.map(c =>
+                `<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:.85rem;color:#166534;">
+                    <i class="bi bi-lightbulb-fill me-2"></i>${c}
+                </div>`
+            ).join('');
+
+            document.getElementById('prixResult').classList.add('show');
+        }
+    } catch (e) {
+        alert('Erreur de connexion.');
+    }
+
+    document.getElementById('btnGenPrix').disabled = false;
+    document.getElementById('prixLoader').classList.remove('show');
+}
+
+// ─────────────────────────────────
+// MEILLEURES PÉRIODES
+// ─────────────────────────────────
+async function analyserPeriodes() {
+    const select = document.getElementById('periodesLogementSelect');
+    const id = select.value;
+    if (!id) { alert('Veuillez sélectionner un logement.'); return; }
+
+    document.getElementById('btnGenPeriodes').disabled = true;
+    document.getElementById('periodesLoader').classList.add('show');
+    document.getElementById('periodesResult').classList.remove('show');
+
+    try {
+        const response = await fetch(URL_PERIODES(id));
+        const data = await response.json();
+
+        if (data.erreur) {
+            alert('Erreur : ' + data.erreur);
+        } else {
+            // Périodes creuses
+            document.getElementById('periodesCreuses').innerHTML =
+                (data.periodes_creuses || []).map(p => `
+                    <div class="periode-item creuse">
+                        <span class="periode-badge creuse">📉 ${p.periode}</span>
+                        <div style="font-size:.85rem;color:#7f1d1d;">${p.conseil}</div>
+                    </div>
+                `).join('') || '<p class="text-muted">Aucune période creuse détectée.</p>';
+
+            // Périodes fortes
+            document.getElementById('periodesFortes').innerHTML =
+                (data.periodes_fortes || []).map(p => `
+                    <div class="periode-item forte">
+                        <span class="periode-badge forte">📈 ${p.periode}</span>
+                        <div style="font-size:.85rem;color:#14532d;">${p.conseil}</div>
+                    </div>
+                `).join('') || '<p class="text-muted">Aucune période forte détectée.</p>';
+
+            // Recommandation
+            document.getElementById('promoPct').textContent       = `-${data.promo_recommandee}%`;
+            document.getElementById('promoRecoTexte').textContent = `Créez une promotion en ${data.meilleur_moment_promo} pour maximiser votre occupation.`;
+            document.getElementById('promoAnalyse').textContent   = data.analyse;
+
+            document.getElementById('periodesResult').classList.add('show');
+        }
+    } catch (e) {
+        alert('Erreur de connexion.');
+    }
+
+    document.getElementById('btnGenPeriodes').disabled = false;
+    document.getElementById('periodesLoader').classList.remove('show');
+}
+</script>

@@ -567,8 +567,7 @@ final class LogementController extends AbstractController
 
 
    // =========================================================================
-    // AJAX — FILTRAGE MULTICRITÈRES — retourne du JSON pur
-    // Ajouter avant la } finale de LogementController
+    // AJAX — FILTRAGE MULTICRITÈRES
     // =========================================================================
     #[Route('/proprietaire/logements/filter', name: 'proprietaire_logement_filter', methods: ['POST'])]
     #[IsGranted('ROLE_PROPRIETAIRE')]
