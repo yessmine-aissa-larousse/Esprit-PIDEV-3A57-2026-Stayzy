@@ -15,6 +15,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Psr\Log\LoggerInterface;
 
 #[Route('/reservation', name: 'front_reservation_')]
 class ReservationController extends AbstractController
@@ -248,8 +252,9 @@ class ReservationController extends AbstractController
     }
 
     #[Route('/proprietaire/action/{id}/{status}', name: 'proprietaire_action')]
-    public function proprietaireAction(Reservation $reservation, string $status, EntityManagerInterface $em): Response
+    public function proprietaireAction(Reservation $reservation, string $status, EntityManagerInterface $em, MailerInterface $mailer, LoggerInterface $logger): Response
     {
+        $logger->info('proprietaireAction called', ['reservation_id' => $reservation->getId(), 'status' => $status]);
         $reservation->setStatus($status);
 
         if ($status === 'CONFIRMÉE') {
@@ -272,6 +277,41 @@ class ReservationController extends AbstractController
 
             $commandeController = new \App\Controller\CommandeController();
             $commandeController->createFromReservation($reservation, $em);
+
+            // Envoi d'un email au client pour l'informer de la confirmation
+            try {
+                $userEmail = $reservation->getUser()?->getEmail();
+                $logger->info('Preparing to send confirmation email', ['reservation_id' => $reservation->getId(), 'user_email' => $userEmail]);
+                if ($userEmail) {
+                    $fromAddress = $this->getParameter('mailer_from') ?? 'no-reply@stayzy.local';
+                    $alwaysTo = $this->getParameter('mailer_always_to');
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address($fromAddress, 'Stayzy'))
+                        // If an always-to address is configured, send the email to it
+                        // and add the reservation user as BCC so they also receive a copy.
+                        ->subject('Nouvelle réservation confirmée')
+                        ->htmlTemplate('emails/reservation_confirmed.html.twig')
+                        ->context(['reservation' => $reservation]);
+
+                    if ($alwaysTo) {
+                        $email->to($alwaysTo);
+                        if ($userEmail) {
+                            $email->addBcc($userEmail);
+                        }
+                    } else {
+                        // Fallback: send to reservation user only
+                        $email->to($userEmail);
+                    }
+
+                    $logger->info('Sending confirmation email now', ['reservation_id' => $reservation->getId(), 'to' => $alwaysTo ?? $userEmail]);
+
+                    $mailer->send($email);
+                }
+            } catch (\Throwable $e) {
+                // Ne pas bloquer la confirmation si l'envoi échoue — on logge l'erreur
+                $logger->error('Échec envoi email réservation confirmée', ['exception' => $e, 'reservation_id' => $reservation->getId()]);
+            }
         }
 
         $em->flush();
