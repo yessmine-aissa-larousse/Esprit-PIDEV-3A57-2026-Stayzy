@@ -76,7 +76,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Logement::class, mappedBy: 'proprietaire', orphanRemoval: true)]
     private Collection $logements;
 
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commande::class, orphanRemoval: true)]
 private Collection $commandes;
 
@@ -102,7 +101,6 @@ private Collection $reservations;
     // Raison du rejet (optionnel)
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $rejectionReason = null;
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Reclamation::class)]
 private Collection $reclamations;
 
@@ -359,9 +357,9 @@ $this->reclamations = new ArrayCollection();
     }
 
     public function isFavori(Logement $logement): bool
-{
-    return $this->favoris->contains($logement);
-}
+    {
+        return $this->favoris->contains($logement);
+    }
 
     public function getNombreFavoris(): int
     {
@@ -373,7 +371,7 @@ $this->reclamations = new ArrayCollection();
      */
     #[ORM\OneToMany(mappedBy: 'destinataire', targetEntity: Notification::class)]
 private Collection $notifications;
-    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'destinataire')]
+
 
     public function getNotifications(): Collection
     {
@@ -635,8 +633,7 @@ private Collection $notifications;
             $reservation->setUser(null);
         }
         return $this;
-    }  
-
+    } 
     
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $faceDescriptor = null;
@@ -679,5 +676,4 @@ private Collection $notifications;
         $this->resetPasswordExpiresAt = $date;
         return $this;
     }
-
     }

@@ -2,8 +2,6 @@
 
 {% block title %}Mes Logements - Stayzy{% endblock %}
 
-<<<<<<< HEAD
-=======
 {% block stylesheets %}{{ parent() }}
 <style>
 /* ── FILTER BAR ── */
@@ -165,16 +163,11 @@
 </style>
 {% endblock %}
 
->>>>>>> origin/module-user_logement_reservation
 {% block body %}
 
 <div class="page-title light-background">
     <div class="container d-lg-flex justify-content-between align-items-center">
-<<<<<<< HEAD
-        <h1 class="mb-2 mb-lg-0">🏠 Mes Logements</h1>
-=======
         <h1 class="mb-2 mb-lg-0">Mes Logements</h1>
->>>>>>> origin/module-user_logement_reservation
         <nav class="breadcrumbs">
             <ol>
                 <li><a href="{{ path('app_home') }}">Accueil</a></li>
@@ -186,62 +179,14 @@
 
 <section class="section" style="padding: 60px 0; background: #f8f9fa;">
     <div class="container">
-<<<<<<< HEAD
-        
-        {# Messages Flash #}
-        {% for message in app.flashes('success') %}
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                ✅ {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-=======
 
         {% for message in app.flashes('success') %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
->>>>>>> origin/module-user_logement_reservation
             </div>
         {% endfor %}
         {% for message in app.flashes('error') %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-<<<<<<< HEAD
-                ❌ {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-
-        {# Header avec bouton ajouter #}
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h3>Mes annonces ({{ logements|length }})</h3>
-                <p class="text-muted">Gérez vos logements publiés sur la plateforme</p>
-            </div>
-            <a href="{{ path('proprietaire_logement_add') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Publier un logement
-            </a>
-        </div>
-
-        {# Recherche #}
-        <div class="card mb-4">
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-10">
-                        <input type="text" 
-                               class="form-control" 
-                               name="search" 
-                               placeholder="🔍 Rechercher un logement..."
-                               value="{{ app.request.query.get('search') }}">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Rechercher</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        {# Liste des logements #}
-        {% if logements is empty %}
-            <div class="text-center py-5">
-=======
                 {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         {% endfor %}
@@ -358,7 +303,6 @@
         {# ════ CARTES ════ #}
         {% if logements is empty %}
             <div class="text-center py-5" id="logements-grid">
->>>>>>> origin/module-user_logement_reservation
                 <i class="bi bi-house-door" style="font-size: 80px; color: #ddd;"></i>
                 <h4 class="mt-4">Aucun logement publié</h4>
                 <p class="text-muted">Commencez par publier votre premier logement !</p>
@@ -367,18 +311,6 @@
                 </a>
             </div>
         {% else %}
-<<<<<<< HEAD
-            <div class="row g-4">
-                {% for logement in logements %}
-                    <div class="col-lg-4 col-md-6">
-                        <div class="card h-100 shadow-sm">
-                            {# Image #}
-                            <div style="position: relative; height: 200px; overflow: hidden;">
-                                {% if logement.photoPrincipale %}
-                                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
-                                         class="card-img-top" 
-                                         style="height: 100%; object-fit: cover;">
-=======
             <div class="row g-4" id="logements-grid">
                 {% for logement in logements %}
                     <div class="col-lg-4 col-md-6">
@@ -387,17 +319,11 @@
                                 {% if logement.photoPrincipale %}
                                     <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
                                          class="card-img-top" style="height: 100%; object-fit: cover;">
->>>>>>> origin/module-user_logement_reservation
                                 {% else %}
                                     <div class="bg-light d-flex align-items-center justify-content-center" style="height: 100%;">
                                         <i class="bi bi-image" style="font-size: 50px; color: #ccc;"></i>
                                     </div>
                                 {% endif %}
-<<<<<<< HEAD
-                                
-                                {# Badge statut #}
-=======
->>>>>>> origin/module-user_logement_reservation
                                 <div style="position: absolute; top: 10px; right: 10px; display:flex; gap:5px; flex-direction:column; align-items:flex-end;">
                                     {% if logement.disponible %}
                                         <span class="badge bg-success">Disponible</span>
@@ -410,37 +336,19 @@
                                     {% endif %}
                                 </div>
                             </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/module-user_logement_reservation
                             <div class="card-body">
                                 <h5 class="card-title">{{ logement.titre }}</h5>
                                 <p class="text-muted mb-2">
                                     <i class="bi bi-geo-alt"></i>
                                     {% if logement.adresse %}
-                                        {{ logement.adresse.ville }}, {{ logement.adresse.codePostal }}
-<<<<<<< HEAD
-                                    {% else %}
-                                        Non renseigné
-                                    {% endif %}
-                                </p>
-                                
-                                {# Caractéristiques #}
-=======
+                                        {{ logement.adresse.ville }}, {{ logement.adresse.code_postal }}
                                     {% else %}Non renseigné{% endif %}
                                 </p>
->>>>>>> origin/module-user_logement_reservation
                                 <div class="d-flex gap-3 mb-3" style="font-size: 14px;">
                                     <span><i class="bi bi-house-door"></i> {{ logement.nombreChambres }} ch</span>
                                     <span><i class="bi bi-droplet"></i> {{ logement.nombreSalleDeBain }} sdb</span>
                                     <span><i class="bi bi-arrows-angle-expand"></i> {{ logement.superficie }} m²</span>
                                 </div>
-<<<<<<< HEAD
-
-                                {# Prix #}
-=======
->>>>>>> origin/module-user_logement_reservation
                                 <div class="mb-3">
                                     {% set promoActive = logement.promoActive %}
                                     {% if promoActive %}
@@ -451,37 +359,6 @@
                                         </h4>
                                     {% else %}
                                         <h4 class="text-primary mb-0">{{ logement.prix }}€ <small class="text-muted">/nuit</small></h4>
-<<<<<<< HEAD
-                                    {% endif %}                               
-                                </div>
-
-                                {# Actions #}
-                                <div class="d-flex gap-2">
-                                    <a href="{{ path('proprietaire_logement_details', {id: logement.id}) }}" 
-                                       class="btn btn-sm btn-outline-primary flex-fill">
-                                        <i class="bi bi-eye"></i> Voir
-                                    </a>
-                                    <a href="{{ path('proprietaire_logement_edit', {id: logement.id}) }}" 
-                                       class="btn btn-sm btn-warning flex-fill">
-                                        <i class="bi bi-pencil"></i> Modifier
-                                    </a>
-                                    <a href="{{ path('promotion_list', {logementId: logement.id}) }}"
-                                    class="btn btn-sm btn-outline-success"
-                                    title="Gérer les promotions">
-                                        <i class="bi bi-tag"></i>
-                                    </a>
-                                    <a href="{{ path('proprietaire_logement_delete', {id: logement.id}) }}" 
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce logement ?')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="card-footer text-muted small">
-                                Publié le {{ logement.createdAt|date('d/m/Y') }}
-                            </div>
-=======
                                     {% endif %}
                                 </div>
                                 <div class="d-flex gap-2">
@@ -492,7 +369,6 @@
                                 </div>
                             </div>
                             <div class="card-footer text-muted small">Publié le {{ logement.createdAt|date('d/m/Y') }}</div>
->>>>>>> origin/module-user_logement_reservation
                         </div>
                     </div>
                 {% endfor %}
@@ -503,8 +379,6 @@
 </section>
 
 {% endblock %}
-<<<<<<< HEAD
-=======
 
 {% block javascripts %}{{ parent() }}
 <script>
@@ -583,7 +457,7 @@ function renderCards(logements) {
                     <h5 class="card-title">${l.titre}</h5>
                     <p class="text-muted mb-2">
                         <i class="bi bi-geo-alt"></i>
-                        ${l.ville ? `${l.ville}, ${l.codePostal}` : 'Non renseigné'}
+                        ${l.ville ? `${l.ville}, ${l.code_postal}` : 'Non renseigné'}
                     </p>
                     <div class="d-flex gap-3 mb-3" style="font-size:14px;">
                         <span><i class="bi bi-house-door"></i> ${l.nombreChambres} ch</span>
@@ -675,4 +549,3 @@ function updateTags() {
     .forEach(id => document.getElementById(id).addEventListener('change', doFilter));
 </script>
 {% endblock %}
->>>>>>> origin/module-user_logement_reservation

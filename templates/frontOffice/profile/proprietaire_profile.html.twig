@@ -4,10 +4,6 @@
 
 {% block body %}
 
-<<<<<<< HEAD
-    {# ── Hero / Breadcrumb ── #}
-=======
->>>>>>> origin/module-user_logement_reservation
     <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 60px 0 40px;">
         <div class="container">
             <div class="row align-items-center">
@@ -29,22 +25,16 @@
         </div>
     </section>
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
     {# ── Contenu principal ── #}
     <section style="padding: 50px 0 80px;">
         <div class="container">
 
             {# Messages Flash #}
-<<<<<<< HEAD
-=======
 
     <section style="padding: 50px 0 80px;">
         <div class="container">
 
->>>>>>> origin/module-user_logement_reservation
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
@@ -63,19 +53,13 @@
                 {# ══════════════════════════════ #}
                 {# COLONNE GAUCHE — Carte identité #}
                 {# ══════════════════════════════ #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                 <div class="col-lg-3">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 90px;">
                         <div class="card-body text-center p-4">
 
                             {# Photo + badge statut #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                             <div class="position-relative d-inline-block mb-3">
                                 {% if user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}"
@@ -114,13 +98,9 @@
 
                             <hr class="my-3">
 
-<<<<<<< HEAD
-                            {# Stats rapides #}
-=======
 
                             {# Stats rapides #}
 
->>>>>>> origin/module-user_logement_reservation
                             <div class="row g-2 text-center">
                                 <div class="col-6">
                                     <div class="rounded-3 p-2" style="background: #f0fdf4;">
@@ -139,10 +119,7 @@
                             <hr class="my-3">
 
                             {# Score de confiance #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                             {% include 'components/trust_score.html.twig' %}
 
                             <p class="text-muted small mt-3 mb-0">
@@ -150,8 +127,6 @@
                                 Membre depuis {{ user.createdAt|date('M Y') }}
                             </p>
 
-<<<<<<< HEAD
-=======
                             {# ===== FACE ID ===== #}
                             <hr style="margin: 15px 0;">
                             <button type="button" onclick="startFaceSave()"
@@ -172,7 +147,6 @@
                             {# ===== FIN FACE ID ===== #}
 
 
->>>>>>> origin/module-user_logement_reservation
                         </div>
                     </div>
                 </div>
@@ -180,19 +154,13 @@
                 {# ════════════════════════════════════ #}
                 {# COLONNE DROITE — Formulaire + Logements #}
                 {# ════════════════════════════════════ #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                 <div class="col-lg-9">
 
                     {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
 
                     {# CARD 1 : Photo de profil #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -224,10 +192,7 @@
                     </div>
 
                     {# CARD 2 : Informations personnelles #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -269,10 +234,7 @@
                     </div>
 
                     {# CARD 3 : Mot de passe #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -289,10 +251,7 @@
                     </div>
 
                     {# Boutons d'action #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="d-flex gap-3 mb-5">
                         <button type="submit" class="btn btn-warning fw-semibold px-4"
                                 style="border-radius: 10px;">
@@ -310,12 +269,9 @@
                     {% include 'components/trust_suggestions.html.twig' %}
 
                     {# CARD 4 : Mes propriétés #}
-<<<<<<< HEAD
-=======
 
                     {% include 'components/trust_suggestions.html.twig' %}
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; overflow: hidden;">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-4 py-3">
                             <h6 class="mb-0 fw-semibold">
@@ -389,37 +345,11 @@
                 </div>
                 {# fin col droite #}
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
             </div>
         </div>
     </section>
 
-<<<<<<< HEAD
-    <style>
-        .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
-        .breadcrumb-item a:hover { text-decoration: underline; }
-        .form-control:focus { border-color: #f59e0b; box-shadow: 0 0 0 0.2rem rgba(245,158,11,.15); }
-        .table tbody tr:hover { background-color: #fafafa; }
-    </style>
-
-    <script>
-    function previewImage(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('preview').innerHTML =
-                `<img src="${e.target.result}" class="rounded-circle"
-                      style="width:72px;height:72px;object-fit:cover;border:3px solid #f59e0b;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-    </script>
-
-=======
     {# ===== MODAL FACE ID ===== #}
     <div class="modal fade" id="faceRegisterModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -528,5 +458,4 @@ function stopFaceCamera() {
 document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
 // ===== FIN FACE SAVE =====
 </script>
->>>>>>> origin/module-user_logement_reservation
 {% endblock %}

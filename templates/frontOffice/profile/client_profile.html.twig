@@ -31,10 +31,7 @@
         <div class="container">
 
             {# Messages Flash #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
@@ -53,19 +50,13 @@
                 {# ══════════════════════════════ #}
                 {# COLONNE GAUCHE — Carte identité #}
                 {# ══════════════════════════════ #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                 <div class="col-lg-3">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 90px;">
                         <div class="card-body text-center p-4">
 
                             {# Photo + badge statut #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                             <div class="position-relative d-inline-block mb-3">
                                 {% if app.user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}"
@@ -102,13 +93,9 @@
 
                             <hr class="my-3">
 
-<<<<<<< HEAD
-                            {# Stats rapides #}
-=======
 
                             {# Stats rapides #}
 
->>>>>>> origin/module-user_logement_reservation
                             <div class="row g-2 text-center">
                                 <div class="col-6">
                                     <div class="rounded-3 p-2" style="background: #fdf2f8;">
@@ -127,10 +114,7 @@
                             <hr class="my-3">
 
                             {# Score de confiance #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                             {% include 'components/trust_score.html.twig' %}
 
                             <p class="text-muted small mt-3 mb-0">
@@ -138,8 +122,6 @@
                                 Membre depuis {{ app.user.createdAt|date('M Y') }}
                             </p>
 
-<<<<<<< HEAD
-=======
 
                             {# ===== FACE ID ===== #}
                             <hr style="margin: 15px 0;">
@@ -160,7 +142,6 @@
                             {% endif %}
                             {# ===== FIN FACE ID ===== #}
 
->>>>>>> origin/module-user_logement_reservation
                         </div>
                     </div>
                 </div>
@@ -168,19 +149,13 @@
                 {# ════════════════════════════════════ #}
                 {# COLONNE DROITE — Formulaire + Favoris #}
                 {# ════════════════════════════════════ #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                 <div class="col-lg-9">
 
                     {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
 
                     {# CARD 1 : Photo de profil #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -210,13 +185,8 @@
                             </div>
                         </div>
                     </div>
-<<<<<<< HEAD
-
-                    {# CARD 2 : Informations personnelles #}
-=======
                     {# CARD 2 : Informations personnelles #}
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -258,10 +228,7 @@
                     </div>
 
                     {# CARD 3 : Mot de passe #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -278,10 +245,7 @@
                     </div>
 
                     {# Boutons d'action #}
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="d-flex gap-3 mb-5">
                         <button type="submit" class="btn btn-primary fw-semibold px-4"
                                 style="border-radius: 10px;">
@@ -299,12 +263,9 @@
                     {% include 'components/trust_suggestions.html.twig' %}
 
                     {# CARD 4 : Mes favoris #}
-<<<<<<< HEAD
-=======
 
                     {% include 'components/trust_suggestions.html.twig' %}
 
->>>>>>> origin/module-user_logement_reservation
                     <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; overflow: hidden;">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-4 py-3">
                             <h6 class="mb-0 fw-semibold">
@@ -374,21 +335,14 @@
                     </div>
 
                 </div>
-<<<<<<< HEAD
-                {# fin col droite #}
-
-=======
 
                 {# fin col droite #}
 
 
->>>>>>> origin/module-user_logement_reservation
             </div>
         </div>
     </section>
 
-<<<<<<< HEAD
-=======
     {# ===== MODAL FACE ID ===== #}
     <div class="modal fade" id="faceRegisterModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -419,7 +373,6 @@
     </div>
     {# ===== FIN MODAL ===== #}
 
->>>>>>> origin/module-user_logement_reservation
     <style>
         .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
         .breadcrumb-item a:hover { text-decoration: underline; }
@@ -427,22 +380,6 @@
         .table tbody tr:hover { background-color: #fafafa; }
     </style>
 
-<<<<<<< HEAD
-    <script>
-    function previewImage(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader client_mes_favoris= new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('preview').innerHTML =
-                `<img src="${e.target.result}" class="rounded-circle"
-                      style="width:72px;height:72px;object-fit:cover;border:3px solid #0d6efd;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-    </script>
-
-=======
 {% endblock %}
 
 {% block javascripts %}
@@ -522,5 +459,4 @@ function stopFaceCamera() {
 document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
 // ===== FIN FACE SAVE =====
 </script>
->>>>>>> origin/module-user_logement_reservation
 {% endblock %}

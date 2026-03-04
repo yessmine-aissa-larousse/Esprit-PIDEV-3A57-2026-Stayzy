@@ -78,11 +78,6 @@
                                             Se souvenir de moi
                                         </label>
                                     </div>
-<<<<<<< HEAD
-                                    <a href="#" style="color: #2e7d32; font-size: 14px; text-decoration: none;">Mot de passe oublié?</a>
-                                </div>
-
-=======
                                 </div>
 
                                         <a href="{{ path('app_forgot_password') }}" style="color: #2e7d32; font-size: 14px;">
@@ -90,7 +85,6 @@
                                         </a>                               
                                      </div>
 
->>>>>>> origin/module-user_logement_reservation
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                                 <button type="submit" class="btn btn-lg w-100 fw-semibold"
@@ -100,8 +94,6 @@
 
                             </form>
 
-<<<<<<< HEAD
-=======
                             {# ===== BOUTON FACE ID ===== #}
                             <div class="text-center mt-3">
                                 <button type="button"
@@ -139,7 +131,6 @@
                             </div>
                             {# ===== FIN BOUTON FACE ID ===== #}
 
->>>>>>> origin/module-user_logement_reservation
                             <hr style="margin: 25px 0; border-color: #eee;">
 
                             <div class="text-center">
@@ -182,8 +173,6 @@ function togglePassword() {
         icon.className = 'bi bi-eye';
     }
 }
-<<<<<<< HEAD
-=======
 
 // ===== FACE LOGIN =====
 let faceStream = null;
@@ -253,6 +242,5 @@ function stopCamera() {
 
 document.getElementById('faceModal')?.addEventListener('hidden.bs.modal', stopCamera);
 // ===== FIN FACE LOGIN =====
->>>>>>> origin/module-user_logement_reservation
 </script>
 {% endblock %}

@@ -19,7 +19,12 @@ class Logement
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire")]
-    #[Assert\Length(min: 5, max: 255)]
+    #[Assert\Length(
+        min: 5,
+        max: 255,
+        minMessage: "Le titre doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -29,23 +34,23 @@ class Logement
     private ?array $adresse = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\NotBlank(message: "Le prix est obligatoire")]
+    #[Assert\Positive(message: "Le prix doit être un nombre positif")]
     private ?float $prix = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\NotBlank(message: "La superficie est obligatoire")]
+    #[Assert\Positive(message: "La superficie doit être un nombre positif")]
     private ?int $superficie = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\NotBlank(message: "Le nombre de chambres est obligatoire")]
+    #[Assert\Positive(message: "Le nombre de chambres doit être un nombre positif")]
     private ?int $nombreChambres = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\NotBlank(message: "Le nombre de salles de bain est obligatoire")]
+    #[Assert\Positive(message: "Le nombre de salles de bain doit être un nombre positif")]
     private ?int $nombreSalleDeBain = null;
 
     #[ORM\Column(nullable: true)]
@@ -68,6 +73,7 @@ class Logement
 
     #[ORM\ManyToOne(inversedBy: 'logements')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank(message: "La catégorie est obligatoire")]
     private ?Categorie $categorie = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'logements')]
@@ -86,6 +92,7 @@ class Logement
     #[ORM\OneToMany(mappedBy: 'logement', targetEntity: Reservation::class, orphanRemoval: true)]
     private Collection $reservations;
 
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -97,10 +104,9 @@ class Logement
         $this->reservations = new ArrayCollection();
     }
 
-    // ===== GETTERS / SETTERS =====
+    // ====== GETTERS / SETTERS ======
 
     public function getId(): ?int { return $this->id; }
-
     public function getTitre(): ?string { return $this->titre; }
     public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
@@ -149,35 +155,16 @@ class Logement
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-    // ===== FAVORIS =====
-
+    // ⭐ Favoris
     public function getUtilisateursFavoris(): Collection { return $this->utilisateursFavoris; }
+    public function addUtilisateurFavori(User $user): static { if (!$this->utilisateursFavoris->contains($user)) { $this->utilisateursFavoris->add($user); } return $this; }
+    public function removeUtilisateurFavori(User $user): static { $this->utilisateursFavoris->removeElement($user); return $this; }
+    public function estEnFavoriPour(User $user): bool { return $this->utilisateursFavoris->contains($user); }
 
-    public function addUtilisateurFavori(User $user): static {
-        if (!$this->utilisateursFavoris->contains($user)) {
-            $this->utilisateursFavoris->add($user);
-        }
-        return $this;
-    }
-
-    public function removeUtilisateurFavori(User $user): static {
-        $this->utilisateursFavoris->removeElement($user);
-        return $this;
-    }
-
-    public function estEnFavoriPour(User $user): bool {
-        return $this->utilisateursFavoris->contains($user);
-    }
-
-    public function getNombreFavoris(): int {
-        return $this->utilisateursFavoris->count();
-    }
-
-    // ===== PROMOTIONS =====
-
+    // ⭐ Promotions
     public function getPromotions(): Collection { return $this->promotions; }
-
     public function addPromotion(Promotion $promotion): static {
+
         if (!$this->promotions->contains($promotion)) {
             $this->promotions->add($promotion);
             $promotion->setLogement($this);
@@ -185,27 +172,25 @@ class Logement
         return $this;
     }
 
-    public function removePromotion(Promotion $promotion): static {
-        if ($this->promotions->removeElement($promotion)
-            && $promotion->getLogement() === $this) {
-            $promotion->setLogement(null);
+    public function removePromotion(Promotion $promotion): static
+    {
+        if ($this->promotions->removeElement($promotion)) {
+            if ($promotion->getLogement() === $this) {
+                $promotion->setLogement(null);
+            }
         }
         return $this;
     }
 
-    public function getPromoActive(): ?Promotion {
+    public function getPromoActive(): ?\App\Entity\Promotion
+    {
         $now = new \DateTime();
         foreach ($this->promotions as $promo) {
             if ($promo->isActive()
                 && $promo->getDateDebut() !== null
                 && $promo->getDateFin() !== null) {
-
-                $debut = clone $promo->getDateDebut();
-                $fin   = clone $promo->getDateFin();
-
-                $debut->setTime(0,0,0);
-                $fin->setTime(23,59,59);
-
+                $debut = clone $promo->getDateDebut(); $debut->setTime(0, 0, 0);
+                $fin   = clone $promo->getDateFin();   $fin->setTime(23, 59, 59);
                 if ($debut <= $now && $now <= $fin) {
                     return $promo;
                 }
@@ -214,15 +199,9 @@ class Logement
         return null;
     }
 
-    public function getPrixFinal(): float {
-        $promo = $this->getPromoActive();
-        return $promo ? $promo->getPrixPromo() : (float)$this->prix;
-    }
 
-    // ===== RESERVATIONS =====
-
+    // ⭐ Réservations
     public function getReservations(): Collection { return $this->reservations; }
-
     public function addReservation(Reservation $reservation): static {
         if (!$this->reservations->contains($reservation)) {
             $this->reservations->add($reservation);
@@ -230,12 +209,26 @@ class Logement
         }
         return $this;
     }
-
     public function removeReservation(Reservation $reservation): static {
-        if ($this->reservations->removeElement($reservation)
-            && $reservation->getLogement() === $this) {
+        if ($this->reservations->removeElement($reservation) && $reservation->getLogement() === $this) {
             $reservation->setLogement(null);
         }
-        return $this;
+        return $this;}
+        /**
+     * Retourne le prix final (avec promo si en cours, sinon prix normal)
+     * Ta camarade appelle juste logement.getPrixFinal() ou logement.prixFinal en Twig
+     */
+    public function getPrixFinal(): float
+    {
+        $promo = $this->getPromoActive();
+        if ($promo !== null) {
+            return $promo->getPrixPromo();
+        }
+        return (float) $this->prix;
+
     }
+    public function getNombreFavoris(): int
+{
+    return $this->utilisateursFavoris->count();
+}
 }

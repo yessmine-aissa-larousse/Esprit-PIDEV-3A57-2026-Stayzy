@@ -4,20 +4,6 @@
 
 {% block body %}
 
-<<<<<<< HEAD
-<div class="container-fluid">
-
-   <div class="mb-4 mt-5 text-center">
-    <h2 class="fw-semibold text-secondary">
-        Mes Réservations
-    </h2>
-</div>
-
-
-
-    {% for message in app.flashes('success') %}
-        <div class="alert alert-success alert-dismissible fade show small" role="alert">
-=======
 <style>
     .reservations-container {
         min-height: 85vh;
@@ -93,21 +79,11 @@
 
     {% for message in app.flashes('success') %}
         <div class="alert alert-success alert-dismissible fade show small mx-auto" style="max-width:800px;" role="alert">
->>>>>>> origin/module-user_logement_reservation
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     {% endfor %}
 
-<<<<<<< HEAD
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light text-muted small">
-                    <tr>
-                        <th>#</th>
-=======
     {# ═══════════════════════ IA DATES OPTIMALES ═══════════════════════ #}
     {% if datesOptimales is not empty %}
     <div class="card modern-card ia-card mb-4 mx-auto" style="max-width: 1400px;">
@@ -153,48 +129,16 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light text-muted">
                     <tr>
->>>>>>> origin/module-user_logement_reservation
                         <th>Logement</th>
                         <th>Date Début</th>
                         <th>Date Fin</th>
                         <th>Personnes</th>
                         <th>Prix</th>
-<<<<<<< HEAD
-=======
                         <th>Analyse IA</th>
->>>>>>> origin/module-user_logement_reservation
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
-<<<<<<< HEAD
-
-                <tbody class="small">
-                {% for reservation in reservations %}
-                    <tr>
-                        <td class="fw-medium">#{{ reservation.id }}</td>
-                        <td>{{ reservation.logement.titre }}</td>
-                        <td>{{ reservation.dateDebut|date('d/m/Y') }}</td>
-                        <td>{{ reservation.dateFin|date('d/m/Y') }}</td>
-                        <td>{{ reservation.nombrePersonnes }}</td>
-                        <td>{{ reservation.prixTotal }} DT</td>
-
-                        <td>
-                            {% if reservation.status == 'EN_ATTENTE' %}
-                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis fw-normal">
-    En attente
-</span>
-
-
-                            {% elseif reservation.status == 'CONFIRMÉE' %}
-                                <span class="badge bg-success bg-opacity-25 text-success fw-normal">
-                                    Confirmée
-                                </span>
-                            {% else %}
-                                <span class="badge bg-danger bg-opacity-25 text-danger fw-normal">
-                                    Annulée
-                                </span>
-=======
                 <tbody>
                 {% for reservation in reservations %}
 
@@ -245,29 +189,11 @@
                                 <div class="mt-1">
                                     <span class="badge bg-warning text-dark">⚠ {{ alerte.message }}</span>
                                 </div>
->>>>>>> origin/module-user_logement_reservation
                             {% endif %}
                         </td>
 
                         <td class="text-end">
                             {% if reservation.status == 'EN_ATTENTE' %}
-<<<<<<< HEAD
-                                <a href="{{ path('front_reservation_edit', {'id': reservation.id}) }}"
-                                   class="btn btn-sm btn-outline-primary">
-                                    Modifier
-                                </a>
-                            {% endif %}
-                            <a href="{{ path('front_reservation_cancel', {'id': reservation.id}) }}"
-                               class="btn btn-sm btn-outline-danger ms-1">
-                                Annuler
-                            </a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            Aucune réservation trouvée
-=======
                                 {% if alerte.peut_modifier %}
                                     <a href="{{ path('front_reservation_edit', {'id': reservation.id}) }}"
                                        class="btn btn-sm btn-outline-primary btn-modern">
@@ -294,24 +220,13 @@
                                 <h5>Aucune réservation trouvée</h5>
                                 <p>Vous n’avez pas encore effectué de réservation.</p>
                             </div>
->>>>>>> origin/module-user_logement_reservation
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
-<<<<<<< HEAD
-
             </table>
-
-=======
-            </table>
->>>>>>> origin/module-user_logement_reservation
         </div>
     </div>
 
 </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/module-user_logement_reservation
 {% endblock %}

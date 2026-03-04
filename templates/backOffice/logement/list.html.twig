@@ -131,28 +131,11 @@
                                         </td>
                                         
                                         <td>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-                                            {% if logement.adresse is iterable %}
-    <small>
-        {{ logement.adresse.ville ?? '-' }},
-        {{ logement.adresse.codePostal ?? '-' }}
-    </small>
-{% else %}
-    <small class="text-muted">-</small>
-{% endif %}
-=======
->>>>>>> origin/module-user_logement_reservation
                                             {% if logement.adresse %}
-                                                <small>{{ logement.adresse.ville }}, {{ logement.adresse.codePostal }}</small>
+                                                <small>{{ logement.adresse.ville }}, {{ logement.adresse.code_postal }}</small>
                                             {% else %}
                                                 <small class="text-muted">-</small>
                                             {% endif %}
-<<<<<<< HEAD
-=======
->>>>>>> origin/integration-logement-utilisateur
->>>>>>> origin/module-user_logement_reservation
                                         </td>
                                         
                                         <td><strong class="text-success">{{ logement.prix|number_format(0) }}€</strong></td>

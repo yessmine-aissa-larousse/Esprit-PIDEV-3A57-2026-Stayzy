@@ -265,7 +265,7 @@
                                                     {% if logement.adresse %}
                                                         {{ logement.adresse.rue|default('') }}, 
                                                         {{ logement.adresse.ville|default('') }} 
-                                                        {{ logement.adresse.codePostal|default('') }}
+                                                        {{ logement.adresse.code_postal|default('') }}
                                                     {% else %}
                                                         Adresse non renseignée
                                                     {% endif %}
