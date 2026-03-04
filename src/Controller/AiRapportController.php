@@ -13,8 +13,29 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PROPRIETAIRE')]
 final class AiRapportController extends AbstractController
 {
-    // Chemin absolu vers Python sur ta machine
-    private const PYTHON_PATH = 'C:\Users\ASUS\AppData\Local\Programs\Python\Python313\python.exe';
+    // =========================================================================
+    // DÉTECTION AUTOMATIQUE DU CHEMIN PYTHON (portable sur toutes les machines)
+    // =========================================================================
+    private function getPythonPath(): string
+    {
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+        if ($isWindows) {
+            $candidates = ['python', 'python3', 'py'];
+        } else {
+            $candidates = ['/usr/bin/python3', '/usr/local/bin/python3', 'python3', 'python'];
+        }
+
+        foreach ($candidates as $cmd) {
+            $test = shell_exec(sprintf('"%s" --version 2>&1', $cmd));
+            if ($test && str_contains($test, 'Python')) {
+                return $cmd;
+            }
+        }
+
+        // Fallback ultime
+        return $isWindows ? 'python' : 'python3';
+    }
 
     // =========================================================================
     // PAGE PRINCIPALE DU RAPPORT IA
@@ -89,7 +110,7 @@ final class AiRapportController extends AbstractController
 
         // ── 4. Appeler le script Python ──
         $scriptPath = $this->getParameter('kernel.project_dir') . '/ai/analyze.py';
-        $pythonPath = self::PYTHON_PATH;
+        $pythonPath = $this->getPythonPath(); // ✅ Détection automatique
 
         // Passe par un fichier JSON temporaire
         $tmpFile = sys_get_temp_dir() . '/stayzy_ai_' . uniqid() . '.json';
@@ -119,10 +140,8 @@ final class AiRapportController extends AbstractController
 
                 if (json_last_error() === JSON_ERROR_NONE) {
                     if (isset($decoded['erreur'])) {
-                        // Python a retourné une erreur explicite
                         $erreur = $decoded['erreur'];
                     } else {
-                        // ✅ Succès — on a un vrai rapport
                         $rapport = $decoded;
                     }
                 } else {
@@ -132,10 +151,9 @@ final class AiRapportController extends AbstractController
                 $erreur = 'Aucun JSON détecté. Sortie Python : ' . substr($sortie, 0, 500);
             }
         } else {
-            $erreur = 'Python n\'a retourné aucune sortie. Vérifiez le chemin Python et le script.';
+            $erreur = 'Python n\'a retourné aucune sortie. Vérifiez que Python est installé.';
         }
 
-        // ✅ FIX : on ne remplace $rapport par une erreur que si c'est vraiment une erreur
         if ($rapport !== null && isset($rapport['erreur'])) {
             $erreur  = $rapport['erreur'];
             $rapport = null;

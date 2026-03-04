@@ -30,10 +30,8 @@
     <section style="padding: 50px 0 80px;">
         <div class="container">
 
-<<<<<<< HEAD
             {# Messages Flash #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
@@ -49,20 +47,16 @@
 
             <div class="row g-4">
 
-<<<<<<< HEAD
                 {# ══════════════════════════════ #}
                 {# COLONNE GAUCHE — Carte identité #}
                 {# ══════════════════════════════ #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                 <div class="col-lg-3">
                     <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 90px;">
                         <div class="card-body text-center p-4">
 
-<<<<<<< HEAD
                             {# Photo + badge statut #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                             <div class="position-relative d-inline-block mb-3">
                                 {% if app.user.profilePicture %}
                                     <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}"
@@ -99,10 +93,9 @@
 
                             <hr class="my-3">
 
-<<<<<<< HEAD
+
                             {# Stats rapides #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                             <div class="row g-2 text-center">
                                 <div class="col-6">
                                     <div class="rounded-3 p-2" style="background: #fdf2f8;">
@@ -120,10 +113,8 @@
 
                             <hr class="my-3">
 
-<<<<<<< HEAD
                             {# Score de confiance #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                             {% include 'components/trust_score.html.twig' %}
 
                             <p class="text-muted small mt-3 mb-0">
@@ -131,8 +122,7 @@
                                 Membre depuis {{ app.user.createdAt|date('M Y') }}
                             </p>
 
-<<<<<<< HEAD
-=======
+
                             {# ===== FACE ID ===== #}
                             <hr style="margin: 15px 0;">
                             <button type="button" onclick="startFaceSave()"
@@ -152,25 +142,20 @@
                             {% endif %}
                             {# ===== FIN FACE ID ===== #}
 
->>>>>>> origin/integration-logement-utilisateur
                         </div>
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 {# ════════════════════════════════════ #}
                 {# COLONNE DROITE — Formulaire + Favoris #}
                 {# ════════════════════════════════════ #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                 <div class="col-lg-9">
 
                     {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
 
-<<<<<<< HEAD
                     {# CARD 1 : Photo de profil #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -200,11 +185,8 @@
                             </div>
                         </div>
                     </div>
-
-<<<<<<< HEAD
                     {# CARD 2 : Informations personnelles #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -245,10 +227,8 @@
                         </div>
                     </div>
 
-<<<<<<< HEAD
                     {# CARD 3 : Mot de passe #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                     <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                         <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
                             <h6 class="mb-0 fw-semibold">
@@ -264,10 +244,8 @@
                         </div>
                     </div>
 
-<<<<<<< HEAD
                     {# Boutons d'action #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                     <div class="d-flex gap-3 mb-5">
                         <button type="submit" class="btn btn-primary fw-semibold px-4"
                                 style="border-radius: 10px;">
@@ -281,15 +259,13 @@
 
                     {{ form_end(form) }}
 
-<<<<<<< HEAD
                     {# Suggestions Trust Score #}
                     {% include 'components/trust_suggestions.html.twig' %}
 
                     {# CARD 4 : Mes favoris #}
-=======
+
                     {% include 'components/trust_suggestions.html.twig' %}
 
->>>>>>> origin/integration-logement-utilisateur
                     <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; overflow: hidden;">
                         <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-4 py-3">
                             <h6 class="mb-0 fw-semibold">
@@ -359,17 +335,14 @@
                     </div>
 
                 </div>
-<<<<<<< HEAD
+
                 {# fin col droite #}
-=======
->>>>>>> origin/integration-logement-utilisateur
+
 
             </div>
         </div>
     </section>
 
-<<<<<<< HEAD
-=======
     {# ===== MODAL FACE ID ===== #}
     <div class="modal fade" id="faceRegisterModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -400,7 +373,6 @@
     </div>
     {# ===== FIN MODAL ===== #}
 
->>>>>>> origin/integration-logement-utilisateur
     <style>
         .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
         .breadcrumb-item a:hover { text-decoration: underline; }
@@ -408,23 +380,6 @@
         .table tbody tr:hover { background-color: #fafafa; }
     </style>
 
-<<<<<<< HEAD
-    <script>
-    function previewImage(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader client_mes_favoris= new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('preview').innerHTML =
-                `<img src="${e.target.result}" class="rounded-circle"
-                      style="width:72px;height:72px;object-fit:cover;border:3px solid #0d6efd;">`;
-        };
-        reader.readAsDataURL(file);
-    }
-    </script>
-
-{% endblock %}
-=======
 {% endblock %}
 
 {% block javascripts %}
@@ -505,4 +460,3 @@ document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal'
 // ===== FIN FACE SAVE =====
 </script>
 {% endblock %}
->>>>>>> origin/integration-logement-utilisateur

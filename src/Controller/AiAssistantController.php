@@ -14,8 +14,28 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_PROPRIETAIRE')]
 final class AiAssistantController extends AbstractController
 {
-    private const PYTHON_PATH  = 'C:\Users\ASUS\AppData\Local\Programs\Python\Python313\python.exe';
-    private const SCRIPT_PATH  = '/ai/analyze.py';
+    private const SCRIPT_PATH = '/ai/analyze.py';
+
+    // =========================================================================
+    // DÉTECTION AUTOMATIQUE DU CHEMIN PYTHON (portable sur toutes les machines)
+    // =========================================================================
+    private function getPythonPath(): string
+    {
+        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+
+        $candidates = $isWindows
+            ? ['python', 'python3', 'py']
+            : ['/usr/bin/python3', '/usr/local/bin/python3', 'python3', 'python'];
+
+        foreach ($candidates as $cmd) {
+            $test = shell_exec(sprintf('"%s" --version 2>&1', $cmd));
+            if ($test && str_contains($test, 'Python')) {
+                return $cmd;
+            }
+        }
+
+        return $isWindows ? 'python' : 'python3';
+    }
 
     // =========================================================================
     // HELPER : appelle le script Python et retourne le tableau décodé
@@ -27,7 +47,7 @@ final class AiAssistantController extends AbstractController
 
         file_put_contents($tmpFile, json_encode($payload, JSON_UNESCAPED_UNICODE));
 
-        $commande = sprintf('"%s" "%s" "%s" 2>&1', self::PYTHON_PATH, $scriptPath, $tmpFile);
+        $commande = sprintf('"%s" "%s" "%s" 2>&1', $this->getPythonPath(), $scriptPath, $tmpFile);
         $sortie   = shell_exec($commande);
 
         if (file_exists($tmpFile)) unlink($tmpFile);
@@ -73,20 +93,20 @@ final class AiAssistantController extends AbstractController
         }
 
         $donneesLogements = array_map(fn($l) => [
-            'id'                  => $l->getId(),
-            'titre'               => $l->getTitre(),
-            'prix'                => $l->getPrix(),
-            'superficie'          => $l->getSuperficie(),
-            'nombre_chambres'     => $l->getNombreChambres(),
-            'nombre_salle_de_bain'=> $l->getNombreSalleDeBain(),
-            'amenites'            => $l->getAmenites() ?? [],
-            'note_moyenne'        => $l->getNoteMoyenne(),
-            'nb_favoris'          => $l->getNombreFavoris(),
-            'a_promo'             => $l->getPromoActive() !== null,
-            'nb_photos'           => count($l->getPhotos() ?? []),
-            'description_longue'  => strlen($l->getDescription() ?? '') > 100,
-            'categorie'           => $l->getCategorie()?->getNom() ?? '',
-            'ville'               => is_array($l->getAdresse()) ? ($l->getAdresse()['ville'] ?? '') : '',
+            'id'                   => $l->getId(),
+            'titre'                => $l->getTitre(),
+            'prix'                 => $l->getPrix(),
+            'superficie'           => $l->getSuperficie(),
+            'nombre_chambres'      => $l->getNombreChambres(),
+            'nombre_salle_de_bain' => $l->getNombreSalleDeBain(),
+            'amenites'             => $l->getAmenites() ?? [],
+            'note_moyenne'         => $l->getNoteMoyenne(),
+            'nb_favoris'           => $l->getNombreFavoris(),
+            'a_promo'              => $l->getPromoActive() !== null,
+            'nb_photos'            => count($l->getPhotos() ?? []),
+            'description_longue'   => strlen($l->getDescription() ?? '') > 100,
+            'categorie'            => $l->getCategorie()?->getNom() ?? '',
+            'ville'                => is_array($l->getAdresse()) ? ($l->getAdresse()['ville'] ?? '') : '',
         ], $logements);
 
         $donneesReservations = array_map(fn($r) => [
@@ -117,8 +137,8 @@ final class AiAssistantController extends AbstractController
             return $this->json(['erreur' => 'Question vide.'], 400);
         }
 
-        $data           = $this->getProprietaireData($em);
-        $data['mode']   = 'chat';
+        $data             = $this->getProprietaireData($em);
+        $data['mode']     = 'chat';
         $data['question'] = $question;
 
         $result = $this->callPython($data, $this->getParameter('kernel.project_dir'));
@@ -171,26 +191,26 @@ final class AiAssistantController extends AbstractController
             return $this->json(['erreur' => 'Logement introuvable.'], 404);
         }
 
-        $data          = $this->getProprietaireData($em);
-        $adresse       = $logement->getAdresse();
-        $reservations  = array_filter($data['reservations'],
+        $data         = $this->getProprietaireData($em);
+        $adresse      = $logement->getAdresse();
+        $reservations = array_filter($data['reservations'],
             fn($r) => $r['logement_id'] === $logementId);
 
         $payload = [
-            'mode'          => 'prix',
-            'logement'      => [
-                'id'                   => $logement->getId(),
-                'titre'                => $logement->getTitre(),
-                'prix'                 => $logement->getPrix(),
-                'superficie'           => $logement->getSuperficie(),
-                'nombre_chambres'      => $logement->getNombreChambres(),
-                'amenites'             => $logement->getAmenites() ?? [],
-                'note_moyenne'         => $logement->getNoteMoyenne(),
-                'nb_photos'            => count($logement->getPhotos() ?? []),
-                'ville'                => is_array($adresse) ? ($adresse['ville'] ?? '') : '',
+            'mode'           => 'prix',
+            'logement'       => [
+                'id'           => $logement->getId(),
+                'titre'        => $logement->getTitre(),
+                'prix'         => $logement->getPrix(),
+                'superficie'   => $logement->getSuperficie(),
+                'nombre_chambres' => $logement->getNombreChambres(),
+                'amenites'     => $logement->getAmenites() ?? [],
+                'note_moyenne' => $logement->getNoteMoyenne(),
+                'nb_photos'    => count($logement->getPhotos() ?? []),
+                'ville'        => is_array($adresse) ? ($adresse['ville'] ?? '') : '',
             ],
-            'reservations'  => array_values($reservations),
-            'tous_logements'=> $data['logements'],
+            'reservations'   => array_values($reservations),
+            'tous_logements' => $data['logements'],
         ];
 
         $result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));

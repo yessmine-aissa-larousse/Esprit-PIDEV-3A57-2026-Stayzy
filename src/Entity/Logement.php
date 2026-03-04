@@ -227,4 +227,8 @@ class Logement
         return (float) $this->prix;
 
     }
+    public function getNombreFavoris(): int
+{
+    return $this->utilisateursFavoris->count();
+}
 }

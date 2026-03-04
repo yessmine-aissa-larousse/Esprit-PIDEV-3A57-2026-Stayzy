@@ -1,20 +1,5 @@
 {% extends 'frontOffice/base.html.twig' %}
 
-<<<<<<< HEAD
-{% block title %}{{ logement.titre }} - Stayzy{% endblock %}
-
-{% block stylesheets %}
-    {{ parent() }}
-    <style>
-        /* Sidebar fixe sans décalage visuel au scroll */
-        .sidebar-sticky {
-            position: sticky;
-            top: 80px;          /* hauteur de la navbar — ajuste si besoin */
-            max-height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-    </style>
-=======
 {% block title %}{{ logement.titre }} — Tableau de bord{% endblock %}
 
 {% block stylesheets %}
@@ -562,79 +547,11 @@ body {
     .dash-wrap { padding: 16px 12px 40px; }
 }
 </style>
->>>>>>> origin/integration-logement-utilisateur
 {% endblock %}
 
 {% block body %}
 
-<<<<<<< HEAD
-<div class="page-title light-background">
-    <div class="container d-lg-flex justify-content-between align-items-center">
-        <h1 class="mb-2 mb-lg-0">{{ logement.titre }}</h1>
-        <nav class="breadcrumbs">
-            <ol>
-                <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                <li><a href="{{ path('proprietaire_logement_list') }}">Mes Logements</a></li>
-                <li class="current">Détails</li>
-            </ol>
-        </nav>
-    </div>
-</div>
 
-<section class="section" style="padding: 60px 0;">
-    <div class="container">
-        <div class="row">
-            
-            {# Colonne principale #}
-            <div class="col-lg-8">
-                
-                {# Image principale #}
-                {% if logement.photoPrincipale %}
-                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
-                         class="img-fluid rounded mb-4" 
-                         style="width: 100%; height: 400px; object-fit: cover;">
-                {% endif %}
-
-                {# Description #}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h3>Description</h3>
-                        <p>{{ logement.description|default('Aucune description disponible') }}</p>
-                    </div>
-                </div>
-
-                {# Caractéristiques #}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h3>Caractéristiques</h3>
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <div class="text-center p-3 border rounded">
-                                    <i class="bi bi-house-door fs-1 text-primary"></i>
-                                    <h5 class="mt-2">{{ logement.nombreChambres }}</h5>
-                                    <small class="text-muted">Chambre(s)</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-center p-3 border rounded">
-                                    <i class="bi bi-droplet fs-1 text-info"></i>
-                                    <h5 class="mt-2">{{ logement.nombreSalleDeBain }}</h5>
-                                    <small class="text-muted">Salle(s) de bain</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-center p-3 border rounded">
-                                    <i class="bi bi-arrows-angle-expand fs-1 text-success"></i>
-                                    <h5 class="mt-2">{{ logement.superficie }}</h5>
-                                    <small class="text-muted">m²</small>
-                                </div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <div class="text-center p-3 border rounded">
-                                    <i class="bi bi-tag fs-1 text-warning"></i>
-                                    <h5 class="mt-2">{{ logement.prix }}€</h5>
-                                    <small class="text-muted">/nuit</small>
-=======
 {# ══ TOP BAR ══ #}
 <div class="dash-topbar">
     <nav class="topbar-breadcrumb">
@@ -755,13 +672,12 @@ body {
                                 <div>
                                     <div class="info-row-label">Date de publication</div>
                                     <div class="info-row-value">{{ logement.createdAt|date('d/m/Y à H:i') }}</div>
->>>>>>> origin/integration-logement-utilisateur
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-<<<<<<< HEAD
+
 
                 {# Équipements #}
                 {% if logement.amenites %}
@@ -876,7 +792,6 @@ body {
         </div>
     </div>
 </section>
-=======
             </div>
 
             {# DESCRIPTION #}
@@ -1067,6 +982,5 @@ body {
 
     </div>
 </div>
->>>>>>> origin/integration-logement-utilisateur
 
 {% endblock %}
