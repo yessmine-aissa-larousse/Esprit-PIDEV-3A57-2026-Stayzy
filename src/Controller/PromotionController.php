@@ -5,10 +5,8 @@ namespace App\Controller;
 use App\Entity\Logement;
 use App\Entity\Promotion;
 use App\Form\PromotionType;
-<<<<<<< HEAD
-=======
 use App\Service\SmsService;
->>>>>>> origin/integration-logement-utilisateur
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,42 +48,6 @@ final class PromotionController extends AbstractController
 
     // -------------------------------------------------------------------------
     #[Route('/proprietaire/logement/{logementId}/promotions/new', name: 'promotion_new')]
-<<<<<<< HEAD
-    public function new(int $logementId, Request $request, EntityManagerInterface $em): Response
-    {
-        $logement = $this->getLogementSecurise($logementId, $em);
-
-        // Bloquer si promo en cours
-        $promoEnCours = $em->getRepository(Promotion::class)
-            ->findPromoActiveByLogement($logement->getId());
-
-        if ($promoEnCours) {
-            $this->addFlash('warning', '⚠️ Une promotion est déjà en cours sur ce logement. Modifiez-la ou désactivez-la d\'abord.');
-            return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
-        }
-
-        $promotion = new Promotion();
-        $promotion->setLogement($logement);
-
-        $form = $this->createForm(PromotionType::class, $promotion);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($promotion);
-            $em->flush();
-            $this->addFlash('success', '🎉 Promotion "' . $promotion->getTitre() . '" créée avec succès !');
-            return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
-        }
-
-        return $this->render('frontOffice/promotion/form.html.twig', [
-            'form'      => $form->createView(),
-            'logement'  => $logement,
-            'promotion' => null,
-            'titre'     => 'Créer une promotion',
-        ]);
-    }
-
-=======
 public function new(int $logementId, Request $request, EntityManagerInterface $em, SmsService $smsService): Response
 {
     $logement = $this->getLogementSecurise($logementId, $em);
@@ -123,7 +85,7 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
     ]);
 }
 
->>>>>>> origin/integration-logement-utilisateur
+
     // -------------------------------------------------------------------------
     #[Route('/proprietaire/logement/{logementId}/promotions/{id}/edit', name: 'promotion_edit')]
     public function edit(int $logementId, int $id, Request $request, EntityManagerInterface $em): Response
@@ -145,11 +107,8 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
         }
 
-<<<<<<< HEAD
-        return $this->render('frontOffice/promotion/form.html.twig', [
-=======
+
         return $this->render('frontOffice/promotion/add.html.twig', [
->>>>>>> origin/integration-logement-utilisateur
             'form'      => $form->createView(),
             'logement'  => $logement,
             'promotion' => $promotion,
@@ -202,11 +161,8 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
     #[Route('/proprietaire/promotions', name: 'promotion_globale_list')]
     public function globaleList(EntityManagerInterface $em): Response
     {
-<<<<<<< HEAD
-        /** @var \App\Entity\Utilisateur $user */
-=======
         /** @var \App\Entity\User $user */
->>>>>>> origin/integration-logement-utilisateur
+
         $user = $this->getUser();
 
         $logements = $em->getRepository(Logement::class)
@@ -246,11 +202,8 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
     #[Route('/proprietaire/promotions/appliquer-tous', name: 'promotion_globale_appliquer_tous')]
     public function appliquerTous(Request $request, EntityManagerInterface $em): Response
     {
-<<<<<<< HEAD
-        /** @var \App\Entity\Utilisateur $user */
-=======
+
         /** @var \App\Entity\User $user */
->>>>>>> origin/integration-logement-utilisateur
         $user = $this->getUser();
 
         $logements = $em->getRepository(Logement::class)
@@ -274,10 +227,7 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             $nbIgnores   = 0;
 
             foreach ($logements as $logement) {
-<<<<<<< HEAD
-                // Ignorer les logements avec promo en cours
-=======
->>>>>>> origin/integration-logement-utilisateur
+
                 $promoEnCours = $em->getRepository(Promotion::class)
                     ->findPromoActiveByLogement($logement->getId());
 
@@ -306,18 +256,10 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             return $this->redirectToRoute('promotion_globale_list');
         }
 
-<<<<<<< HEAD
-        // Calcul prix moyen pour le JS (prixMoyen doit être une var PHP, pas Twig)
-        $prixMoyen = 0;
-        if (!empty($logements)) {
-            foreach ($logements as $l) {
-                $prixMoyen += $l->getPrix();
-            }
-=======
         $prixMoyen = 0;
         if (!empty($logements)) {
             foreach ($logements as $l) { $prixMoyen += $l->getPrix(); }
->>>>>>> origin/integration-logement-utilisateur
+
             $prixMoyen = round($prixMoyen / count($logements), 2);
         }
 
@@ -375,8 +317,6 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
         }
         return $promotion;
     }
-<<<<<<< HEAD
-=======
 
     // -------------------------------------------------------------------------
     // ✅ NOUVEAU : Envoi SMS aux clients qui ont le logement en favori
@@ -490,6 +430,4 @@ public function testSmsDebug(): Response
         'Error curl: ' . $error . "\n" .
         json_encode($json, JSON_PRETTY_PRINT) 
     . '</pre>');
-}
->>>>>>> origin/integration-logement-utilisateur
-}
+}}

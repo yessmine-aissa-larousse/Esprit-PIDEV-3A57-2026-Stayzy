@@ -565,8 +565,6 @@ final class LogementController extends AbstractController
         }
     }
 
-<<<<<<< HEAD
-=======
 
    // =========================================================================
     // AJAX — FILTRAGE MULTICRITÈRES
@@ -680,6 +678,5 @@ final class LogementController extends AbstractController
         return $this->json($result);
     }
 
->>>>>>> origin/integration-logement-utilisateur
     
 }

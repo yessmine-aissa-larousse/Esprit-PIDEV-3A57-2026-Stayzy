@@ -72,11 +72,12 @@ class FavoriController extends AbstractController
         // Pour chaque logement, compter les favoris
         $statistiques = [];
         foreach ($mesLogements as $logement) {
-            $statistiques[] = [
-                'logement' => $logement,
-                'nombre_favoris' => $logement->getNombreFavoris(),
-                'utilisateurs' => $logement->getUtilisateursFavoris(),
-            ];
+    $statistiques[] = [
+        'logement' => $logement,
+        'nombre_favoris' => $logement->getUtilisateursFavoris()->count(),
+        'utilisateurs' => $logement->getUtilisateursFavoris(),
+    ];
+
         }
 
         // Trier par nombre de favoris (les plus populaires en premier)

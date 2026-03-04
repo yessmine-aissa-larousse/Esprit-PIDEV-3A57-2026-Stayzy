@@ -35,18 +35,24 @@ security:
                 lifetime: 604800
 
     access_control:
+<<<<<<< HEAD
+=======
         - { path: ^/face/login, roles: PUBLIC_ACCESS }
         - { path: ^/face/save, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/connect/google, roles: PUBLIC_ACCESS }
         - { path: ^/verify, roles: IS_AUTHENTICATED_FULLY }
+>>>>>>> origin/integration-logement-utilisateur
         - { path: ^/admin/logement, roles: ROLE_PROPRIETAIRE }
         - { path: ^/admin/favoris, roles: ROLE_PROPRIETAIRE }
         - { path: ^/admin/mes-favoris, roles: ROLE_CLIENT }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/client, roles: ROLE_CLIENT }
         - { path: ^/proprietaire, roles: ROLE_PROPRIETAIRE }
+<<<<<<< HEAD
+=======
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+>>>>>>> origin/integration-logement-utilisateur
 
 when@test:
     security:

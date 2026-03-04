@@ -26,14 +26,13 @@ services:
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
-<<<<<<< HEAD
     App\Controller\SendTestEmailCommand:
         arguments:
             $mailerFrom: '%mailer_from%'
         tags: ['console.command']
-=======
 
->>>>>>> origin/integration-logement-utilisateur
+
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
