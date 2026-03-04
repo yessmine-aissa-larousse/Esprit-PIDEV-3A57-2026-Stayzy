@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity;
+use App\Entity\Logement;
 
 use App\Repository\CategorieRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -121,3 +122,4 @@ class Categorie
         return $this;
     }
 }
+

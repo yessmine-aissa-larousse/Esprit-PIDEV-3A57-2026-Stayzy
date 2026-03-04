@@ -7,6 +7,8 @@ parameters:
     stripe_secret_key: '%env(resolve:STRIPE_SECRET_KEY)%'
     stripe_webhook_secret: '%env(resolve:STRIPE_WEBHOOK_SECRET)%'
     stripe_publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
+    mailer_from: '%env(MAILER_FROM)%'
+    mailer_always_to: '%env(MAILER_ALWAYS_TO)%'
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -24,6 +26,12 @@ services:
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
+    App\Controller\SendTestEmailCommand:
+        arguments:
+            $mailerFrom: '%mailer_from%'
+        tags: ['console.command']
+
+
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

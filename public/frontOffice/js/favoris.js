@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 /**
  * SYSTÈME DE FAVORIS - JavaScript avec Authentification
  */
+=======
+>>>>>>> origin/module-user_logement_reservation
 
 // ============================================================================
 // TOGGLE FAVORI (Ajouter / Retirer)

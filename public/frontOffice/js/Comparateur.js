@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 /**
  * SYSTÈME DE COMPARATEUR - JavaScript
  */
+=======
+
+>>>>>>> origin/module-user_logement_reservation
 
 // ============================================================================
 // TOGGLE COMPARATEUR (Ajouter / Retirer)

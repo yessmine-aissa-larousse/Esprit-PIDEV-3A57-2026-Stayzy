@@ -19,7 +19,11 @@ class Notification
     #[ORM\Column(length: 50)]
     private ?string $type = null; // 'nouveau_logement', 'modification', etc.
 
+<<<<<<< HEAD
 #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'notifications')]
+=======
+    #[ORM\ManyToOne(targetEntity: User::class)]
+>>>>>>> origin/module-user_logement_reservation
     #[ORM\JoinColumn(nullable: false)]
     private ?User $destinataire = null; // L'admin qui recevra la notification
 

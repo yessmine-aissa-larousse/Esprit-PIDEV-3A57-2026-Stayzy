@@ -565,5 +565,118 @@ final class LogementController extends AbstractController
         }
     }
 
+
+   // =========================================================================
+    // AJAX — FILTRAGE MULTICRITÈRES
+    // =========================================================================
+    #[Route('/proprietaire/logements/filter', name: 'proprietaire_logement_filter', methods: ['POST'])]
+    #[IsGranted('ROLE_PROPRIETAIRE')]
+    public function filter(Request $request, EntityManagerInterface $em): \Symfony\Component\HttpFoundation\JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        $search        = trim($data['search']        ?? '');
+        $disponible    = $data['disponible']          ?? 'all';
+        $avecPromo     = $data['avecPromo']           ?? 'all';
+        $prixMin       = isset($data['prixMin'])       && $data['prixMin'] !== '' ? (float)$data['prixMin']       : null;
+        $prixMax       = isset($data['prixMax'])       && $data['prixMax'] !== '' ? (float)$data['prixMax']       : null;
+        $chambresMin   = isset($data['chambresMin'])   && $data['chambresMin'] !== '' ? (int)$data['chambresMin'] : null;
+        $superficieMin = isset($data['superficieMin']) && $data['superficieMin'] !== '' ? (float)$data['superficieMin'] : null;
+        $superficieMax = isset($data['superficieMax']) && $data['superficieMax'] !== '' ? (float)$data['superficieMax'] : null;
+        $ville         = trim($data['ville']          ?? '');
+        $sortBy        = $data['sortBy']              ?? 'date_desc';
+
+        $qb = $em->getRepository(Logement::class)
+            ->createQueryBuilder('l')
+            ->where('l.proprietaire = :user')
+            ->setParameter('user', $user);
+
+        if ($search !== '') {
+            $qb->andWhere('l.titre LIKE :search OR l.description LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+        if ($disponible === '1') {
+            $qb->andWhere('l.disponible = true');
+        } elseif ($disponible === '0') {
+            $qb->andWhere('l.disponible = false');
+        }
+        if ($prixMin !== null) {
+            $qb->andWhere('l.prix >= :prixMin')->setParameter('prixMin', $prixMin);
+        }
+        if ($prixMax !== null) {
+            $qb->andWhere('l.prix <= :prixMax')->setParameter('prixMax', $prixMax);
+        }
+        if ($chambresMin !== null) {
+            $qb->andWhere('l.nombreChambres >= :chambresMin')->setParameter('chambresMin', $chambresMin);
+        }
+        if ($superficieMin !== null) {
+            $qb->andWhere('l.superficie >= :superficieMin')->setParameter('superficieMin', $superficieMin);
+        }
+        if ($superficieMax !== null) {
+            $qb->andWhere('l.superficie <= :superficieMax')->setParameter('superficieMax', $superficieMax);
+        }
+
+        match ($sortBy) {
+            'prix_asc'   => $qb->orderBy('l.prix', 'ASC'),
+            'prix_desc'  => $qb->orderBy('l.prix', 'DESC'),
+            'titre_asc'  => $qb->orderBy('l.titre', 'ASC'),
+            'titre_desc' => $qb->orderBy('l.titre', 'DESC'),
+            default      => $qb->orderBy('l.createdAt', 'DESC'),
+        };
+
+        $logements = $qb->getQuery()->getResult();
+
+        // Ville : adresse = JSON array, pas une relation → filtre PHP
+        if ($ville !== '') {
+            $villeLower = strtolower($ville);
+            $logements = array_filter($logements, function($l) use ($villeLower) {
+                $adr = $l->getAdresse();
+                if (!$adr) return false;
+                $v = is_array($adr) ? ($adr['ville'] ?? '') : '';
+                return str_contains(strtolower($v), $villeLower);
+            });
+        }
+
+        // Promo active → filtre PHP
+        if ($avecPromo === '1') {
+            $logements = array_filter($logements, fn($l) => $l->getPromoActive() !== null);
+        } elseif ($avecPromo === '0') {
+            $logements = array_filter($logements, fn($l) => $l->getPromoActive() === null);
+        }
+
+        // Sérialiser en JSON simple
+        $result = [];
+        foreach (array_values($logements) as $l) {
+            $promo = $l->getPromoActive();
+            $adr   = $l->getAdresse();
+
+            $result[] = [
+                'id'              => $l->getId(),
+                'titre'           => $l->getTitre(),
+                'prix'            => $l->getPrix(),
+                'prixFinal'       => $promo ? $promo->getPrixPromo() : $l->getPrix(),
+                'pourcentage'     => $promo ? $promo->getPourcentage() : null,
+                'disponible'      => $l->isDisponible(),
+                'nombreChambres'  => $l->getNombreChambres(),
+                'nombreSalleDeBain' => $l->getNombreSalleDeBain(),
+                'superficie'      => $l->getSuperficie(),
+                'photoPrincipale' => $l->getPhotoPrincipale(),
+                'ville'           => is_array($adr) ? ($adr['ville'] ?? '') : '',
+                'codePostal'      => is_array($adr) ? ($adr['codePostal'] ?? '') : '',
+                'createdAt'       => $l->getCreatedAt()?->format('d/m/Y'),
+                'hasPromo'        => $promo !== null,
+                'urlVoir'         => $this->generateUrl('proprietaire_logement_details', ['id' => $l->getId()]),
+                'urlModifier'     => $this->generateUrl('proprietaire_logement_edit', ['id' => $l->getId()]),
+                'urlPromotion'    => $this->generateUrl('promotion_list', ['logementId' => $l->getId()]),
+                'urlSupprimer'    => $this->generateUrl('proprietaire_logement_delete', ['id' => $l->getId()]),
+            ];
+        }
+
+        return $this->json($result);
+    }
+
     
 }

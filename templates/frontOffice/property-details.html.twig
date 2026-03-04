@@ -645,43 +645,30 @@
         {# ── SWIPER HERO — initialisé en JS pur (pas via JSON config)
            pour garantir que les boutons next/prev fonctionnent ── #}
         {% if logement.photoPrincipale or logement.photos %}
-<div class="swiper" id="heroSwiper">
-    <div class="swiper-wrapper">
-
-        {# Photo principale #}
-        {% if logement.photoPrincipale %}
-            <div class="swiper-slide">
-                <img
-                    src="{% if 'http' in logement.photoPrincipale %}
-                            {{ logement.photoPrincipale }}
-                         {% else %}
-                            {{ asset('uploads/logements/' ~ logement.photoPrincipale) }}
-                         {% endif %}"
-                    alt="{{ logement.titre }}">
-            </div>
-        {% endif %}
-
-        {# Galerie photos #}
-        {% if logement.photos %}
-            {% for photo in logement.photos %}
-                <div class="swiper-slide">
-                    <img
-                        src="{% if 'http' in photo %}
-                                {{ photo }}
-                             {% else %}
-                                {{ asset('uploads/logements/' ~ photo) }}
-                             {% endif %}"
-                        alt="{{ logement.titre }} {{ loop.index }}">
+            <div class="swiper" id="heroSwiper">
+                <div class="swiper-wrapper">
+                    {% if logement.photoPrincipale %}
+                        <div class="swiper-slide">
+                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
+                                 alt="{{ logement.titre }}">
+                        </div>
+                    {% endif %}
+                    {% if logement.photos %}
+                        {% for photo in logement.photos %}
+                            <div class="swiper-slide">
+                                <img src="{{ asset('uploads/logements/' ~ photo) }}"
+                                     alt="{{ logement.titre }} {{ loop.index }}">
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
-            {% endfor %}
+                <div class="swiper-button-next" id="heroNext"></div>
+                <div class="swiper-button-prev" id="heroPrev"></div>
+            </div>
+        {% else %}
+            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}"
+                 alt="{{ logement.titre }}">
         {% endif %}
-
-    </div>
-
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-</div>
-{% endif %}
 
         <div class="hero-overlay"></div>
 
@@ -905,9 +892,11 @@
                                 {% endif %}
                             </div>
                             <div class="booking-body">
-                               <a href="{{ path('front_reservation_new', {id: logement.id}) }}" class="btn-book">
-    <i class="bi bi-calendar-check"></i> Réserver ce logement
-</a>
+
+                                <a href="#contact-form" class="btn-book">
+                                    <i class="bi bi-calendar-check"></i> Réserver ce logement
+                                </a>
+
                                 <div style="display:flex;gap:8px;">
                                     <button class="btn-fav favorite-btn" data-logement-id="{{ logement.id }}">
                                         <i class="bi bi-heart"></i> Favoris

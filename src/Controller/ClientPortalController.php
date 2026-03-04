@@ -65,18 +65,11 @@ class ClientPortalController extends AbstractController
 
             // Gestion mot de passe
             $newPassword = $form->get('password')->getData();
-            if ($form->isSubmitted() && $form->isValid()) {
-
-    $plainPassword = $form->get('password')->getData();
-
-    if ($plainPassword) {
-        $hashedPassword = $passwordHasher->hashPassword(
-            $user,
-            $plainPassword
-        );
-
-        $user->setPassword($hashedPassword);
-    }}
+            if ($newPassword) {
+                $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+            } else {
+                $user->setPassword($oldPassword);
+            }
 
             $em->flush();
             $this->addFlash('success', 'Profil modifié avec succès !');

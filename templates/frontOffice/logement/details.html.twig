@@ -1,5 +1,6 @@
 {% extends 'frontOffice/base.html.twig' %}
 
+<<<<<<< HEAD
 {% block title %}{{ logement.titre }} - Stayzy{% endblock %}
 
 {% block stylesheets %}
@@ -13,10 +14,560 @@
             overflow-y: auto;
         }
     </style>
+=======
+{% block title %}{{ logement.titre }} — Tableau de bord{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+    --bg:       #f0f2f7;
+    --surface:  #ffffff;
+    --border:   #e4e7ef;
+
+    --ink:      #111827;
+    --ink-mid:  #4b5563;
+    --ink-soft: #9ca3af;
+
+    --blue:     #10b77f;
+    --blue-bg:  #eff3ff;
+    --blue-glow: #0c7754;
+
+    --green:    #10b77f;
+    --green-bg: #e8faf3;
+
+    --amber:    #f59e0b;
+    --amber-bg: #fef8ec;
+
+    --red:      #ef4444;
+    --red-bg:   #fef2f2;
+
+    --violet:   #10b77f;
+    --violet-bg:#f3f0ff;
+
+    --radius:   14px;
+    --shadow:   0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+    --shadow-lg:0 8px 40px rgba(0,0,0,.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    font-family: 'Epilogue', sans-serif;
+    color: var(--ink);
+    font-size: 15px;
+}
+
+/* ════════════════════════════════════════
+   TOP NAV BAR
+════════════════════════════════════════ */
+.dash-topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.topbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .82rem;
+    color: var(--ink-soft);
+}
+.topbar-breadcrumb a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: color .15s;
+}
+.topbar-breadcrumb a:hover { color: var(--blue); }
+.topbar-breadcrumb .sep { color: var(--border); }
+.topbar-breadcrumb .current {
+    color: var(--ink);
+    font-weight: 600;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.topbar-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .82rem;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all .15s;
+    font-family: 'Epilogue', sans-serif;
+    background: transparent;
+    cursor: pointer;
+}
+.topbar-pill:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ════════════════════════════════════════
+   MAIN LAYOUT
+════════════════════════════════════════ */
+.dash-wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+}
+
+/* ════════════════════════════════════════
+   PAGE HEADER
+════════════════════════════════════════ */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.page-header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1.2;
+}
+.page-header-left p {
+    color: var(--ink-soft);
+    font-size: .88rem;
+    margin-top: 4px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.status-badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+}
+.status-badge.on  { background: var(--green-bg);  color: var(--green); }
+.status-badge.on  .dot  { background: var(--green);  box-shadow: 0 0 0 3px rgba(16,183,127,.2); }
+.status-badge.off { background: var(--red-bg);    color: var(--red); }
+.status-badge.off .dot  { background: var(--red);    box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
+
+/* ════════════════════════════════════════
+   KPI STRIP
+════════════════════════════════════════ */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 4px 0 0 4px;
+}
+.kpi-card.blue::after  { background: var(--blue); }
+.kpi-card.green::after { background: var(--green); }
+.kpi-card.amber::after { background: var(--amber); }
+.kpi-card.violet::after{ background: var(--violet); }
+.kpi-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+
+.kpi-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.kpi-card.blue  .kpi-icon { background: var(--blue-bg);   color: var(--blue); }
+.kpi-card.green .kpi-icon { background: var(--green-bg);  color: var(--green); }
+.kpi-card.amber .kpi-icon { background: var(--amber-bg);  color: var(--amber); }
+.kpi-card.violet .kpi-icon{ background: var(--violet-bg); color: var(--violet); }
+
+.kpi-info { min-width: 0; }
+.kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+}
+.kpi-label {
+    font-size: .75rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ════════════════════════════════════════
+   GRID
+════════════════════════════════════════ */
+.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ════════════════════════════════════════
+   PANEL
+════════════════════════════════════════ */
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.panel-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.panel-title .icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem;
+}
+.icon-blue   { background: var(--blue-bg);   color: var(--blue); }
+.icon-green  { background: var(--green-bg);  color: var(--green); }
+.icon-amber  { background: var(--amber-bg);  color: var(--amber); }
+.icon-violet { background: var(--violet-bg); color: var(--violet); }
+.icon-red    { background: var(--red-bg);    color: var(--red); }
+
+.panel-body { padding: 24px; }
+
+.panel-badge {
+    font-size: .75rem;
+    color: var(--ink-soft);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+}
+
+/* ════════════════════════════════════════
+   PHOTO + INFO ROW
+════════════════════════════════════════ */
+.photo-info-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+.prop-thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+}
+.prop-thumb-empty {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-size: 2rem;
+    border: 1px solid var(--border);
+}
+.info-list { display: flex; flex-direction: column; gap: 10px; }
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 10px;
+}
+.info-row-icon { font-size: 1rem; width: 28px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+.info-row-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.info-row-value { font-size: .9rem; color: var(--ink); font-weight: 500; }
+
+/* ════════════════════════════════════════
+   DESCRIPTION
+════════════════════════════════════════ */
+.description-text {
+    color: var(--ink-mid);
+    line-height: 1.85;
+    font-size: .94rem;
+}
+
+/* ════════════════════════════════════════
+   AMENITIES
+════════════════════════════════════════ */
+.amenity-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.amenity-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: .82rem;
+    font-weight: 500;
+    color: var(--ink-mid);
+    transition: all .15s;
+}
+.amenity-chip:hover { background: var(--blue-bg); border-color: var(--blue); color: var(--blue); }
+.amenity-chip i { font-size: .7rem; color: var(--green); }
+
+/* ════════════════════════════════════════
+   GALLERY
+════════════════════════════════════════ */
+.gallery-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+.g-thumb {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+.g-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s; }
+.g-thumb:hover img { transform: scale(1.08); }
+.g-thumb-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.1rem;
+    transition: background .25s;
+}
+.g-thumb:hover .g-thumb-overlay { background: rgba(0,0,0,.35); }
+
+/* ════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════ */
+.sidebar-sticky { position: sticky; top: 76px; }
+
+/* PRICE CARD */
+.price-card {
+    background: linear-gradient(135deg, #3b6ef8 0%, #7b46f8 100%);
+    border-radius: var(--radius);
+    padding: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(59,110,248,.3);
+}
+.price-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.08);
+}
+.price-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; right: 30px;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+}
+.price-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    opacity: .7;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.price-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    position: relative;
+}
+.price-value span { font-size: 1rem; font-weight: 400; opacity: .75; margin-left: 4px; }
+.price-note { font-size: .78rem; opacity: .65; margin-top: 8px; position: relative; }
+
+/* ACTIONS */
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+
+.act-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-radius: 11px;
+    font-size: .88rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    transition: all .18s;
+    font-family: 'Epilogue', sans-serif;
+}
+.act-btn .act-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+.act-btn-label { flex: 1; text-align: left; }
+.act-btn-arrow { font-size: .75rem; opacity: .4; }
+
+.act-btn.primary {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--blue-glow);
+}
+.act-btn.primary .act-icon { background: rgba(255,255,255,.2); }
+.act-btn.primary:hover { background: #2a5de8; transform: translateY(-1px); color: #fff; }
+
+.act-btn.secondary {
+    background: var(--bg);
+    color: var(--ink);
+    border: 1px solid var(--border);
+}
+.act-btn.secondary .act-icon { background: var(--surface); }
+.act-btn.secondary:hover { background: var(--surface); border-color: var(--blue); color: var(--blue); }
+
+.act-btn.promo {
+    background: var(--violet-bg);
+    color: var(--violet);
+    border: 1px solid rgba(139,92,246,.2);
+}
+.act-btn.promo .act-icon { background: rgba(139,92,246,.15); }
+.act-btn.promo:hover { background: var(--violet); color: #fff; }
+
+.act-btn.danger {
+    background: var(--red-bg);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,.15);
+}
+.act-btn.danger .act-icon { background: rgba(239,68,68,.12); }
+.act-btn.danger:hover { background: var(--red); color: #fff; }
+
+.act-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* RÉSUMÉ */
+.stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-row-left { display: flex; align-items: center; gap: 10px; }
+.stat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.stat-row-label { font-size: .88rem; color: var(--ink-mid); }
+.stat-row-value { font-weight: 700; font-size: .95rem; color: var(--ink); }
+
+/* ════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════ */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.anim { animation: slideIn .45s ease both; }
+.d1 { animation-delay: .05s; }
+.d2 { animation-delay: .12s; }
+.d3 { animation-delay: .18s; }
+.d4 { animation-delay: .24s; }
+.d5 { animation-delay: .30s; }
+.d6 { animation-delay: .36s; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .dash-grid { grid-template-columns: 1fr; }
+    .kpi-row   { grid-template-columns: repeat(2, 1fr); }
+    .sidebar-sticky { position: static; }
+}
+@media (max-width: 640px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .photo-info-row { grid-template-columns: 1fr; }
+    .dash-topbar { padding: 0 16px; }
+    .dash-wrap { padding: 16px 12px 40px; }
+}
+</style>
+>>>>>>> origin/module-user_logement_reservation
 {% endblock %}
 
 {% block body %}
 
+<<<<<<< HEAD
 <div class="page-title light-background">
     <div class="container d-lg-flex justify-content-between align-items-center">
         <h1 class="mb-2 mb-lg-0">{{ logement.titre }}</h1>
@@ -83,12 +634,139 @@
                                     <i class="bi bi-tag fs-1 text-warning"></i>
                                     <h5 class="mt-2">{{ logement.prix }}€</h5>
                                     <small class="text-muted">/nuit</small>
+=======
+
+{# ══ TOP BAR ══ #}
+<div class="dash-topbar">
+    <nav class="topbar-breadcrumb">
+        <a href="{{ path('app_home') }}"><i class="bi bi-house"></i></a>
+        <span class="sep">/</span>
+        <a href="{{ path('proprietaire_logement_list') }}">Mes logements</a>
+        <span class="sep">/</span>
+        <span class="current">{{ logement.titre }}</span>
+    </nav>
+    <div class="topbar-actions">
+        <a href="{{ path('app_property_details', {id: logement.id}) }}"
+           class="topbar-pill" target="_blank">
+            <i class="bi bi-eye"></i> Vue publique
+        </a>
+    </div>
+</div>
+
+{# ══ WRAPPER ══ #}
+<div class="dash-wrap">
+
+    {# PAGE HEADER #}
+    <div class="page-header anim d1">
+        <div class="page-header-left">
+            <h1>{{ logement.titre }}</h1>
+            {% if logement.adresse %}
+            <p>
+                <i class="bi bi-geo-alt-fill" style="color:var(--blue);"></i>
+                {{ logement.adresse.rue }}, {{ logement.adresse.ville }} — {{ logement.adresse.pays }}
+            </p>
+            {% endif %}
+        </div>
+        <div>
+            {% if logement.disponible %}
+                <span class="status-badge on"><span class="dot"></span> Disponible</span>
+            {% else %}
+                <span class="status-badge off"><span class="dot"></span> Indisponible</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# KPI ROW #}
+    <div class="kpi-row anim d2">
+        <div class="kpi-card blue">
+            <div class="kpi-icon"><i class="bi bi-currency-euro"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ logement.prix }}€</div>
+                <div class="kpi-label">Par nuit</div>
+            </div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-icon"><i class="bi bi-door-closed"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ logement.nombreChambres }}</div>
+                <div class="kpi-label">Chambre{{ logement.nombreChambres > 1 ? 's' : '' }}</div>
+            </div>
+        </div>
+        <div class="kpi-card amber">
+            <div class="kpi-icon"><i class="bi bi-droplet"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ logement.nombreSalleDeBain }}</div>
+                <div class="kpi-label">Salle{{ logement.nombreSalleDeBain > 1 ? 's' : '' }} de bain</div>
+            </div>
+        </div>
+        <div class="kpi-card violet">
+            <div class="kpi-icon"><i class="bi bi-bounding-box"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-value">{{ logement.superficie }}<small style="font-size:.9rem;font-weight:500;">m²</small></div>
+                <div class="kpi-label">Surface totale</div>
+            </div>
+        </div>
+    </div>
+
+    {# MAIN GRID #}
+    <div class="dash-grid">
+
+        {# ══ COLONNE PRINCIPALE ══ #}
+        <div>
+
+            {# APERÇU #}
+            <div class="panel anim d3">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-blue"><i class="bi bi-image"></i></span>
+                        Aperçu du logement
+                    </div>
+                    <span class="panel-badge">Publié le {{ logement.createdAt|date('d/m/Y') }}</span>
+                </div>
+                <div class="panel-body">
+                    <div class="photo-info-row">
+                        {% if logement.photoPrincipale %}
+                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
+                                 class="prop-thumb" alt="{{ logement.titre }}">
+                        {% else %}
+                            <div class="prop-thumb-empty"><i class="bi bi-image-alt"></i></div>
+                        {% endif %}
+                        <div class="info-list">
+                            {% if logement.adresse %}
+                            <div class="info-row">
+                                <div class="info-row-icon">📍</div>
+                                <div>
+                                    <div class="info-row-label">Adresse complète</div>
+                                    <div class="info-row-value">{{ logement.adresse.rue }}, {{ logement.adresse.codePostal }} {{ logement.adresse.ville }}, {{ logement.adresse.pays }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="info-row">
+                                <div class="info-row-icon">💰</div>
+                                <div>
+                                    <div class="info-row-label">Tarif</div>
+                                    <div class="info-row-value" style="color:var(--blue);font-size:1.05rem;">
+                                        {{ logement.prix }} €
+                                        <small style="font-weight:400;color:var(--ink-soft);font-size:.8rem;">/ nuit</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-row-icon">📅</div>
+                                <div>
+                                    <div class="info-row-label">Date de publication</div>
+                                    <div class="info-row-value">{{ logement.createdAt|date('d/m/Y à H:i') }}</div>
+>>>>>>> origin/module-user_logement_reservation
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/module-user_logement_reservation
                 {# Équipements #}
                 {% if logement.amenites %}
                     <div class="card mb-4">
@@ -202,5 +880,198 @@
         </div>
     </div>
 </section>
+<<<<<<< HEAD
+=======
+            </div>
+
+            {# DESCRIPTION #}
+            <div class="panel anim d3">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-green"><i class="bi bi-file-text"></i></span>
+                        Description
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <p class="description-text">
+                        {{ logement.description|default('Aucune description renseignée pour ce logement.')|nl2br }}
+                    </p>
+                </div>
+            </div>
+
+            {# ÉQUIPEMENTS #}
+            {% if logement.amenites %}
+            <div class="panel anim d4">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-amber"><i class="bi bi-stars"></i></span>
+                        Équipements & services
+                    </div>
+                    <span class="panel-badge">{{ logement.amenites|length }} équipement{{ logement.amenites|length > 1 ? 's' : '' }}</span>
+                </div>
+                <div class="panel-body">
+                    <div class="amenity-grid">
+                        {% for amenite in logement.amenites %}
+                        <span class="amenity-chip">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ amenite|replace({'_': ' '})|title }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# GALERIE #}
+            {% if logement.photos %}
+            <div class="panel anim d5">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-violet"><i class="bi bi-images"></i></span>
+                        Galerie photos
+                    </div>
+                    <span class="panel-badge">{{ logement.photos|length }} photo{{ logement.photos|length > 1 ? 's' : '' }}</span>
+                </div>
+                <div class="panel-body">
+                    <div class="gallery-scroll">
+                        {% for photo in logement.photos %}
+                        <div class="g-thumb">
+                            <img src="{{ asset('uploads/logements/' ~ photo) }}" alt="Photo {{ loop.index }}">
+                            <div class="g-thumb-overlay"><i class="bi bi-zoom-in"></i></div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {# ══ SIDEBAR ══ #}
+        <div class="sidebar-sticky">
+
+            {# PRICE CARD #}
+            <div class="price-card anim d2">
+                <div class="price-label">Tarif nuit</div>
+                <div class="price-value">{{ logement.prix }}€ <span>/ nuit</span></div>
+                <div class="price-note">
+                    {% if logement.disponible %}
+                        ✅ Logement visible par les voyageurs
+                    {% else %}
+                        ⏸ Logement masqué aux voyageurs
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ACTIONS #}
+            <div class="panel anim d3">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-blue"><i class="bi bi-lightning-fill"></i></span>
+                        Actions rapides
+                    </div>
+                </div>
+                <div class="panel-body" style="padding:16px;">
+                    <div class="action-list">
+
+                        <a href="{{ path('proprietaire_logement_edit', {id: logement.id}) }}"
+                           class="act-btn primary">
+                            <span class="act-icon"><i class="bi bi-pencil-fill"></i></span>
+                            <span class="act-btn-label">Modifier l'annonce</span>
+                            <i class="bi bi-arrow-right act-btn-arrow"></i>
+                        </a>
+
+                        <a href="{{ path('promotion_list', {logementId: logement.id}) }}"
+                           class="act-btn promo">
+                            <span class="act-icon"><i class="bi bi-tag-fill"></i></span>
+                            <span class="act-btn-label">Gérer les promotions</span>
+                            <i class="bi bi-arrow-right act-btn-arrow"></i>
+                        </a>
+
+                        <div class="act-divider"></div>
+
+                        <a href="{{ path('app_property_details', {id: logement.id}) }}"
+                           class="act-btn secondary" target="_blank">
+                            <span class="act-icon"><i class="bi bi-box-arrow-up-right"></i></span>
+                            <span class="act-btn-label">Voir l'annonce publique</span>
+                            <i class="bi bi-arrow-right act-btn-arrow"></i>
+                        </a>
+
+                        <a href="{{ path('proprietaire_logement_list') }}"
+                           class="act-btn secondary">
+                            <span class="act-icon"><i class="bi bi-arrow-left"></i></span>
+                            <span class="act-btn-label">Retour à mes logements</span>
+                            <i class="bi bi-arrow-right act-btn-arrow"></i>
+                        </a>
+
+                        <div class="act-divider"></div>
+
+                        <a href="{{ path('proprietaire_logement_delete', {id: logement.id}) }}"
+                           class="act-btn danger"
+                           onclick="return confirm('Supprimer ce logement ? Cette action est irréversible.')">
+                            <span class="act-icon"><i class="bi bi-trash3-fill"></i></span>
+                            <span class="act-btn-label">Supprimer le logement</span>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+
+            {# RÉSUMÉ #}
+            <div class="panel anim d4">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="icon icon-green"><i class="bi bi-bar-chart-fill"></i></span>
+                        Résumé du bien
+                    </div>
+                </div>
+                <div class="panel-body" style="padding:8px 20px 16px;">
+                    <div class="stat-row">
+                        <div class="stat-row-left">
+                            <span class="stat-dot" style="background:var(--green);"></span>
+                            <span class="stat-row-label">Chambres</span>
+                        </div>
+                        <span class="stat-row-value">{{ logement.nombreChambres }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-row-left">
+                            <span class="stat-dot" style="background:var(--blue);"></span>
+                            <span class="stat-row-label">Salles de bain</span>
+                        </div>
+                        <span class="stat-row-value">{{ logement.nombreSalleDeBain }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-row-left">
+                            <span class="stat-dot" style="background:var(--amber);"></span>
+                            <span class="stat-row-label">Superficie</span>
+                        </div>
+                        <span class="stat-row-value">{{ logement.superficie }} m²</span>
+                    </div>
+                    {% if logement.amenites %}
+                    <div class="stat-row">
+                        <div class="stat-row-left">
+                            <span class="stat-dot" style="background:var(--violet);"></span>
+                            <span class="stat-row-label">Équipements</span>
+                        </div>
+                        <span class="stat-row-value">{{ logement.amenites|length }}</span>
+                    </div>
+                    {% endif %}
+                    {% if logement.photos %}
+                    <div class="stat-row">
+                        <div class="stat-row-left">
+                            <span class="stat-dot" style="background:var(--ink-soft);"></span>
+                            <span class="stat-row-label">Photos</span>
+                        </div>
+                        <span class="stat-row-value">{{ logement.photos|length }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+>>>>>>> origin/module-user_logement_reservation
 
 {% endblock %}

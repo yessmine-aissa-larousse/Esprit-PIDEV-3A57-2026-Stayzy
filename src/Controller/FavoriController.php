@@ -27,7 +27,7 @@ class FavoriController extends AbstractController
 
         $favoris = $user->getFavoris();
 
-        return $this->render('frontOffice/favoris/favoris.html.twig', [
+        return $this->render('backOffice/favoris/favoris.html.twig', [
             'favoris' => $favoris,
         ]);
     }
@@ -47,20 +47,19 @@ class FavoriController extends AbstractController
 
         $favoris = $user->getFavoris();
 
-        return $this->render('backOffice/favoris/favoris.html.twig', [
+        return $this->render('frontOffice/favoris/favoris.html.twig', [
             'favoris' => $favoris,
         ]);
     }
 
     // =========================================================================
-    //  LOGEMENTS MIS EN FAVORIS PAR MES CLIENTS (Pour propriétaires)
+    // LOGEMENTS MIS EN FAVORIS PAR MES CLIENTS (Pour propriétaires)
     // =========================================================================
-    #[Route('/proprietaire/favoris-clients', name: 'proprietaire_favoris_clients')]
+    #[Route('/proprieyaire/favoris-clients', name: 'proprieyaire_favoris_clients')]
     public function favorisClients(): Response
     {
         $user = $this->getUser();
 
-        // ✅ Un seul check propre, plus de double vérification
         if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
@@ -69,11 +68,12 @@ class FavoriController extends AbstractController
         $mesLogements = $user->getLogements();
 
         $statistiques = [];
+
         foreach ($mesLogements as $logement) {
             $statistiques[] = [
-                'logement'       => $logement,
+                'logement' => $logement,
                 'nombre_favoris' => $logement->getUtilisateursFavoris()->count(),
-                'utilisateurs'   => $logement->getUtilisateursFavoris(),
+                'utilisateurs' => $logement->getUtilisateursFavoris(),
             ];
         }
 
@@ -87,35 +87,36 @@ class FavoriController extends AbstractController
     }
 
     // =========================================================================
-    // AJAX : TOGGLE FAVORI (Ajouter/Retirer)
+    // AJAX : TOGGLE FAVORI (Ajouter / Retirer)
     // =========================================================================
     #[Route('/favori/toggle/{id}', name: 'favori_toggle', methods: ['POST'])]
     public function toggleFavori(int $id, EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
 
-        // ✅ Cast instanceof User → accès à isFavori(), addFavori(), removeFavori(), getNombreFavoris()
         if (!$user instanceof User) {
             return new JsonResponse([
-                'success'  => false,
-                'message'  => 'Vous devez être connecté pour ajouter des favoris',
-                'redirect' => $this->generateUrl('app_login')
-            ], 401);
+                'success' => false,
+                'message' => 'Vous devez être connecté pour ajouter des favoris',
+            ]);
         }
 
         $logement = $em->getRepository(Logement::class)->find($id);
 
         if (!$logement) {
-            return new JsonResponse(['success' => false, 'message' => 'Logement introuvable'], 404);
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Logement introuvable'
+            ], 404);
         }
 
         if ($user->isFavori($logement)) {
             $user->removeFavori($logement);
-            $action  = 'removed';
+            $action = 'removed';
             $message = 'Retiré des favoris';
         } else {
             $user->addFavori($logement);
-            $action  = 'added';
+            $action = 'added';
             $message = 'Ajouté aux favoris';
         }
 
@@ -123,21 +124,20 @@ class FavoriController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'action'  => $action,
+            'action' => $action,
             'message' => $message,
-            'count'   => $user->getNombreFavoris()
+            'count' => $user->getNombreFavoris()
         ]);
     }
 
     // =========================================================================
-    // AJAX : VÉRIFIER SI EN FAVORI
+    // AJAX : Vérifier si en favori
     // =========================================================================
     #[Route('/favori/check/{id}', name: 'favori_check', methods: ['GET'])]
     public function checkFavori(int $id, EntityManagerInterface $em): JsonResponse
     {
         $user = $this->getUser();
 
-        // ✅ Cast instanceof User → accès à isFavori()
         if (!$user instanceof User) {
             return new JsonResponse(['isFavorite' => false]);
         }
@@ -154,14 +154,13 @@ class FavoriController extends AbstractController
     }
 
     // =========================================================================
-    // AJAX : COMPTEUR FAVORIS (Badge menu)
+    // AJAX : Compteur favoris (Badge menu)
     // =========================================================================
     #[Route('/favori/count', name: 'favori_count', methods: ['GET'])]
     public function countFavoris(): JsonResponse
     {
         $user = $this->getUser();
 
-        // ✅ Cast instanceof User → accès à getNombreFavoris()
         if (!$user instanceof User) {
             return new JsonResponse(['count' => 0]);
         }

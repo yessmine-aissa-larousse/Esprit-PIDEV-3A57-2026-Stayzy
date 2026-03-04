@@ -19,12 +19,7 @@ class Logement
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Le titre est obligatoire")]
-    #[Assert\Length(
-        min: 5,
-        max: 255,
-        minMessage: "Le titre doit contenir au moins {{ limit }} caractères",
-        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères"
-    )]
+    #[Assert\Length(min: 5, max: 255)]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -34,23 +29,23 @@ class Logement
     private ?array $adresse = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Le prix est obligatoire")]
-    #[Assert\Positive(message: "Le prix doit être un nombre positif")]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?float $prix = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "La superficie est obligatoire")]
-    #[Assert\Positive(message: "La superficie doit être un nombre positif")]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $superficie = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Le nombre de chambres est obligatoire")]
-    #[Assert\Positive(message: "Le nombre de chambres doit être un nombre positif")]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $nombreChambres = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank(message: "Le nombre de salles de bain est obligatoire")]
-    #[Assert\Positive(message: "Le nombre de salles de bain doit être un nombre positif")]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $nombreSalleDeBain = null;
 
     #[ORM\Column(nullable: true)]
@@ -73,7 +68,6 @@ class Logement
 
     #[ORM\ManyToOne(inversedBy: 'logements')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotBlank(message: "La catégorie est obligatoire")]
     private ?Categorie $categorie = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'logements')]
@@ -82,17 +76,15 @@ class Logement
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
-    // ⭐ NOUVEAU : Utilisateurs qui ont mis ce logement en favori
- 
+
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'favoris')]
-private Collection $utilisateursFavoris;
+    private Collection $utilisateursFavoris;
 
     #[ORM\OneToMany(targetEntity: Promotion::class, mappedBy: 'logement', orphanRemoval: true)]
     private Collection $promotions;
 
     #[ORM\OneToMany(mappedBy: 'logement', targetEntity: Reservation::class, orphanRemoval: true)]
     private Collection $reservations;
-
 
     public function __construct()
     {
@@ -101,14 +93,14 @@ private Collection $utilisateursFavoris;
         $this->noteMoyenne = null;
         $this->totalAvis = 0;
         $this->utilisateursFavoris = new ArrayCollection();
-
         $this->promotions = new ArrayCollection();
         $this->reservations = new ArrayCollection();
     }
 
-    // ====== GETTERS / SETTERS ======
+    // ===== GETTERS / SETTERS =====
 
     public function getId(): ?int { return $this->id; }
+
     public function getTitre(): ?string { return $this->titre; }
     public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
@@ -157,14 +149,34 @@ private Collection $utilisateursFavoris;
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
 
-    // ⭐ Favoris
-    public function getUtilisateursFavoris(): Collection { return $this->utilisateursFavoris; }
-    public function addUtilisateurFavori(User $user): static { if (!$this->utilisateursFavoris->contains($user)) { $this->utilisateursFavoris->add($user); } return $this; }
-    public function removeUtilisateurFavori(User $user): static { $this->utilisateursFavoris->removeElement($user); return $this; }
-    public function estEnFavoriPour(User $user): bool { return $this->utilisateursFavoris->contains($user); }
+    // ===== FAVORIS =====
 
-    // ⭐ Promotions
+    public function getUtilisateursFavoris(): Collection { return $this->utilisateursFavoris; }
+
+    public function addUtilisateurFavori(User $user): static {
+        if (!$this->utilisateursFavoris->contains($user)) {
+            $this->utilisateursFavoris->add($user);
+        }
+        return $this;
+    }
+
+    public function removeUtilisateurFavori(User $user): static {
+        $this->utilisateursFavoris->removeElement($user);
+        return $this;
+    }
+
+    public function estEnFavoriPour(User $user): bool {
+        return $this->utilisateursFavoris->contains($user);
+    }
+
+    public function getNombreFavoris(): int {
+        return $this->utilisateursFavoris->count();
+    }
+
+    // ===== PROMOTIONS =====
+
     public function getPromotions(): Collection { return $this->promotions; }
+
     public function addPromotion(Promotion $promotion): static {
         if (!$this->promotions->contains($promotion)) {
             $this->promotions->add($promotion);
@@ -172,19 +184,29 @@ private Collection $utilisateursFavoris;
         }
         return $this;
     }
-    public function removePromotion(Promotion $promotion): static {
-        if ($this->promotions->removeElement($promotion) && $promotion->getLogement() === $this) {
-            $promotion->setLogement(null);
 
+    public function removePromotion(Promotion $promotion): static {
+        if ($this->promotions->removeElement($promotion)
+            && $promotion->getLogement() === $this) {
+            $promotion->setLogement(null);
         }
         return $this;
     }
-    public function getPromoActive(): ?Promotion
-    {
+
+    public function getPromoActive(): ?Promotion {
         $now = new \DateTime();
         foreach ($this->promotions as $promo) {
-            if ($promo->isActive() && $promo->getDateDebut() && $promo->getDateFin()) {
-                if ($promo->getDateDebut() <= $now && $now <= $promo->getDateFin()) {
+            if ($promo->isActive()
+                && $promo->getDateDebut() !== null
+                && $promo->getDateFin() !== null) {
+
+                $debut = clone $promo->getDateDebut();
+                $fin   = clone $promo->getDateFin();
+
+                $debut->setTime(0,0,0);
+                $fin->setTime(23,59,59);
+
+                if ($debut <= $now && $now <= $fin) {
                     return $promo;
                 }
             }
@@ -192,14 +214,15 @@ private Collection $utilisateursFavoris;
         return null;
     }
 
-    public function getPrixFinal(): float
-    {
+    public function getPrixFinal(): float {
         $promo = $this->getPromoActive();
         return $promo ? $promo->getPrixPromo() : (float)$this->prix;
     }
 
-    // ⭐ Réservations
+    // ===== RESERVATIONS =====
+
     public function getReservations(): Collection { return $this->reservations; }
+
     public function addReservation(Reservation $reservation): static {
         if (!$this->reservations->contains($reservation)) {
             $this->reservations->add($reservation);
@@ -207,11 +230,12 @@ private Collection $utilisateursFavoris;
         }
         return $this;
     }
+
     public function removeReservation(Reservation $reservation): static {
-        if ($this->reservations->removeElement($reservation) && $reservation->getLogement() === $this) {
+        if ($this->reservations->removeElement($reservation)
+            && $reservation->getLogement() === $this) {
             $reservation->setLogement(null);
         }
         return $this;
-
     }
 }

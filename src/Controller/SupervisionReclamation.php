@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use App\Service\MLScoringService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\ReclamationRepository;
@@ -9,7 +10,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 use App\Service\ReclamationIntelligenceService;
-use App\Service\MLScoringService;                  // ← AJOUT
 use Doctrine\ORM\EntityManagerInterface;
 
 final class SupervisionReclamation extends AbstractController

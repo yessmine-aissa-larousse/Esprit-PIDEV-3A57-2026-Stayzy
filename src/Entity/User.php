@@ -373,6 +373,7 @@ $this->reclamations = new ArrayCollection();
      */
     #[ORM\OneToMany(mappedBy: 'destinataire', targetEntity: Notification::class)]
 private Collection $notifications;
+    #[ORM\OneToMany(targetEntity: Notification::class, mappedBy: 'destinataire')]
 
     public function getNotifications(): Collection
     {
@@ -635,5 +636,48 @@ private Collection $notifications;
         }
         return $this;
     }  
+
+    
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $faceDescriptor = null;
+
+    public function getFaceDescriptor(): ?string
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?string $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $resetPasswordToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $resetPasswordExpiresAt = null;
+
+    public function getResetPasswordToken(): ?string
+    {
+        return $this->resetPasswordToken;
+    }
+
+    public function setResetPasswordToken(?string $token): static
+    {
+        $this->resetPasswordToken = $token;
+        return $this;
+    }
+
+    public function getResetPasswordExpiresAt(): ?\DateTime
+    {
+        return $this->resetPasswordExpiresAt;
+    }
+
+    public function setResetPasswordExpiresAt(?\DateTime $date): static
+    {
+        $this->resetPasswordExpiresAt = $date;
+        return $this;
+    }
 
     }

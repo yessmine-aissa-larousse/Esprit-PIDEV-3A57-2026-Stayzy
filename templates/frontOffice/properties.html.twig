@@ -197,10 +197,10 @@
                                         <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
                                             <div class="property-image-wrapper">
                                                 {% if logement.photoPrincipale %}
-    <img src="{{ logement.photoPrincipale }}" 
-         alt="{{ logement.titre }}" 
-         class="img-fluid">
-{% else %}
+                                                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                                                         alt="{{ logement.titre }}" 
+                                                         class="img-fluid">
+                                                {% else %}
                                                     <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" 
                                                          alt="{{ logement.titre }}" 
                                                          class="img-fluid">

@@ -31,26 +31,19 @@ class UserType extends AbstractType
                     new NotBlank(['message' => 'L\'email est obligatoire']),
                 ]
             ])
-
-           ->add('password', PasswordType::class, [
-    'label' => $isEdit
-        ? "Nouveau mot de passe (laisser vide pour garder l'ancien)"
-        : 'Mot de passe',
-    'required' => !$isEdit,
-    'mapped' => false,   // ⭐⭐⭐ IMPORTANT
-    'attr' => ['class' => 'form-control'],
-    'constraints' => $isEdit ? [] : [
-        new NotBlank([
-            'message' => 'Le mot de passe est obligatoire'
-        ]),
-        new Length([
-            'min' => 6,
-            'minMessage' => 'Minimum 6 caractères'
-        ]),
-    ]
-])
             
-            
+            ->add('password', PasswordType::class, [
+                'label' => $isEdit ? 'Nouveau mot de passe (laisser vide pour garder l\'ancien)' : 'Mot de passe',
+                'required' => !$isEdit,
+                'attr' => ['class' => 'form-control'],
+                'constraints' => $isEdit ? [] : [
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire']),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Le mot de passe doit contenir au moins 6 caractères'
+                    ]),
+                ]
+            ])
             
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
