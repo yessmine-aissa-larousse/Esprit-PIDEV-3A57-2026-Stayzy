@@ -78,8 +78,15 @@
                                             Se souvenir de moi
                                         </label>
                                     </div>
+<<<<<<< HEAD
                                     <a href="#" style="color: #2e7d32; font-size: 14px; text-decoration: none;">Mot de passe oublié?</a>
                                 </div>
+=======
+                                        <a href="{{ path('app_forgot_password') }}" style="color: #2e7d32; font-size: 14px;">
+                                            Mot de passe oublié?
+                                        </a>                               
+                                     </div>
+>>>>>>> origin/integration-logement-utilisateur
 
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
@@ -90,6 +97,46 @@
 
                             </form>
 
+<<<<<<< HEAD
+=======
+                            {# ===== BOUTON FACE ID ===== #}
+                            <div class="text-center mt-3">
+                                <button type="button"
+                                        onclick="startFaceLogin()"
+                                        class="btn btn-lg w-100 fw-semibold"
+                                        style="background: #1565c0; color: white; border-radius: 10px; padding: 14px; border: none;">
+                                    <i class="bi bi-camera me-2"></i> Se connecter avec mon visage
+                                </button>
+                            </div>
+
+                            {# Modal caméra #}
+                            <div class="modal fade" id="faceModal" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content" style="border-radius: 16px;">
+                                        <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                                            <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Reconnaissance Faciale</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopCamera()"></button>
+                                        </div>
+                                        <div class="modal-body text-center p-4">
+                                            <div id="faceStatus" class="alert alert-info mb-3">
+                                                <i class="bi bi-info-circle me-2"></i>Positionnez votre visage dans le cadre
+                                            </div>
+                                            <div style="position: relative; display: inline-block;">
+                                                <video id="faceVideo" width="350" height="263" autoplay muted
+                                                       style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                                                <canvas id="faceCanvas" width="350" height="263"
+                                                        style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div id="loadingFace" class="spinner-border text-primary d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {# ===== FIN BOUTON FACE ID ===== #}
+
+>>>>>>> origin/integration-logement-utilisateur
                             <hr style="margin: 25px 0; border-color: #eee;">
 
                             <div class="text-center">
@@ -132,5 +179,77 @@ function togglePassword() {
         icon.className = 'bi bi-eye';
     }
 }
+<<<<<<< HEAD
+=======
+
+// ===== FACE LOGIN =====
+let faceStream = null;
+let faceDetectionInterval = null;
+
+async function startFaceLogin() {
+    const modal = new bootstrap.Modal(document.getElementById('faceModal'));
+    modal.show();
+
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage dans le cadre';
+
+    faceStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('faceVideo').srcObject = faceStream;
+
+    faceDetectionInterval = setInterval(detectAndLogin, 2000);
+}
+
+async function detectAndLogin() {
+    const video = document.getElementById('faceVideo');
+
+    document.getElementById('faceStatus').className = 'alert alert-info mb-3';
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Analyse en cours...';
+
+    clearInterval(faceDetectionInterval);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+
+    const response = await fetch('/face/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('faceStatus').className = 'alert alert-success mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Bienvenue ' + result.name + '! Redirection...';
+        stopCamera();
+        setTimeout(() => window.location.href = result.redirect, 1500);
+    } else {
+        document.getElementById('faceStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>' + (result.error || 'Visage non reconnu') + '. Réessayez.';
+        setTimeout(() => {
+            faceDetectionInterval = setInterval(detectAndLogin, 2000);
+        }, 2000);
+    }
+}
+
+function stopCamera() {
+    if (faceStream) {
+        faceStream.getTracks().forEach(t => t.stop());
+        faceStream = null;
+    }
+    if (faceDetectionInterval) {
+        clearInterval(faceDetectionInterval);
+    }
+}
+
+document.getElementById('faceModal')?.addEventListener('hidden.bs.modal', stopCamera);
+// ===== FIN FACE LOGIN =====
+>>>>>>> origin/integration-logement-utilisateur
 </script>
 {% endblock %}

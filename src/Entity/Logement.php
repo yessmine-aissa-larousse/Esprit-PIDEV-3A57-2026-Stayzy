@@ -92,6 +92,7 @@ class Logement
     #[ORM\OneToMany(mappedBy: 'logement', targetEntity: Reservation::class, orphanRemoval: true)]
     private Collection $reservations;
 
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -163,25 +164,34 @@ class Logement
     // ⭐ Promotions
     public function getPromotions(): Collection { return $this->promotions; }
     public function addPromotion(Promotion $promotion): static {
+
         if (!$this->promotions->contains($promotion)) {
             $this->promotions->add($promotion);
             $promotion->setLogement($this);
         }
         return $this;
     }
-    public function removePromotion(Promotion $promotion): static {
-        if ($this->promotions->removeElement($promotion) && $promotion->getLogement() === $this) {
-            $promotion->setLogement(null);
+
+    public function removePromotion(Promotion $promotion): static
+    {
+        if ($this->promotions->removeElement($promotion)) {
+            if ($promotion->getLogement() === $this) {
+                $promotion->setLogement(null);
+            }
         }
         return $this;
     }
 
-    public function getPromoActive(): ?Promotion
+    public function getPromoActive(): ?\App\Entity\Promotion
     {
         $now = new \DateTime();
         foreach ($this->promotions as $promo) {
-            if ($promo->isActive() && $promo->getDateDebut() && $promo->getDateFin()) {
-                if ($promo->getDateDebut() <= $now && $now <= $promo->getDateFin()) {
+            if ($promo->isActive()
+                && $promo->getDateDebut() !== null
+                && $promo->getDateFin() !== null) {
+                $debut = clone $promo->getDateDebut(); $debut->setTime(0, 0, 0);
+                $fin   = clone $promo->getDateFin();   $fin->setTime(23, 59, 59);
+                if ($debut <= $now && $now <= $fin) {
                     return $promo;
                 }
             }
@@ -189,11 +199,6 @@ class Logement
         return null;
     }
 
-    public function getPrixFinal(): float
-    {
-        $promo = $this->getPromoActive();
-        return $promo ? $promo->getPrixPromo() : (float)$this->prix;
-    }
 
     // ⭐ Réservations
     public function getReservations(): Collection { return $this->reservations; }
@@ -208,6 +213,18 @@ class Logement
         if ($this->reservations->removeElement($reservation) && $reservation->getLogement() === $this) {
             $reservation->setLogement(null);
         }
-        return $this;
+        return $this;}
+        /**
+     * Retourne le prix final (avec promo si en cours, sinon prix normal)
+     * Ta camarade appelle juste logement.getPrixFinal() ou logement.prixFinal en Twig
+     */
+    public function getPrixFinal(): float
+    {
+        $promo = $this->getPromoActive();
+        if ($promo !== null) {
+            return $promo->getPrixPromo();
+        }
+        return (float) $this->prix;
+
     }
 }

@@ -1,6 +1,4 @@
-/**
- * SYSTÈME DE COMPARATEUR - JavaScript
- */
+
 
 // ============================================================================
 // TOGGLE COMPARATEUR (Ajouter / Retirer)

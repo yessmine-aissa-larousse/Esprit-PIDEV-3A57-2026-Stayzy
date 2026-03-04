@@ -119,6 +119,7 @@
                                     <p class="text-muted small mb-3">
                                         <i class="bi bi-geo-alt text-danger me-1"></i>
                                         {% if logement.adresse %}
+<<<<<<< HEAD
     {{ logement.adresse.ville|default('') }}
     {% if logement.adresse.code_postal is defined and logement.adresse.code_postal %}
         ({{ logement.adresse.code_postal }})
@@ -126,6 +127,13 @@
 {% else %}
     Localisation non renseignée
 {% endif %}
+=======
+                                            {{ logement.adresse.ville|default('') }}
+                                            {% if logement.adresse.codePostal %}({{ logement.adresse.codePostal }}){% endif %}
+                                        {% else %}
+                                            Localisation non renseignée
+                                        {% endif %}
+>>>>>>> origin/integration-logement-utilisateur
                                     </p>
 
                                     {# Caractéristiques #}

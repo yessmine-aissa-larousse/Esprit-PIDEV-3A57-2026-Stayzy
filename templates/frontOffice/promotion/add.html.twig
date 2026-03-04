@@ -226,8 +226,14 @@
             <div class="mb-3">
                 {{ form_label(form.pourcentage, null, {label_attr: {class: 'form-label'}}) }}
                 <div class="pct-wrapper">
+<<<<<<< HEAD
                     {{ form_widget(form.pourcentage, {attr: {
                         id: 'pourcentage-input',
+=======
+                    {# ✅ On utilise data-pct-input pour éviter le conflit avec l'id généré par Symfony #}
+                    {{ form_widget(form.pourcentage, {attr: {
+                        'data-pct-input': 'true',
+>>>>>>> origin/integration-logement-utilisateur
                         min: 1, max: 99,
                         placeholder: 'Ex: 20',
                         style: 'padding-right: 56px;'
@@ -293,6 +299,7 @@
 
 {% block javascripts %}{{ parent() }}
 <script>
+<<<<<<< HEAD
 const prixBase        = {{ logement.prix }};
 const pctInput        = document.getElementById('pourcentage-input');
 const pctDisplay      = document.getElementById('pct-display');
@@ -323,5 +330,51 @@ updatePreview();
 // Uppercase code promo
 const codeInput = document.querySelector('input[name*="codePromo"]');
 codeInput?.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+=======
+document.addEventListener('DOMContentLoaded', function () {
+
+    const prixBase        = {{ logement.prix }};
+    // ✅ On cherche par data-attribute au lieu de getElementById
+    const pctInput        = document.querySelector('[data-pct-input="true"]');
+    const pctDisplay      = document.getElementById('pct-display');
+    const previewReduit   = document.getElementById('preview-reduit');
+    const previewEconomie = document.getElementById('preview-economie');
+    const previewBadge    = document.getElementById('preview-badge');
+
+    function updatePreview() {
+        // ✅ Garde-fou : si l'élément n'existe pas, on sort
+        if (!pctInput) return;
+
+        const pct      = parseInt(pctInput.value) || 0;
+        const reduit   = (prixBase * (1 - pct / 100)).toFixed(2);
+        const economie = (prixBase * pct / 100).toFixed(2);
+
+        if (pctDisplay)      pctDisplay.textContent      = pct + '%';
+        if (previewReduit)   previewReduit.textContent   = reduit + '€';
+        if (previewEconomie) previewEconomie.textContent = '-' + economie + '€';
+        if (previewBadge) {
+            previewBadge.textContent = '-' + pct + '%';
+            if (pct >= 40)      previewBadge.style.background = '#c62828';
+            else if (pct >= 20) previewBadge.style.background = '#e53935';
+            else                previewBadge.style.background = '#ef5350';
+        }
+    }
+
+    if (pctInput) {
+        pctInput.addEventListener('input', updatePreview);
+    }
+
+    updatePreview();
+
+    // Uppercase code promo
+    const codeInput = document.querySelector('input[name*="codePromo"]');
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+
+});
+>>>>>>> origin/integration-logement-utilisateur
 </script>
 {% endblock %}

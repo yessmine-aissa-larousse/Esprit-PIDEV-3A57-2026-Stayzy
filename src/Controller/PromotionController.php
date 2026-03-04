@@ -5,6 +5,10 @@ namespace App\Controller;
 use App\Entity\Logement;
 use App\Entity\Promotion;
 use App\Form\PromotionType;
+<<<<<<< HEAD
+=======
+use App\Service\SmsService;
+>>>>>>> origin/integration-logement-utilisateur
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,6 +50,7 @@ final class PromotionController extends AbstractController
 
     // -------------------------------------------------------------------------
     #[Route('/proprietaire/logement/{logementId}/promotions/new', name: 'promotion_new')]
+<<<<<<< HEAD
     public function new(int $logementId, Request $request, EntityManagerInterface $em): Response
     {
         $logement = $this->getLogementSecurise($logementId, $em);
@@ -80,6 +85,45 @@ final class PromotionController extends AbstractController
         ]);
     }
 
+=======
+public function new(int $logementId, Request $request, EntityManagerInterface $em, SmsService $smsService): Response
+{
+    $logement = $this->getLogementSecurise($logementId, $em);
+
+    $promoEnCours = $em->getRepository(Promotion::class)
+        ->findPromoActiveByLogement($logement->getId());
+
+    if ($promoEnCours) {
+        $this->addFlash('warning', '⚠️ Une promotion est déjà en cours sur ce logement.');
+        return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
+    }
+
+    $promotion = new Promotion();
+    $promotion->setLogement($logement);
+
+    $form = $this->createForm(PromotionType::class, $promotion);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->persist($promotion);
+        $em->flush();
+
+        // ✅ Envoi SMS avec debug visible
+        $this->envoyerSmsPromotion($logement, $promotion, $smsService);
+
+        $this->addFlash('success', '🎉 Promotion "' . $promotion->getTitre() . '" créée avec succès !');
+        return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
+    }
+
+    return $this->render('frontOffice/promotion/add.html.twig', [
+        'form'      => $form->createView(),
+        'logement'  => $logement,
+        'promotion' => null,
+        'titre'     => 'Créer une promotion',
+    ]);
+}
+
+>>>>>>> origin/integration-logement-utilisateur
     // -------------------------------------------------------------------------
     #[Route('/proprietaire/logement/{logementId}/promotions/{id}/edit', name: 'promotion_edit')]
     public function edit(int $logementId, int $id, Request $request, EntityManagerInterface $em): Response
@@ -101,7 +145,11 @@ final class PromotionController extends AbstractController
             return $this->redirectToRoute('promotion_list', ['logementId' => $logementId]);
         }
 
+<<<<<<< HEAD
         return $this->render('frontOffice/promotion/form.html.twig', [
+=======
+        return $this->render('frontOffice/promotion/add.html.twig', [
+>>>>>>> origin/integration-logement-utilisateur
             'form'      => $form->createView(),
             'logement'  => $logement,
             'promotion' => $promotion,
@@ -154,7 +202,11 @@ final class PromotionController extends AbstractController
     #[Route('/proprietaire/promotions', name: 'promotion_globale_list')]
     public function globaleList(EntityManagerInterface $em): Response
     {
+<<<<<<< HEAD
         /** @var \App\Entity\Utilisateur $user */
+=======
+        /** @var \App\Entity\User $user */
+>>>>>>> origin/integration-logement-utilisateur
         $user = $this->getUser();
 
         $logements = $em->getRepository(Logement::class)
@@ -194,7 +246,11 @@ final class PromotionController extends AbstractController
     #[Route('/proprietaire/promotions/appliquer-tous', name: 'promotion_globale_appliquer_tous')]
     public function appliquerTous(Request $request, EntityManagerInterface $em): Response
     {
+<<<<<<< HEAD
         /** @var \App\Entity\Utilisateur $user */
+=======
+        /** @var \App\Entity\User $user */
+>>>>>>> origin/integration-logement-utilisateur
         $user = $this->getUser();
 
         $logements = $em->getRepository(Logement::class)
@@ -218,7 +274,10 @@ final class PromotionController extends AbstractController
             $nbIgnores   = 0;
 
             foreach ($logements as $logement) {
+<<<<<<< HEAD
                 // Ignorer les logements avec promo en cours
+=======
+>>>>>>> origin/integration-logement-utilisateur
                 $promoEnCours = $em->getRepository(Promotion::class)
                     ->findPromoActiveByLogement($logement->getId());
 
@@ -247,12 +306,18 @@ final class PromotionController extends AbstractController
             return $this->redirectToRoute('promotion_globale_list');
         }
 
+<<<<<<< HEAD
         // Calcul prix moyen pour le JS (prixMoyen doit être une var PHP, pas Twig)
         $prixMoyen = 0;
         if (!empty($logements)) {
             foreach ($logements as $l) {
                 $prixMoyen += $l->getPrix();
             }
+=======
+        $prixMoyen = 0;
+        if (!empty($logements)) {
+            foreach ($logements as $l) { $prixMoyen += $l->getPrix(); }
+>>>>>>> origin/integration-logement-utilisateur
             $prixMoyen = round($prixMoyen / count($logements), 2);
         }
 
@@ -310,4 +375,121 @@ final class PromotionController extends AbstractController
         }
         return $promotion;
     }
+<<<<<<< HEAD
+=======
+
+    // -------------------------------------------------------------------------
+    // ✅ NOUVEAU : Envoi SMS aux clients qui ont le logement en favori
+    // -------------------------------------------------------------------------
+    private function envoyerSmsPromotion(
+    Logement $logement,
+    Promotion $promotion,
+    SmsService $smsService
+): void {
+    dump('=== DEBUT envoyerSmsPromotion ===');
+    dump('Promotion active ?', $promotion->isActive());
+
+    if (!$promotion->isActive()) {
+        dump('❌ Promotion inactive → SMS non envoyé');
+        return;
+    }
+
+    $clients = $logement->getUtilisateursFavoris();
+    dump('Nombre de clients en favori:', count($clients));
+
+    if (count($clients) === 0) {
+        dump('❌ Aucun client n\'a ce logement en favori');
+        return;
+    }
+
+    foreach ($clients as $client) {
+        dump('Client trouvé:', $client->getEmail(), '| Tel:', $client->getTel());
+
+        $tel = $client->getTel();
+        if (!$tel) {
+            dump('❌ Client sans numéro de téléphone → ignoré');
+            continue;
+        }
+
+        $telFormate = $this->formaterTelephone($tel);
+        dump('Téléphone formaté:', $telFormate);
+
+        if (!$telFormate) {
+            dump('❌ Téléphone non formaté correctement → ignoré');
+            continue;
+        }
+
+        $message = sprintf(
+            'Bonne nouvelle ! Le logement "%s" que vous avez en favori beneficie d\'une promotion de %d%% ! Profitez-en sur Stayzy.',
+            $logement->getTitre(),
+            $promotion->getPourcentage()
+        );
+
+        dump('📤 Envoi SMS vers:', $telFormate);
+
+        // ⚠️ On laisse l'exception remonter pour voir l'erreur
+        $smsService->sendSms($telFormate, $message);
+
+        dump('✅ SMS envoyé avec succès à:', $telFormate);
+    }
+
+    dump('=== FIN envoyerSmsPromotion ===');
+}
+    private function formaterTelephone(string $tel): ?string
+    {
+        // Supprime espaces, tirets, parenthèses
+        $tel = preg_replace('/[\s\-\(\)]/', '', $tel);
+
+        // Déjà au format international
+        if (str_starts_with($tel, '+')) return $tel;
+
+        // Numéro tunisien sans indicatif (8 chiffres)
+        if (strlen($tel) === 8) return '+216' . $tel;
+
+        return null;
+    }
+
+
+#[Route('/test-sms', name: 'test_sms')]
+public function testSms(SmsService $smsService): Response
+{
+    try {
+        $smsService->sendSms('+21656150403', 'Test SMS Stayzy fonctionne !');
+        return new Response('✅ SMS envoyé avec succès !');
+    } catch (\Exception $e) {
+        return new Response('❌ Erreur : ' . $e->getMessage());
+    }
+}
+#[Route('/test-sms-debug', name: 'test_sms_debug')]
+public function testSmsDebug(): Response
+{
+    $accountSid = 'AC6aeb096f449eec5f93cb3807691dca60';
+    $authToken  = '9d63d0e3cc40d2f3398d738f065b9bef';
+    $from       = '+18654010600';
+    $to         = '+21656150403';
+    $message    = 'Test Stayzy debug';
+
+    $url  = "https://api.twilio.com/2010-04-01/Accounts/{$accountSid}/Messages.json";
+    $data = ['From' => $from, 'To' => $to, 'Body' => $message];
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($ch, CURLOPT_USERPWD, "{$accountSid}:{$authToken}");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    // ✅ Désactive SSL temporairement pour tester
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $response = curl_exec($ch);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    $json = json_decode($response, true);
+
+    return new Response('<pre>' . 
+        'Error curl: ' . $error . "\n" .
+        json_encode($json, JSON_PRETTY_PRINT) 
+    . '</pre>');
+}
+>>>>>>> origin/integration-logement-utilisateur
 }

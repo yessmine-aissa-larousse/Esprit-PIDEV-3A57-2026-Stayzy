@@ -131,6 +131,7 @@
                                         </td>
                                         
                                         <td>
+<<<<<<< HEAD
                                             {% if logement.adresse is iterable %}
     <small>
         {{ logement.adresse.ville ?? '-' }},
@@ -139,6 +140,13 @@
 {% else %}
     <small class="text-muted">-</small>
 {% endif %}
+=======
+                                            {% if logement.adresse %}
+                                                <small>{{ logement.adresse.ville }}, {{ logement.adresse.codePostal }}</small>
+                                            {% else %}
+                                                <small class="text-muted">-</small>
+                                            {% endif %}
+>>>>>>> origin/integration-logement-utilisateur
                                         </td>
                                         
                                         <td><strong class="text-success">{{ logement.prix|number_format(0) }}€</strong></td>

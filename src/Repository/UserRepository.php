@@ -17,7 +17,8 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * 🔍 Recherche par nom, prénom, email ou téléphone, avec filtre optionnel par rôle
+
+     * Recherche par nom, prénom, email ou téléphone, avec filtre optionnel par rôle
      */
     public function search(?string $search = null, ?string $role = null): array
     {
@@ -39,7 +40,8 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * 🧩 Trouver les utilisateurs par rôle avec un statut d'approbation donné
+
+     * Trouver les utilisateurs par rôle avec un statut d'approbation donné
      * $limit = null pour tout récupérer, sinon nombre max de résultats
      */
     public function findByRoleAndStatus(string $role, string $status, ?int $limit = null): array
@@ -59,7 +61,9 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * 🔸 Trouver les utilisateurs par rôle
+
+     * Trouver les utilisateurs par rôle
+
      */
     public function findByRole(string $role): array
     {
@@ -72,7 +76,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * 🟢 Compter les utilisateurs actifs
+     * Compter les utilisateurs actifs
      */
     public function countActive(): int
     {
@@ -85,7 +89,8 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * 🔹 Compter les utilisateurs par rôle
+
+     * Compter par rôle
      */
     public function countByRole(string $role): int
     {
@@ -96,6 +101,7 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
 
     /**
      * ⚡ Trouver les utilisateurs récents (par date de création)
@@ -165,4 +171,5 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
 }

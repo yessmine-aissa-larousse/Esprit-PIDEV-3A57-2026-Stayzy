@@ -1,6 +1,3 @@
-/**
- * SYSTÈME DE FAVORIS - JavaScript avec Authentification
- */
 
 // ============================================================================
 // TOGGLE FAVORI (Ajouter / Retirer)
