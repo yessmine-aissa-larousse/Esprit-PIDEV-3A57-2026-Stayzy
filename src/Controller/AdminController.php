@@ -2,8 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\CommentRepository;
-use App\Repository\PostRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -47,11 +46,5 @@ final class AdminController extends AbstractController
             'total_comment_likes' => $totalCommentLikes,
             'total_comment_dislikes' => $totalCommentDislikes,
         ]);
-    }
-
-    #[Route('/admin/forum', name: 'admin_forum', methods: ['GET'])]
-    public function forum(): Response
-    {
-        return $this->redirectToRoute('admin_post_index');
     }
 }

@@ -1,96 +1,379 @@
 <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
-    {# Sidebar Brand #}
+
+    {# ── Brand ── #}
     <div class="sidebar-brand">
         <a href="{{ path('admin_dashboard') }}" class="brand-link">
-            <img src="{{ asset('backOffice/assets/img/AdminLTELogo.png') }}" 
-                 alt="AdminLTE Logo" 
+            <img src="{{ asset('backOffice/assets/img/AdminLTELogo.png') }}"
+                 alt="AdminLTE Logo"
                  class="brand-image opacity-75 shadow" />
             <span class="brand-text fw-light">Stayzy</span>
         </a>
     </div>
 
-    {# Sidebar Wrapper #}
+    {# ── Sidebar Wrapper ── #}
     <div class="sidebar-wrapper">
         <nav class="mt-2">
-            <ul class="nav sidebar-menu flex-column" 
-                data-lte-toggle="treeview" 
-                role="navigation" 
+            <ul class="nav sidebar-menu flex-column"
+                data-lte-toggle="treeview"
+                role="navigation"
                 aria-label="Main navigation">
-                
-                {# Dashboard Menu #}
-                <li class="nav-item menu-open">
-                    <a href="#" class="nav-link active">
-                        <i class="nav-icon bi bi-speedometer"></i>
-                        <p>
-                            Dashboard
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
+
+                {# ══════════════════════════════════════ #}
+                {#              ADMIN ONLY               #}
+                {# ══════════════════════════════════════ #}
+                {% if is_granted('ROLE_ADMIN') %}
+
+
+                    {# Dashboard #}
+
+                    <li class="nav-item">
+                        <a href="{{ path('admin_dashboard') }}"
+                           class="nav-link {{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-speedometer"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
+
+                    {# Gestion Utilisateurs #}
+
+                    <li class="nav-item {{ app.request.get('_route') starts with 'app_user' ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ app.request.get('_route') starts with 'app_user' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-people-fill"></i>
+                            <p>
+                                Utilisateurs
+                                <i class="nav-arrow bi bi-chevron-right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ path('app_user_index') }}" class="nav-link">
+=======
+<<<<<<< HEAD
+                                <a href="{{ path('app_user_index') }}" class="nav-link">
+=======
+                                <a href="{{ path('app_user_index') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'app_user_index' ? 'active' : '' }}">
+>>>>>>> origin/integration-logement-utilisateur
+>>>>>>> origin/module-user_logement_reservation
+                                    <i class="nav-icon bi bi-list-ul"></i>
+                                    <p>Liste utilisateurs</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('app_user_pending') }}" class="nav-link">
+
+                                <a href="{{ path('app_user_pending') }}" class="nav-link">
+                                <a href="{{ path('app_user_pending') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'app_user_pending' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-clock-history"></i>
+                                    <p>Demandes en attente</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+
+                                <a href="{{ path('app_user_new') }}" class="nav-link">
+=======
+                                <a href="{{ path('app_user_new') }}" class="nav-link">
+                                <a href="{{ path('app_user_new') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'app_user_new' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-person-plus"></i>
+                                    <p>Ajouter utilisateur</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('app_user_export_csv') }}" class="nav-link">
+                                    <i class="nav-icon bi bi-download"></i>
+                                    <p>Exporter CSV</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a href="{{ path('admin_logement_list') }}" class="nav-link">
+                            <i class="nav-icon bi bi-buildings-fill"></i>
+                            <p>Les Annonces</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('admin_categorie_list') }}" class="nav-link">
+                            <i class="nav-icon bi bi-tags-fill"></i>
+                            <p>Catégories</p>
+                        </a>
+                    </li>
+                    <li class="nav-item {{ app.request.get('_route') starts with 'admin_reclamation'
+    or app.request.get('_route') starts with 'admin_supervision'
+    or app.request.get('_route') starts with 'admin_visites'
+    ? 'menu-open' : '' }}">
+
+    <a href="#"
+       class="nav-link {{ app.request.get('_route') starts with 'admin_reclamation'
+        or app.request.get('_route') starts with 'admin_supervision'
+        or app.request.get('_route') starts with 'admin_visites'
+        ? 'active' : '' }}">
+
+        <i class="nav-icon bi bi-exclamation-triangle-fill"></i>
+        <p>
+            Réclamations
+            <i class="nav-arrow bi bi-chevron-right"></i>
+        </p>
+    </a>
+
+    <ul class="nav nav-treeview">
+
+        <li class="nav-item">
+            <a href="{{ path('admin_supervision_reclamation') }}"
+               class="nav-link {{ app.request.get('_route') == 'admin_supervision_reclamation' ? 'active' : '' }}">
+                <i class="nav-icon bi bi-eye-fill"></i>
+                <p>Supervision Réclamation</p>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ path('admin_reclamations') }}"
+               class="nav-link {{ app.request.get('_route') == 'admin_reclamations' ? 'active' : '' }}">
+                <i class="nav-icon bi bi-envelope-fill"></i>
+                <p>Tous les Réclamations</p>
+            </a>
+        </li>
+    </ul>
+    <li class="nav-item">
+            <a href="{{ path('admin_visites') }}"
+               class="nav-link {{ app.request.get('_route') == 'admin_visites' ? 'active' : '' }}">
+                <i class="nav-icon bi bi-calendar-event-fill"></i>
+                <p> Visites</p>
+            </a>
+        </li>
+</li>
+                    <li class="nav-item">
+    <a href="{{ path('front_reservation_proprietaire_dashboard') }}" class="nav-link">
+        <i class="nav-icon bi bi-bar-chart-fill"></i>
+        <p>Dashboard Réservations</p>
+    </a>
+</li>
+
+                    {# Tous les Logements (vue admin globale) #}
+                    <li class="nav-item">
+                        <a href="{{ path('admin_logement_list') }}" class="nav-link">
+                            <i class="nav-icon bi bi-buildings-fill"></i>
+                            <p>
+                                Les Annonces
+                                <i class="nav-arrow bi bi-chevron-right"></i>
+                            </p>
+                        </a>
+                    </li>
+
+                    {# Catégories #}
+                    <li class="nav-item {{ app.request.get('_route') starts with 'admin_categorie' ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ app.request.get('_route') starts with 'admin_categorie' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-tags-fill"></i>
+                            <p>
+                                Catégories
+                                <i class="nav-arrow bi bi-chevron-right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ path('admin_categorie_list') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'admin_categorie_list' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-list-ul"></i>
+                                    <p>Liste des catégories</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('admin_categorie_add') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'admin_categorie_add' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Ajouter une catégorie</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                   
+
+                {# ══════════════════════════════════════ #}
+                {#           PROPRIÉTAIRE ONLY           #}
+                {# ══════════════════════════════════════ #}
+                {% elseif is_granted('ROLE_PROPRIETAIRE') %}
+
+
+                    <li class="nav-item">
+                        <a href="{{ path('front_reservation_proprietaire_dashboard') }}"
+                           class="nav-link {{ app.request.get('_route') == 'front_reservation_proprietaire_dashboard' ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('front_reservation_proprietaire_list') }}"
+                           class="nav-link {{ app.request.get('_route') == 'front_reservation_proprietaire_list' ? 'active' : '' }}">
+                            <i class="bi bi-calendar-plus"></i>
+                            <p>Mes Réservations</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('commande_list') }}"
+                           class="nav-link {{ app.request.get('_route') == 'commande_list' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-box-seam-fill"></i>
+                            <p>Commandes</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('admin_logement_list') }}"
+                           class="nav-link {{ app.request.get('_route') == 'admin_logement_list' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-house-door-fill"></i>
+                            <p>Mes Logements</p>
+                        </a>
+                    </li>
+
+                    {# Mon profil #}
+                    <li class="nav-item">
+                        <a href="{{ path('app_proprietaire_profile') }}"
+                           class="nav-link {{ app.request.get('_route') == 'app_proprietaire_profile' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-person-circle"></i>
+                            <p>Mon profil</p>
+                        </a>
+                    </li>
+
+                    {# Mes logements #}
+                    <li class="nav-item {{ app.request.get('_route') starts with 'admin_logement' ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ app.request.get('_route') starts with 'admin_logement' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-house-door-fill"></i>
+                            <p>
+                                Mes logements
+                                <i class="nav-arrow bi bi-chevron-right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ path('admin_logement_list') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'admin_logement_list' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-list-ul"></i>
+                                    <p>Liste de mes logements</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('admin_logement_add') }}"
+                                   class="nav-link {{ app.request.get('_route') == 'admin_logement_add' ? 'active' : '' }}">
+                                    <i class="nav-icon bi bi-plus-circle"></i>
+                                    <p>Ajouter un logement</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    {# Réservations reçues #}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon bi bi-calendar-check-fill"></i>
+                            <p>Mes réservations</p>
+                        </a>
+                    </li>
+
+                    {# Favoris de mes clients #}
+                    <li class="nav-item">
+                        <a href="{{ path('admin_favoris_clients') }}"
+                           class="nav-link {{ app.request.get('_route') == 'admin_favoris_clients' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-star-fill text-warning"></i>
+
+                            <p>Favoris des Clients</p>
+                        </a>
+                    </li>
+
+                            <p>Favoris de mes clients</p>
+                        </a>
+                    </li>
+
+
+                {# ══════════════════════════════════════ #}
+                {#              CLIENT ONLY              #}
+                {# ══════════════════════════════════════ #}
+                {% elseif is_granted('ROLE_CLIENT') %}
+
+
+                    {# Mon profil #}
+
+                    <li class="nav-item">
+                        <a href="{{ path('app_client_profile') }}"
+                           class="nav-link {{ app.request.get('_route') == 'app_client_profile' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-person-circle"></i>
+                            <p>Mon profil</p>
+                        </a>
+                    </li>
+
+
+                    <li class="nav-item">
+                        <a href="{{ path('app_client_reservations') }}"
+                           class="nav-link {{ app.request.get('_route') == 'app_client_reservations' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-calendar-check-fill"></i>
+                            <p>Mes Réservations</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ path('mes_favoris') }}"
+                           class="nav-link {{ app.request.get('_route') == 'mes_favoris' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-heart-fill text-danger"></i>
+                            <p>Mes Favoris</p>
+                        </a>
+                    </li>
+
+                    {# Mes réservations #}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon bi bi-calendar-check-fill"></i>
+                            <p>Mes réservations</p>
+                        </a>
+                    </li>
+
+                    {# ⭐ Mes favoris #}
+                    <li class="nav-item">
+                        <a href="{{ path('mes_favoris') }}"
+                           class="nav-link {{ app.request.get('_route') == 'admin_mes_favoris' ? 'active' : '' }}">
+                            <i class="nav-icon bi bi-heart-fill text-danger"></i>
+                            <p>Mes favoris</p>
+                        </a>
+                    </li>
+
+                    {# Rechercher un logement #}
+                    <li class="nav-item">
+                        <a href="{{ path('app_properties') }}" class="nav-link">
+                            <i class="nav-icon bi bi-search"></i>
+                            <p>Rechercher un logement</p>
+                        </a>
+                    </li>
+
+                {% endif %}
+
+
+                {# ── Commun à tous ── #}
+                <li class="nav-header">MON COMPTE</li>
+
+                <li class="nav-item">
+                    <a href="{{ path('app_home') }}" target="_blank" class="nav-link">
+                        <i class="nav-icon bi bi-globe"></i>
+                        <p>Voir le site</p>
                     </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link active">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Dashboard </p>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
-                {# Forum Menu #}
                 <li class="nav-item">
-                    <a href="{{ path('admin_post_index') }}" class="nav-link">
-                        <i class="nav-icon bi bi-chat-square-text"></i>
-                        <p>
-                            Forum
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
+                    <a href="{{ path('app_logout') }}" class="nav-link text-danger">
+                        <i class="nav-icon bi bi-box-arrow-right"></i>
+                        <p>Déconnexion</p>
                     </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ path('admin_post_index') }}" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Posts</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ path('admin_comment_index') }}" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Commentaires</p>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
 
-                {# Widgets Menu #}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-box-seam-fill"></i>
-                        <p>
-                            Mes Logements
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Liste des props</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                {# Tables Menu #}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-table"></i>
-                        <p>
-                            DM Réservations
-                            <i class="nav-arrow bi bi-chevron-right"></i>
-                        </p>
-                    </a>
-                </li>
             </ul>
         </nav>
     </div>
+
 </aside>
+
+

@@ -1,0 +1,232 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier la Réservation{% endblock %}
+
+{% block body %}
+
+<<<<<<< HEAD
+<div class="container-fluid">
+
+    <!-- 🔹 Titre principal -->
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="fw-semibold text-secondary">
+            Modifier ma Réservation
+        </h2>
+=======
+<style>
+    .edit-container {
+        min-height: 85vh;
+        background: linear-gradient(135deg, #f9f9ff, #ffffff);
+        padding-bottom: 60px;
+    }
+
+    .edit-title {
+        font-size: 30px;
+        font-weight: 700;
+        color: #6c63ff;
+        letter-spacing: 1px;
+    }
+
+    .modern-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 10px 14px;
+        transition: 0.3s;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(108,99,255,0.15);
+        border-color: #6c63ff;
+    }
+
+    .btn-modern {
+        border-radius: 30px;
+        padding: 8px 22px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-modern:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="edit-container">
+
+    <!-- 🔹 Titre -->
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="edit-title">✏ Modifier ma Réservation</h2>
+        <p class="text-muted">Mettez à jour les informations de votre séjour</p>
+>>>>>>> origin/module-user_logement_reservation
+    </div>
+
+    <!-- 🔹 Messages flash -->
+    {% for message in app.flashes('success') %}
+<<<<<<< HEAD
+        <div class="alert alert-success alert-dismissible fade show small w-75 mx-auto" role="alert">
+=======
+        <div class="alert alert-success alert-dismissible fade show small w-75 mx-auto modern-card" role="alert">
+>>>>>>> origin/module-user_logement_reservation
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+<<<<<<< HEAD
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show small w-75 mx-auto" role="alert">
+=======
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show small w-75 mx-auto modern-card" role="alert">
+>>>>>>> origin/module-user_logement_reservation
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+<<<<<<< HEAD
+    <!-- 🔹 Carte principale -->
+    <div class="card border-0 shadow-sm mx-auto" style="max-width: 900px;">
+        <div class="card-body p-4">
+
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+
+                    {{ form_start(form) }}
+
+                    <!-- Champ date début -->
+                    <div class="mb-3">
+                        {{ form_label(form.dateDebut, 'Date de début', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.dateDebut) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.dateDebut) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ date fin -->
+                    <div class="mb-3">
+                        {{ form_label(form.dateFin, 'Date de fin', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.dateFin) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.dateFin) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ nombre de personnes -->
+                    <div class="mb-3">
+                        {{ form_label(form.nombrePersonnes, 'Nombre de personnes', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.nombrePersonnes, {'attr': {'class': 'form-control'}}) }}
+                        {% if form_errors(form.nombrePersonnes) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.nombrePersonnes) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ message -->
+                    <div class="mb-3">
+                        {{ form_label(form.messageDemande, 'Message / demande spéciale', {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                        {{ form_widget(form.messageDemande, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                        {% if form_errors(form.messageDemande) %}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.messageDemande) }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('front_reservation_list') }}" class="btn btn-outline-secondary">
+    Retour à la liste
+</a>
+
+                        <button class="btn btn-outline-success fw-semibold px-4">
+    Enregistrer
+</button>
+
+                    </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+=======
+    <!-- 🔹 Form Card -->
+    <div class="card modern-card mx-auto" style="max-width: 900px;">
+        <div class="card-body p-5">
+
+            {{ form_start(form) }}
+
+            <div class="mb-4">
+                {{ form_label(form.dateDebut, 'Date de début', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger small mt-1">
+                    {{ form_errors(form.dateDebut) }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.dateFin, 'Date de fin', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.dateFin, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger small mt-1">
+                    {{ form_errors(form.dateFin) }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.nombrePersonnes, 'Nombre de personnes', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.nombrePersonnes, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger small mt-1">
+                    {{ form_errors(form.nombrePersonnes) }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                {{ form_label(form.messageDemande, 'Message / demande spéciale', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                {{ form_widget(form.messageDemande, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                <div class="text-danger small mt-1">
+                    {{ form_errors(form.messageDemande) }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ path('front_reservation_list') }}"
+                   class="btn btn-outline-secondary btn-modern">
+                    ← Retour
+                </a>
+
+                <button class="btn btn-success btn-modern">
+                    💾 Enregistrer
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+>>>>>>> origin/module-user_logement_reservation

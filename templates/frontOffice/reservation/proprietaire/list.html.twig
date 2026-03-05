@@ -1,0 +1,234 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Réservations - Propriétaire{% endblock %}
+
+{% block body %}
+
+<style>
+.filter-premium {
+    background: linear-gradient(135deg, #ffffff, #f3f2ff);
+    padding: 18px 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(108, 99, 255, 0.15);
+    width: 100%;
+    max-width: 500px;
+    transition: 0.3s ease;
+}
+
+.filter-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(108, 99, 255, 0.25);
+}
+
+.filter-icon {
+    width: 45px;
+    height: 45px;
+    background: #6c63ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 18px;
+}
+
+.modern-select {
+    border-radius: 12px;
+    border: 1px solid #e0e0ff;
+    padding: 8px 12px;
+    transition: 0.3s;
+}
+
+.modern-select:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.15);
+}
+    .owner-container {
+        min-height: 85vh;
+        background: linear-gradient(135deg, #f9f9ff, #ffffff);
+        padding-bottom: 60px;
+    }
+
+    .owner-title {
+        font-size: 30px;
+        font-weight: 700;
+        color: #6c63ff;
+        letter-spacing: 1px;
+    }
+
+    .modern-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .table tbody tr {
+        transition: 0.3s;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f4f3ff;
+        transform: scale(1.01);
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .btn-modern {
+        border-radius: 30px;
+        padding: 6px 16px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-modern:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .filter-box {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 10px 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="owner-container">
+
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="owner-title">🏠 Mes Réservations</h2>
+        <p class="text-muted">Gérez les demandes de vos clients</p>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show small mx-auto modern-card" style="max-width:800px;" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    <!-- 🔹 Filtre -->
+    <!-- 🔹 Filtre Premium -->
+<div class="d-flex justify-content-center mb-5">
+    <form method="get" class="filter-premium d-flex align-items-center gap-3">
+
+        <div class="filter-icon">
+            🔎
+        </div>
+
+        <div class="flex-grow-1">
+            <label class="form-label small text-muted mb-1">Filtrer par logement</label>
+            <select name="logement"
+                    class="form-select modern-select"
+                    onchange="this.form.submit()">
+                <option value="">Tous les logements</option>
+                {% for l in logements %}
+                    <option value="{{ l.id }}" {% if selectedLogement == l.id %}selected{% endif %}>
+                        {{ l.titre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+    </form>
+</div>
+
+    <div class="card modern-card mx-auto" style="max-width: 1400px;">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted">
+                    <tr>
+            
+                        <th>Client</th>
+                        <th>Logement</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>Personnes</th>
+                        <th>Prix</th>
+                        <th>Status</th>
+                        <th>Score IA</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reservations %}
+                        <tr>
+                            
+                            <td>{{ r.user.nom ~ ' ' ~ r.user.prenom }}</td>
+                            <td class="fw-medium">{{ r.logement.titre }}</td>
+                            <td>{{ r.dateDebut|date('d/m/Y') }}</td>
+                            <td>{{ r.dateFin|date('d/m/Y') }}</td>
+                            <td>{{ r.nombrePersonnes }}</td>
+                            <td class="fw-bold text-primary">{{ r.prixTotal }} DT</td>
+
+                            <td>
+                                {% if r.status == 'EN_ATTENTE' %}
+                                    <span class="badge bg-warning bg-opacity-25 text-warning-emphasis">⏳ En attente</span>
+                                {% elseif r.status == 'CONFIRMÉE' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success">✔ Confirmée</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger">✖ Annulée</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if r.status == 'EN_ATTENTE' and scores[r.id] is defined %}
+                                    {% set s = scores[r.id] %}
+                                    <div class="fw-bold
+                                        {% if s.score >= 75 %}text-success
+                                        {% elseif s.score >= 40 %}text-warning
+                                        {% else %}text-danger{% endif %}">
+                                        {{ s.emoji }} {{ s.score }}/100
+                                    </div>
+                                    <small class="text-muted">{{ s.priorite }}</small>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                {% if r.status == 'EN_ATTENTE' %}
+                                    <a href="{{ path('front_reservation_proprietaire_action', {'id': r.id, 'status': 'CONFIRMÉE'}) }}"
+                                       class="btn btn-success btn-sm btn-modern">
+                                        ✔ Confirmer
+                                    </a>
+                                    <a href="{{ path('front_reservation_proprietaire_action', {'id': r.id, 'status': 'ANNULÉE'}) }}"
+                                       class="btn btn-danger btn-sm btn-modern ms-1">
+                                        ✖ Annuler
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary btn-sm btn-modern" disabled>
+                                        Action impossible
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="10">
+                                <div class="text-center py-5 text-muted">
+                                    <h6>Aucune réservation trouvée</h6>
+                                    <p class="small">Aucune demande pour le moment.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

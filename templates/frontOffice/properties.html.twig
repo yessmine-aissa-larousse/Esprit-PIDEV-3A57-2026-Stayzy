@@ -1,17 +1,17 @@
 {% extends 'frontOffice/base.html.twig' %}
 
-{% block title %}Properties - HomeSpace{% endblock %}
+{% block title %}Nos Logements - Stayzy{% endblock %}
 
 {% block body %}
 
     <!-- Page Title -->
     <div class="page-title light-background">
         <div class="container d-lg-flex justify-content-between align-items-center">
-            <h1 class="mb-2 mb-lg-0">Properties</h1>
+            <h1 class="mb-2 mb-lg-0">Nos Logements</h1>
             <nav class="breadcrumbs">
                 <ol>
-                    <li><a href="{{ path('app_home') }}">Home</a></li>
-                    <li class="current">Properties</li>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li class="current">Logements</li>
                 </ol>
             </nav>
         </div>
@@ -21,62 +21,111 @@
     <section id="properties" class="properties section">
         <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-            <!-- Search Bar -->
+            <!-- Search Bar - FORMULAIRE FONCTIONNEL -->
             <div class="search-bar mb-5" data-aos="fade-up" data-aos-delay="150">
                 <div class="row justify-content-center">
-                    <div class="col-lg-10">
-                        <div class="search-wrapper">
-                            <div class="row g-3">
+                    <div class="col-lg-12">
+                        <form action="{{ path('app_properties') }}" method="GET" class="search-wrapper">
+                            <div class="row g-3 align-items-end">
+                                
+                                {# Ville #}
                                 <div class="col-lg-3 col-md-6">
                                     <div class="search-field">
-                                        <label>Location</label>
-                                        <input type="text" class="form-control" placeholder="Enter city or zip">
+                                        <label for="ville-input">Localisation</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="ville-input"
+                                               name="ville" 
+                                               value="{{ filtres.ville|default('') }}"
+                                               placeholder="Ville ou code postal">
                                     </div>
                                 </div>
+                                
+                                {# Catégorie #}
                                 <div class="col-lg-2 col-md-6">
                                     <div class="search-field">
-                                        <label>Type</label>
-                                        <select class="form-select">
-                                            <option>Any Type</option>
-                                            <option>House</option>
-                                            <option>Apartment</option>
-                                            <option>Condo</option>
+                                        <label for="categorie-select">Type</label>
+                                        <select class="form-select" id="categorie-select" name="categorie">
+                                            <option value="">Tous types</option>
+                                            {% for categorie in categories %}
+                                                <option value="{{ categorie.id }}" 
+                                                    {% if filtres.categorie == categorie.id %}selected{% endif %}>
+                                                    {{ categorie.nom }}
+                                                </option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                 </div>
+                                
+                                {# Prix #}
                                 <div class="col-lg-2 col-md-6">
                                     <div class="search-field">
-                                        <label>Price</label>
-                                        <select class="form-select">
-                                            <option>Any Price</option>
-                                            <option>$0 - $500k</option>
-                                            <option>$500k - $1M</option>
-                                            <option>$1M+</option>
+                                        <label for="prix-select">Prix max/nuit</label>
+                                        <select class="form-select" id="prix-select" name="prix_max">
+                                            <option value="">Tous</option>
+                                            <option value="50" {% if filtres.prix_max == '50' %}selected{% endif %}>≤ 50€</option>
+                                            <option value="100" {% if filtres.prix_max == '100' %}selected{% endif %}>≤ 100€</option>
+                                            <option value="150" {% if filtres.prix_max == '150' %}selected{% endif %}>≤ 150€</option>
+                                            <option value="200" {% if filtres.prix_max == '200' %}selected{% endif %}>≤ 200€</option>
+                                            <option value="300" {% if filtres.prix_max == '300' %}selected{% endif %}>≤ 300€</option>
                                         </select>
                                     </div>
                                 </div>
+                                
+                                {# Chambres #}
                                 <div class="col-lg-3 col-md-6">
                                     <div class="search-field">
-                                        <label>Bedrooms</label>
+                                        <label>Chambres</label>
                                         <div class="bedroom-quick">
-                                            <button class="bed-btn" data-beds="any">Any</button>
-                                            <button class="bed-btn" data-beds="1">1+</button>
-                                            <button class="bed-btn" data-beds="2">2+</button>
-                                            <button class="bed-btn" data-beds="3">3+</button>
-                                            <button class="bed-btn" data-beds="4">4+</button>
+                                            <button type="button" 
+                                                    class="bed-btn {% if not filtres.chambres or filtres.chambres == 'any' %}active{% endif %}" 
+                                                    onclick="setChambres('any')">
+                                                Toutes
+                                            </button>
+                                            <button type="button" 
+                                                    class="bed-btn {% if filtres.chambres == '1' %}active{% endif %}" 
+                                                    onclick="setChambres('1')">
+                                                1+
+                                            </button>
+                                            <button type="button" 
+                                                    class="bed-btn {% if filtres.chambres == '2' %}active{% endif %}" 
+                                                    onclick="setChambres('2')">
+                                                2+
+                                            </button>
+                                            <button type="button" 
+                                                    class="bed-btn {% if filtres.chambres == '3' %}active{% endif %}" 
+                                                    onclick="setChambres('3')">
+                                                3+
+                                            </button>
+                                            <button type="button" 
+                                                    class="bed-btn {% if filtres.chambres == '4' %}active{% endif %}" 
+                                                    onclick="setChambres('4')">
+                                                4+
+                                            </button>
                                         </div>
+                                        <input type="hidden" name="chambres" id="chambres-input" value="{{ filtres.chambres|default('any') }}">
                                     </div>
                                 </div>
+                                
+                                {# Boutons actions #}
                                 <div class="col-lg-2 col-md-12">
                                     <div class="search-field">
-                                        <label>&nbsp;</label>
-                                        <button class="btn btn-primary w-100 search-btn">
-                                            <i class="bi bi-search"></i> Search
+                                        <button type="submit" class="btn btn-primary w-100 search-btn">
+                                            <i class="bi bi-search"></i> 
+                                            <span>Rechercher</span>
                                         </button>
+                                        {% if filtres.ville or filtres.categorie or filtres.prix_max or (filtres.chambres and filtres.chambres != 'any') %}
+                                            <a href="{{ path('app_properties') }}" 
+                                               class="reset-btn" 
+                                               title="Réinitialiser les filtres"
+                                               data-bs-toggle="tooltip">
+                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -86,19 +135,29 @@
                 <div class="row align-items-center">
                     <div class="col-lg-6">
                         <div class="results-info">
-                            <h5>124 Properties Found</h5>
-                            <p class="text-muted">Showing properties in Beverly Hills, CA</p>
+                            <h5>{{ logements|length }} Logement{{ logements|length > 1 ? 's' : '' }} Trouvé{{ logements|length > 1 ? 's' : '' }}</h5>
+                            {% if filtres.ville or filtres.categorie or filtres.prix_max or (filtres.chambres and filtres.chambres != 'any') %}
+                                <p class="text-muted">
+                                    Résultats filtrés
+                                    {% if filtres.ville %} • Ville : <strong>{{ filtres.ville }}</strong>{% endif %}
+                                    {% if filtres.prix_max %} • Prix ≤ <strong>{{ filtres.prix_max }}€</strong>{% endif %}
+                                    {% if filtres.chambres and filtres.chambres != 'any' %} • <strong>{{ filtres.chambres }}+</strong> chambres{% endif %}
+                                </p>
+                            {% else %}
+                                <p class="text-muted">Découvrez nos propriétés vérifiées</p>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="results-controls">
                             <div class="d-flex gap-3 align-items-center justify-content-lg-end">
+                                {# Tri dynamique #}
                                 <div class="sort-dropdown">
-                                    <select class="form-select form-select-sm">
-                                        <option>Price: Low to High</option>
-                                        <option>Price: High to Low</option>
-                                        <option>Newest First</option>
-                                        <option>Largest Size</option>
+                                    <select class="form-select form-select-sm" onchange="changeTri(this.value)">
+                                        <option value="recent" {% if filtres.tri == 'recent' %}selected{% endif %}>Plus récent</option>
+                                        <option value="prix_asc" {% if filtres.tri == 'prix_asc' %}selected{% endif %}>Prix : Croissant</option>
+                                        <option value="prix_desc" {% if filtres.tri == 'prix_desc' %}selected{% endif %}>Prix : Décroissant</option>
+                                        <option value="superficie_desc" {% if filtres.tri == 'superficie_desc' %}selected{% endif %}>Plus grand</option>
                                     </select>
                                 </div>
                                 <div class="view-toggle">
@@ -118,110 +177,198 @@
             <!-- Properties Container -->
             <div class="properties-container">
                 <div class="properties-masonry view-masonry active" data-aos="fade-up" data-aos-delay="250">
-                    <div class="row g-4">
-
-                        <!-- Property Item 1 -->
-                        <div class="col-lg-4 col-md-6">
-                            <div class="property-item">
-                                <a href="#" class="property-link">
-                                    <div class="property-image-wrapper">
-                                        <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" alt="Luxury Villa" class="img-fluid">
-                                        <div class="property-status">
-                                            <span class="status-badge featured">Featured</span>
-                                            <span class="status-badge sale">For Sale</span>
-                                        </div>
-                                        <div class="property-actions">
-                                            <button class="action-btn favorite-btn" data-toggle="tooltip" title="Add to Favorites">
-                                                <i class="bi bi-heart"></i>
-                                            </button>
-                                            <button class="action-btn share-btn" data-toggle="tooltip" title="Share Property">
-                                                <i class="bi bi-share"></i>
-                                            </button>
-                                            <button class="action-btn gallery-btn" data-toggle="tooltip" title="View Gallery">
-                                                <i class="bi bi-images"></i>
-                                                <span class="gallery-count">14</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </a>
-                                <div class="property-details">
-                                    <a href="#" class="property-link">
-                                        <div class="property-header">
-                                            <div class="property-price">$1,850,000</div>
-                                            <div class="property-type">House</div>
-                                        </div>
-                                        <h4 class="property-title">Luxury Modern Villa with Pool</h4>
-                                        <p class="property-address">
-                                            <i class="bi bi-geo-alt"></i>
-                                            3458 Sunset Boulevard, Beverly Hills, CA 90210
-                                        </p>
-                                        <div class="property-specs">
-                                            <div class="spec-item">
-                                                <i class="bi bi-house-door"></i>
-                                                <span>5 Bedrooms</span>
+                    
+                    {% if logements is empty %}
+                        <div class="alert text-center">
+                            <i class="bi bi-search"></i>
+                            <h5 class="mt-2">Aucun logement trouvé</h5>
+                            <p>Essayez de modifier vos critères de recherche.</p>
+                            <a href="{{ path('app_properties') }}" >
+                                Voir tous les logements
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="row g-4">
+                            {% for logement in logements %}
+                                <!-- Property Item -->
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="property-item">
+                                        {# Lien vers page détails #}
+                                        <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                                            <div class="property-image-wrapper">
+                                                {% if logement.photoPrincipale %}
+                                                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" 
+                                                         alt="{{ logement.titre }}" 
+                                                         class="img-fluid">
+                                                {% else %}
+                                                    <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" 
+                                                         alt="{{ logement.titre }}" 
+                                                         class="img-fluid">
+                                                {% endif %}
+                                                
+                                                <div class="property-status">
+                                                    <span class="status-badge sale">Disponible</span>
+                                                    {% if logement.categorie %}
+                                                        <span class="status-badge featured">{{ logement.categorie.nom }}</span>
+                                                    {% endif %}
+                                                    {% set promoActive = logement.promoActive %}
+                                                    {% if promoActive %}
+                                                        <span class="status-badge" style="background:#e53935; color:#fff;"> -{{ promoActive.pourcentage }}%</span>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="property-actions">
+                                                    {# ✅ CORRIGÉ : data-logement-id ajouté #}
+                                                    <button class="action-btn favorite-btn" 
+                                                            data-logement-id="{{ logement.id }}"
+                                                            title="Ajouter aux favoris">
+                                                        <i class="bi bi-heart"></i>
+                                                    </button>
+                                                    <button class="action-btn compare-btn" 
+                                                            data-logement-id="{{ logement.id }}"
+                                                            title="Ajouter au comparateur">
+                                                        <i class="bi bi-plus-square"></i>
+                                                    </button>
+                                                    <button class="action-btn share-btn" title="Partager">
+                                                        <i class="bi bi-share"></i>
+                                                    </button>
+                                                    {% if logement.photos and logement.photos|length > 0 %}
+                                                        <button class="action-btn gallery-btn" title="Voir la galerie">
+                                                            <i class="bi bi-images"></i>
+                                                            <span class="gallery-count">{{ logement.photos|length }}</span>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
                                             </div>
-                                            <div class="spec-item">
-                                                <i class="bi bi-droplet"></i>
-                                                <span>4 Bathrooms</span>
-                                            </div>
-                                            <div class="spec-item">
-                                                <i class="bi bi-arrows-angle-expand"></i>
-                                                <span>3,400 sq ft</span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <div class="property-agent-info">
-                                        <div class="agent-avatar">
-                                            <img src="{{ asset('frontOffice/img/real-estate/agent-2.webp') }}" alt="Agent">
-                                        </div>
-                                        <div class="agent-details">
-                                            <strong>Jennifer Miller</strong>
-                                            <span>Prime Realty Group</span>
-                                        </div>
-                                        <div class="agent-contact">
-                                            <a href="tel:+15551234567" class="contact-btn">
-                                                <i class="bi bi-telephone"></i>
+                                        </a>
+                                        
+                                        <div class="property-details">
+                                            <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                                                <div class="property-header">
+                                                    {% set promoActive = logement.promoActive %}
+                                                    {% if promoActive %}
+                                                        <div class="property-price">
+                                                            {{ promoActive.prixPromo }}€ <span>/nuit</span>
+                                                            <span style="text-decoration:line-through; color:#9ca3af; font-size:.8rem; font-weight:400; margin-left:4px;">{{ logement.prix }}€</span>
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
+                                                    {% endif %}                                                    {% if logement.categorie %}
+                                                        <div class="property-type">{{ logement.categorie.nom }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <h4 class="property-title">{{ logement.titre }}</h4>
+                                                
+                                                <p class="property-address">
+                                                    <i class="bi bi-geo-alt"></i>
+                                                    {% if logement.adresse %}
+                                                        {{ logement.adresse.rue|default('') }}, 
+                                                        {{ logement.adresse.ville|default('') }} 
+                                                        {{ logement.adresse.code_postal|default('') }}
+                                                    {% else %}
+                                                        Adresse non renseignée
+                                                    {% endif %}
+                                                </p>
+                                                
+                                                <div class="property-specs">
+                                                    <div class="spec-item">
+                                                        <i class="bi bi-house-door"></i>
+                                                        <span>{{ logement.nombreChambres }} Chambre{{ logement.nombreChambres > 1 ? 's' : '' }}</span>
+                                                    </div>
+                                                    <div class="spec-item">
+                                                        <i class="bi bi-droplet"></i>
+                                                        <span>{{ logement.nombreSalleDeBain }} Sdb</span>
+                                                    </div>
+                                                    <div class="spec-item">
+                                                        <i class="bi bi-arrows-angle-expand"></i>
+                                                        <span>{{ logement.superficie }} m²</span>
+                                                    </div>
+                                                </div>
                                             </a>
+                                            
+                                            <div class="property-agent-info">
+                                                {% if logement.proprietaire %}
+                                                    <div class="agent-avatar">
+                                                        {% if logement.proprietaire.imageUrl %}
+                                                            <img src="{{ logement.proprietaire.imageUrl }}" 
+                                                                 alt="{{ logement.proprietaire.fullName }}">
+                                                        {% else %}
+                                                            <img src="{{ asset('frontOffice/img/real-estate/agent-2.webp') }}" 
+                                                                 alt="Agent">
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="agent-details">
+                                                        <strong>{{ logement.proprietaire.fullName }}</strong>
+                                                        <span>Propriétaire</span>
+                                                    </div>
+                                                    {% if logement.proprietaire.tel %}
+                                                        <div class="agent-contact">
+                                                            <a href="tel:{{ logement.proprietaire.tel }}" class="contact-btn">
+                                                                <i class="bi bi-telephone"></i>
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <div class="agent-avatar">
+                                                        <img src="{{ asset('frontOffice/img/real-estate/agent-2.webp') }}" alt="Agent">
+                                                    </div>
+                                                    <div class="agent-details">
+                                                        <strong>Stayzy</strong>
+                                                        <span>Plateforme</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div><!-- End Property Item -->
-
-                        {# Vous pouvez copier les autres propriétés ici (Property Item 2, 3, 4, etc.) #}
-                        {# Pour l'instant, je mets juste la première pour l'exemple #}
-
-                    </div>
+                                </div><!-- End Property Item -->
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
                 </div>
             </div>
 
             <!-- Pagination -->
-            <nav class="pagination-wrapper mt-5" data-aos="fade-up" data-aos-delay="350">
-                <div class="row justify-content-between align-items-center">
-                    <div class="col-lg-6">
-                        <div class="pagination-info">
-                            <p>Showing <strong>1-6</strong> of <strong>124</strong> properties</p>
+            {% if logements|length > 6 %}
+                <nav class="pagination-wrapper mt-5" data-aos="fade-up" data-aos-delay="350">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="col-lg-6">
+                            <div class="pagination-info">
+                                <p>Affichage de <strong>1-{{ logements|length }}</strong> sur <strong>{{ logements|length }}</strong> logements</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <ul class="pagination justify-content-lg-end">
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <ul class="pagination justify-content-lg-end">
-                            <li class="page-item disabled">
-                                <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
-                            </li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">...</a></li>
-                            <li class="page-item"><a class="page-link" href="#">21</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+                </nav>
+            {% endif %}
 
         </div>
     </section><!-- /Properties Section -->
 
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Gestion des boutons de chambres
+        function setChambres(value) {
+            document.getElementById('chambres-input').value = value;
+            document.querySelectorAll('.bed-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Changement de tri
+        function changeTri(triValue) {
+            const url = new URL(window.location);
+            url.searchParams.set('tri', triValue);
+            window.location = url;
+        }
+    </script>
 {% endblock %}

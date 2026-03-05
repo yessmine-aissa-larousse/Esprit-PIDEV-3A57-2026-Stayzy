@@ -1,0 +1,105 @@
+{% extends 'frontOffice/base.html.twig'%}
+
+{% block title %}Espace Propriétaire - StayZy{% endblock %}
+
+{% block body %}
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+    <div class="container">
+        <!-- Bouton retour -->
+        <div class="mb-4">
+            <a href="{{ path('app_home') }}" class="btn btn-light">
+                <i class="bi bi-arrow-left"></i> Retour à l'accueil
+            </a>
+        </div>
+
+        <!-- En-tête -->
+        <div class="text-center text-white mb-5">
+            <div class="mb-4">
+                <i class="bi bi-building" style="font-size: 5rem;"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">Espace Propriétaire</h1>
+            <p class="lead">Gérez vos propriétés et maximisez vos revenus</p>
+        </div>
+
+        <!-- Options -->
+        <div class="row g-4 justify-content-center">
+            <!-- Se connecter -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card shadow-lg border-0 h-100">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <i class="bi bi-box-arrow-in-right text-warning" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="h4 mb-3 fw-bold">Déjà propriétaire ?</h3>
+                        <p class="text-muted mb-4">
+                            Connectez-vous pour gérer vos propriétés, consulter vos réservations et suivre vos revenus locatifs.
+                        </p>
+                        <a href="{{ path('app_login') }}" class="btn btn-warning btn-lg w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                        </a>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i> Connexion sécurisée
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Créer un compte -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card shadow-lg border-0 h-100">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <i class="bi bi-person-plus text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h3 class="h4 mb-3 fw-bold">Nouveau propriétaire ?</h3>
+                        <p class="text-muted mb-4">
+                            Rejoignez StayZy et commencez à louer vos propriétés dès aujourd'hui. Inscription 100% gratuite.
+                        </p>
+                        <a href="{{ path('app_register', {role: 'proprietaire'}) }}" class="btn btn-danger btn-lg w-100">
+                            <i class="bi bi-person-plus"></i> Créer un compte
+                        </a>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> Inscription en 2 minutes
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avantages -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-white bg-opacity-10 border-0 text-white">
+                    <div class="card-body p-4">
+                        <h5 class="mb-4 text-center fw-bold">
+                            <i class="bi bi-trophy-fill"></i> Avantages propriétaire
+                        </h5>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <i class="bi bi-graph-up-arrow" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0"><small>Revenus optimisés</small></p>
+                            </div>
+                            <div class="col-md-3">
+                                <i class="bi bi-calendar-check" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0"><small>Gestion simplifiée</small></p>
+                            </div>
+                            <div class="col-md-3">
+                                <i class="bi bi-people" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0"><small>Locataires vérifiés</small></p>
+                            </div>
+                            <div class="col-md-3">
+                                <i class="bi bi-cash-stack" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0"><small>Paiements rapides</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

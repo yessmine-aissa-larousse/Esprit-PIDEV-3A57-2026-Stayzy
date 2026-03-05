@@ -1,0 +1,551 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Logements - Stayzy{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+/* ── FILTER BAR ── */
+.filter-bar {
+    background: #fff;
+    border: 1px solid #e8edf2;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.06);
+    margin-bottom: 28px;
+    padding: 20px 24px;
+}
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.filter-grid-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+}
+.fi {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.fi label {
+    font-size: .68rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.fi input, .fi select {
+    padding: 9px 12px;
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    font-size: .84rem;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    width: 100%;
+    height: 40px;
+}
+.fi input:focus, .fi select:focus {
+    border-color: #077f46;
+    background: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(7,127,70,.09);
+}
+.fi-search {
+    position: relative;
+}
+.fi-search svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    width: 15px;
+    height: 15px;
+    pointer-events: none;
+}
+.fi-search input {
+    padding-left: 34px;
+}
+.filter-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.filter-tags { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.ftag {
+    background: #f0fdf4;
+    color: #055c32;
+    border: 1px solid #bbf7d0;
+    border-radius: 50px;
+    padding: 3px 10px 3px 12px;
+    font-size: .73rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.ftag button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6ee7b7;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    transition: color .1s;
+}
+.ftag button:hover { color: #e53935; }
+.btn-reset {
+    border: 1.5px solid #e8edf2;
+    background: transparent;
+    border-radius: 10px;
+    padding: 0 16px;
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all .15s;
+    white-space: nowrap;
+    height: 40px;
+    width: 100%;
+}
+.btn-reset:hover { border-color: #e53935; color: #e53935; background: #fff5f5; }
+.sort-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.sort-row .nb-res { font-size: .86rem; color: #64748b; font-weight: 500; }
+.sort-row .nb-res strong { color: #1e293b; font-weight: 700; }
+.sort-row select {
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: .82rem;
+    background: #fff;
+    cursor: pointer;
+    color: #374151;
+}
+#ajax-loader { display: none; text-align: center; padding: 40px; }
+.spin {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid #e5e7eb; border-top-color: #077f46;
+    animation: sp .7s linear infinite; margin: 0 auto 10px;
+}
+@keyframes sp { to { transform: rotate(360deg); } }
+#logements-grid { transition: opacity .2s; }
+#logements-grid.loading { opacity: .35; pointer-events: none; }
+
+@media (max-width: 992px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .filter-grid-row2 { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 576px) {
+    .filter-grid { grid-template-columns: 1fr; }
+    .filter-grid-row2 { grid-template-columns: 1fr 1fr; }
+    .filter-bar { padding: 16px; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Mes Logements</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="current">Mes Logements</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 60px 0; background: #f8f9fa;">
+    <div class="container">
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3>Mes annonces (<span id="total-count">{{ logements|length }}</span>)</h3>
+                <p class="text-muted">Gérez vos logements publiés sur la plateforme</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ path('ai_rapport') }}" class="btn btn-success">
+                    <i class="bi bi-robot"></i> Rapport IA
+                </a>
+                <a href="{{ path('proprietaire_logement_add') }}" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i> Publier un logement
+                </a>
+            </div>
+        </div>
+
+        {# ════ BARRE DE FILTRAGE ════ #}
+        <div class="filter-bar">
+
+            {# Ligne 1 : Recherche | Disponibilité | Promotion | Ville #}
+            <div class="filter-grid">
+                <div class="fi">
+                    <label>Recherche</label>
+                    <div class="fi-search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <input type="text" id="f-search" placeholder="Titre ou description...">
+                    </div>
+                </div>
+                <div class="fi">
+                    <label>Disponibilité</label>
+                    <select id="f-dispo" onchange="doFilter()">
+                        <option value="all">Tous</option>
+                        <option value="1">Disponible</option>
+                        <option value="0">Indisponible</option>
+                    </select>
+                </div>
+                <div class="fi">
+                    <label>Promotion</label>
+                    <select id="f-promo" onchange="doFilter()">
+                        <option value="all">Tous</option>
+                        <option value="1">Avec promo active</option>
+                        <option value="0">Sans promo</option>
+                    </select>
+                </div>
+                <div class="fi">
+                    <label>Ville</label>
+                    <input type="text" id="f-ville" placeholder="Ex: Tunis...">
+                </div>
+            </div>
+
+            {# Ligne 2 : Prix min | Prix max | Chambres min | Superficie min | Superficie max | Réinitialiser #}
+            <div class="filter-grid-row2">
+                <div class="fi">
+                    <label>Prix min (€/nuit)</label>
+                    <input type="number" id="f-prix-min" placeholder="Min" min="0">
+                </div>
+                <div class="fi">
+                    <label>Prix max (€/nuit)</label>
+                    <input type="number" id="f-prix-max" placeholder="Max" min="0">
+                </div>
+                <div class="fi">
+                    <label>Chambres min.</label>
+                    <input type="number" id="f-chambres" placeholder="Ex: 2" min="1">
+                </div>
+                <div class="fi">
+                    <label>Superficie min (m²)</label>
+                    <input type="number" id="f-sup-min" placeholder="Min" min="0">
+                </div>
+                <div class="fi">
+                    <label>Superficie max (m²)</label>
+                    <input type="number" id="f-sup-max" placeholder="Max" min="0">
+                </div>
+                <div class="fi">
+                    <label>&nbsp;</label>
+                    <button class="btn-reset" onclick="resetAll()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+
+            {# Tags des filtres actifs #}
+            <div class="filter-footer">
+                <div class="filter-tags" id="filter-tags"></div>
+            </div>
+
+        </div>
+
+        {# ════ BARRE DE TRI ════ #}
+        <div class="sort-row">
+            <div class="nb-res"><strong id="results-count">{{ logements|length }}</strong> logement(s) trouvé(s)</div>
+            <select id="f-sort" onchange="doFilter()">
+                <option value="date_desc">Plus récents</option>
+                <option value="prix_asc">Prix croissant</option>
+                <option value="prix_desc">Prix décroissant</option>
+                <option value="titre_asc">A → Z</option>
+                <option value="titre_desc">Z → A</option>
+            </select>
+        </div>
+
+        <div id="ajax-loader">
+            <div class="spin"></div>
+            <p style="color:#9ca3af;font-size:.85rem;">Chargement...</p>
+        </div>
+
+        {# ════ CARTES ════ #}
+        {% if logements is empty %}
+            <div class="text-center py-5" id="logements-grid">
+                <i class="bi bi-house-door" style="font-size: 80px; color: #ddd;"></i>
+                <h4 class="mt-4">Aucun logement publié</h4>
+                <p class="text-muted">Commencez par publier votre premier logement !</p>
+                <a href="{{ path('proprietaire_logement_add') }}" class="btn btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i> Publier mon premier logement
+                </a>
+            </div>
+        {% else %}
+            <div class="row g-4" id="logements-grid">
+                {% for logement in logements %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 shadow-sm">
+                            <div style="position: relative; height: 200px; overflow: hidden;">
+                                {% if logement.photoPrincipale %}
+                                    <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
+                                         class="card-img-top" style="height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 100%;">
+                                        <i class="bi bi-image" style="font-size: 50px; color: #ccc;"></i>
+                                    </div>
+                                {% endif %}
+                                <div style="position: absolute; top: 10px; right: 10px; display:flex; gap:5px; flex-direction:column; align-items:flex-end;">
+                                    {% if logement.disponible %}
+                                        <span class="badge bg-success">Disponible</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Indisponible</span>
+                                    {% endif %}
+                                    {% set promoActive = logement.promoActive %}
+                                    {% if promoActive %}
+                                        <span class="badge" style="background:#e53935;"> -{{ promoActive.pourcentage }}%</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ logement.titre }}</h5>
+                                <p class="text-muted mb-2">
+                                    <i class="bi bi-geo-alt"></i>
+                                    {% if logement.adresse %}
+                                        {{ logement.adresse.ville }}, {{ logement.adresse.code_postal }}
+                                    {% else %}Non renseigné{% endif %}
+                                </p>
+                                <div class="d-flex gap-3 mb-3" style="font-size: 14px;">
+                                    <span><i class="bi bi-house-door"></i> {{ logement.nombreChambres }} ch</span>
+                                    <span><i class="bi bi-droplet"></i> {{ logement.nombreSalleDeBain }} sdb</span>
+                                    <span><i class="bi bi-arrows-angle-expand"></i> {{ logement.superficie }} m²</span>
+                                </div>
+                                <div class="mb-3">
+                                    {% set promoActive = logement.promoActive %}
+                                    {% if promoActive %}
+                                        <h4 class="mb-0">
+                                            <span style="text-decoration:line-through; color:#9ca3af; font-size:.85rem;">{{ logement.prix }}€</span>
+                                            <span style="color:#077f46; font-weight:800;">{{ promoActive.prixPromo }}€</span>
+                                            <small class="text-muted">/nuit</small>
+                                        </h4>
+                                    {% else %}
+                                        <h4 class="text-primary mb-0">{{ logement.prix }}€ <small class="text-muted">/nuit</small></h4>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('proprietaire_logement_details', {id: logement.id}) }}" class="btn btn-sm btn-outline-primary flex-fill"><i class="bi bi-eye"></i> Voir</a>
+                                    <a href="{{ path('proprietaire_logement_edit', {id: logement.id}) }}" class="btn btn-sm btn-warning flex-fill"><i class="bi bi-pencil"></i> Modifier</a>
+                                    <a href="{{ path('promotion_list', {logementId: logement.id}) }}" class="btn btn-sm btn-outline-success" title="Gérer les promotions"><i class="bi bi-tag"></i></a>
+                                    <a href="{{ path('proprietaire_logement_delete', {id: logement.id}) }}" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce logement ?')"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </div>
+                            <div class="card-footer text-muted small">Publié le {{ logement.createdAt|date('d/m/Y') }}</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+const FILTER_URL = '{{ path("proprietaire_logement_filter") }}';
+const ASSET_PATH = '{{ asset("uploads/logements/") }}';
+let timer = null;
+
+function getFilters() {
+    return {
+        search:        document.getElementById('f-search').value.trim(),
+        disponible:    document.getElementById('f-dispo').value,
+        avecPromo:     document.getElementById('f-promo').value,
+        ville:         document.getElementById('f-ville').value.trim(),
+        prixMin:       document.getElementById('f-prix-min').value,
+        prixMax:       document.getElementById('f-prix-max').value,
+        chambresMin:   document.getElementById('f-chambres').value,
+        superficieMin: document.getElementById('f-sup-min').value,
+        superficieMax: document.getElementById('f-sup-max').value,
+        sortBy:        document.getElementById('f-sort').value,
+    };
+}
+
+function doFilter() {
+    const grid   = document.getElementById('logements-grid');
+    const loader = document.getElementById('ajax-loader');
+    grid.classList.add('loading');
+    loader.style.display = 'block';
+
+    fetch(FILTER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(getFilters()),
+    })
+    .then(r => r.json())
+    .then(data => {
+        loader.style.display = 'none';
+        grid.classList.remove('loading');
+        renderCards(data);
+        updateTags();
+    })
+    .catch(err => {
+        console.error(err);
+        loader.style.display = 'none';
+        grid.classList.remove('loading');
+    });
+}
+
+function renderCards(logements) {
+    const grid = document.getElementById('logements-grid');
+
+    if (logements.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search" style="font-size:60px;color:#ddd;"></i>
+                <h5 class="mt-3 text-muted">Aucun logement ne correspond à vos critères</h5>
+            </div>`;
+        document.getElementById('results-count').textContent = 0;
+        document.getElementById('total-count').textContent   = 0;
+        return;
+    }
+
+    grid.innerHTML = logements.map(l => `
+        <div class="col-lg-4 col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div style="position:relative;height:200px;overflow:hidden;">
+                    ${l.photoPrincipale
+                        ? `<img src="${ASSET_PATH}${l.photoPrincipale}" class="card-img-top" style="height:100%;object-fit:cover;">`
+                        : `<div class="bg-light d-flex align-items-center justify-content-center" style="height:100%;"><i class="bi bi-image" style="font-size:50px;color:#ccc;"></i></div>`
+                    }
+                    <div style="position:absolute;top:10px;right:10px;display:flex;gap:5px;flex-direction:column;align-items:flex-end;">
+                        <span class="badge ${l.disponible ? 'bg-success' : 'bg-danger'}">${l.disponible ? 'Disponible' : 'Indisponible'}</span>
+                        ${l.hasPromo ? `<span class="badge" style="background:#e53935;"> -${l.pourcentage}%</span>` : ''}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">${l.titre}</h5>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt"></i>
+                        ${l.ville ? `${l.ville}, ${l.code_postal}` : 'Non renseigné'}
+                    </p>
+                    <div class="d-flex gap-3 mb-3" style="font-size:14px;">
+                        <span><i class="bi bi-house-door"></i> ${l.nombreChambres} ch</span>
+                        <span><i class="bi bi-droplet"></i> ${l.nombreSalleDeBain} sdb</span>
+                        <span><i class="bi bi-arrows-angle-expand"></i> ${l.superficie} m²</span>
+                    </div>
+                    <div class="mb-3">
+                        ${l.hasPromo
+                            ? `<h4 class="mb-0">
+                                <span style="text-decoration:line-through;color:#9ca3af;font-size:.85rem;">${l.prix}€</span>
+                                <span style="color:#077f46;font-weight:800;">${l.prixFinal}€</span>
+                                <small class="text-muted">/nuit</small>
+                               </h4>`
+                            : `<h4 class="text-primary mb-0">${l.prix}€ <small class="text-muted">/nuit</small></h4>`
+                        }
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="${l.urlVoir}" class="btn btn-sm btn-outline-primary flex-fill"><i class="bi bi-eye"></i> Voir</a>
+                        <a href="${l.urlModifier}" class="btn btn-sm btn-warning flex-fill"><i class="bi bi-pencil"></i> Modifier</a>
+                        <a href="${l.urlPromotion}" class="btn btn-sm btn-outline-success" title="Gérer les promotions"><i class="bi bi-tag"></i></a>
+                        <a href="${l.urlSupprimer}" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce logement ?')"><i class="bi bi-trash"></i></a>
+                    </div>
+                </div>
+                <div class="card-footer text-muted small">Publié le ${l.createdAt}</div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('results-count').textContent = logements.length;
+    document.getElementById('total-count').textContent   = logements.length;
+}
+
+function debounceFilter() { clearTimeout(timer); timer = setTimeout(doFilter, 350); }
+
+function resetAll() {
+    ['f-search','f-ville','f-prix-min','f-prix-max','f-chambres','f-sup-min','f-sup-max']
+        .forEach(id => document.getElementById(id).value = '');
+    ['f-dispo','f-promo','f-sort']
+        .forEach(id => document.getElementById(id).selectedIndex = 0);
+    doFilter();
+}
+
+function clearFilter(key) {
+    const map = {
+        search:       'f-search',
+        disponible:   'f-dispo',
+        avecPromo:    'f-promo',
+        ville:        'f-ville',
+        prixMin:      'f-prix-min',
+        prixMax:      'f-prix-max',
+        chambresMin:  'f-chambres',
+        superficieMin:'f-sup-min',
+        superficieMax:'f-sup-max'
+    };
+    const el = document.getElementById(map[key]);
+    if (!el) return;
+    el.tagName === 'SELECT' ? (el.selectedIndex = 0) : (el.value = '');
+    doFilter();
+}
+
+const LABELS = {
+    search:        v => `"${v}"`,
+    disponible:    v => v === '1' ? 'Disponible' : 'Indisponible',
+    avecPromo:     v => v === '1' ? 'Avec promo' : 'Sans promo',
+    ville:         v => v,
+    prixMin:       v => `Min ${v}€`,
+    prixMax:       v => `Max ${v}€`,
+    chambresMin:   v => `Min ${v} ch.`,
+    superficieMin: v => `Min ${v} m²`,
+    superficieMax: v => `Max ${v} m²`,
+};
+
+function updateTags() {
+    const f         = getFilters();
+    const container = document.getElementById('filter-tags');
+    container.innerHTML = '';
+    for (const [key, val] of Object.entries(f)) {
+        if (key === 'sortBy' || !val || val === 'all' || val === '') continue;
+        const tag = document.createElement('div');
+        tag.className = 'ftag';
+        tag.innerHTML = `${LABELS[key]?.(val) ?? val} <button onclick="clearFilter('${key}')">×</button>`;
+        container.appendChild(tag);
+    }
+}
+
+['f-search','f-ville','f-prix-min','f-prix-max','f-chambres','f-sup-min','f-sup-max']
+    .forEach(id => document.getElementById(id).addEventListener('input', debounceFilter));
+['f-dispo','f-promo']
+    .forEach(id => document.getElementById(id).addEventListener('change', doFilter));
+</script>
+{% endblock %}

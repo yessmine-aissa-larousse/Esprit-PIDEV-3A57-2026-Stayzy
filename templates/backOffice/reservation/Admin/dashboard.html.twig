@@ -1,0 +1,279 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block admin_content %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --bg: #f4f6fb;
+        --surface: #ffffff;
+        --surface2: #eef0f7;
+        --border: rgba(0,0,0,0.08);
+        --text: #1a1d27;
+        --muted: #6b7280;
+        --accent: #6c63ff;
+        --accent2: #00b894;
+        --success: #00b894;
+        --danger: #e17055;
+        --warning: #fdcb6e;
+    }
+
+    .app-main { background: var(--bg) !important; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
+    .dash-wrapper { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    .dash-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+    }
+    .dash-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; color: var(--text); margin: 0; }
+    .dash-header h1 span { color: var(--accent); }
+
+    .live-badge {
+        display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;
+        color: var(--success); font-family: 'DM Mono', monospace;
+        background: rgba(0,184,148,0.08); padding: 0.4rem 0.9rem;
+        border-radius: 100px; border: 1px solid rgba(0,184,148,0.2);
+    }
+    .live-dot {
+        width: 7px; height: 7px; background: var(--success); border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    .kpi-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem; margin-bottom: 2rem;
+    }
+    .kpi-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+        padding: 1.4rem 1.6rem; position: relative; overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    .kpi-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: var(--accent-color, var(--accent));
+    }
+    .kpi-card.green  { --accent-color: var(--success); }
+    .kpi-card.red    { --accent-color: var(--danger); }
+    .kpi-card.yellow { --accent-color: var(--warning); }
+    .kpi-card.blue   { --accent-color: #4fc3f7; }
+    .kpi-card.purple { --accent-color: var(--accent); }
+
+    .kpi-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 0.6rem; }
+    .kpi-value { font-size: 2.2rem; font-weight: 700; line-height: 1; color: var(--text); font-family: 'DM Mono', monospace; }
+    .kpi-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.4rem; }
+
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .charts-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+
+    .chart-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+        padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .chart-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 1.2rem; }
+
+    .ai-section {
+        background: linear-gradient(135deg, rgba(108,99,255,0.05), rgba(0,184,148,0.03));
+        border: 1px solid rgba(108,99,255,0.15); border-radius: 16px;
+        padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(108,99,255,0.06);
+    }
+    .ai-header { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.2rem; }
+    .ai-icon {
+        width: 36px; height: 36px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .ai-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .ai-subtitle { font-size: 0.72rem; color: var(--muted); }
+
+    .ai-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .ai-insight {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+        padding: 1rem 1.2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .ai-insight-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 0.4rem; }
+    .ai-insight-value { font-size: 1rem; font-weight: 600; color: var(--text); }
+    .ai-insight-msg { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.4; }
+
+    .badge-ia { display: inline-block; font-size: 0.68rem; padding: 0.2rem 0.6rem; border-radius: 100px; font-weight: 500; }
+    .badge-danger-soft  { background: rgba(225,112,85,0.12); color: var(--danger); }
+    .badge-success-soft { background: rgba(0,184,148,0.12); color: var(--success); }
+
+    .classement-table { width: 100%; border-collapse: collapse; }
+    .classement-table th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); padding: 0.5rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); }
+    .classement-table td { padding: 0.7rem 0.8rem; font-size: 0.82rem; border-bottom: 1px solid var(--border); color: var(--text); }
+    .classement-table tr:hover td { background: var(--surface2); }
+
+    .rank { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; font-family: 'DM Mono', monospace; }
+    .rank-1 { background: rgba(253,203,110,0.3); color: #b7860b; }
+    .rank-2 { background: rgba(192,192,192,0.3); color: #888; }
+    .rank-3 { background: rgba(205,127,50,0.2); color: #a0522d; }
+    .rank-n { background: var(--surface2); color: var(--muted); }
+
+    .progress-bar-wrap { background: var(--surface2); border-radius: 100px; height: 5px; width: 80px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 0.5rem; }
+    .progress-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+    @media (max-width: 900px) { .charts-grid, .charts-grid-2 { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash-wrapper">
+
+    <div class="dash-header">
+        <h1>Réservation/<span>Commandes</span></h1>
+        <div class="live-badge"><div class="live-dot"></div>Live Analytics</div>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card purple">
+            <div class="kpi-label">Total Réservations</div>
+            <div class="kpi-value">{{ totalReservations }}</div>
+            <div class="kpi-sub">Toutes périodes</div>
+        </div>
+        <div class="kpi-card yellow">
+            <div class="kpi-label">En Attente</div>
+            <div class="kpi-value">{{ nbEnAttente }}</div>
+            <div class="kpi-sub">À traiter</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">Confirmées</div>
+            <div class="kpi-value">{{ nbConfirmee }}</div>
+            <div class="kpi-sub">Réservations actives</div>
+        </div>
+        <div class="kpi-card red">
+            <div class="kpi-label">Annulées</div>
+            <div class="kpi-value">{{ nbAnnulee }}</div>
+            <div class="kpi-sub">Taux {{ totalReservations > 0 ? ((nbAnnulee / totalReservations) * 100)|round : 0 }}%</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">Commandes</div>
+            <div class="kpi-value">{{ nbCommandesTotal }}</div>
+            <div class="kpi-sub">Total générées</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">Revenu Total</div>
+            <div class="kpi-value" style="font-size:1.6rem;">{{ totalRevenu|number_format(0, ',', ' ') }}</div>
+            <div class="kpi-sub">DT encaissés</div>
+        </div>
+    </div>
+
+    <div class="ai-section">
+        <div class="ai-header">
+            <div class="ai-icon">🤖</div>
+            <div>
+                <div class="ai-title">Intelligence Artificielle — Insights</div>
+                <div class="ai-subtitle">Analyse automatique de vos données</div>
+            </div>
+        </div>
+        <div class="ai-grid">
+            <div class="ai-insight">
+                <div class="ai-insight-label">🏆 Logement le plus demandé</div>
+                <div class="ai-insight-value">{{ iaInsights.top_logement }}</div>
+                <div class="ai-insight-msg">Logement avec le plus de réservations</div>
+            </div>
+            <div class="ai-insight">
+                <div class="ai-insight-label">📅 Période creuse prévue</div>
+                <div class="ai-insight-value">{{ iaInsights.periode_creuse }}</div>
+                <div class="ai-insight-msg">{{ iaInsights.prediction_msg }}</div>
+            </div>
+            <div class="ai-insight">
+                <div class="ai-insight-label">📊 Tendance globale</div>
+                <div class="ai-insight-value">{{ iaInsights.tendance }}</div>
+                <div class="ai-insight-msg">Comparaison 6 derniers mois</div>
+            </div>
+            <div class="ai-insight">
+                <div class="ai-insight-label">⚠️ Logements sous-performants</div>
+                {% if iaInsights.sous_performants is empty %}
+                    <div class="ai-insight-value" style="color: var(--success);">✅ Aucun</div>
+                    <div class="ai-insight-msg">Tous les logements performent bien</div>
+                {% else %}
+                    {% for l in iaInsights.sous_performants %}
+                        <span class="badge-ia badge-danger-soft">{{ l }}</span>
+                    {% endfor %}
+                    <div class="ai-insight-msg">Taux d'occupation inférieur à 30%</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>📈 Réservations — 12 derniers mois</h3>
+            <canvas id="chartReservations" height="100"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>🎯 Répartition des statuts</h3>
+            <canvas id="chartStatus" height="100"></canvas>
+        </div>
+    </div>
+
+    <div class="charts-grid-2">
+        <div class="chart-card">
+            <h3>📦 Commandes — 12 derniers mois</h3>
+            <canvas id="chartCommandes" height="120"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3>🏠 Classement des logements</h3>
+            <table class="classement-table">
+                <thead>
+                    <tr><th>#</th><th>Logement</th><th>Réservations</th><th>Taux</th></tr>
+                </thead>
+                <tbody>
+                    {% for i, l in classementLogements %}
+                        <tr>
+                            <td><span class="rank {% if i == 0 %}rank-1{% elseif i == 1 %}rank-2{% elseif i == 2 %}rank-3{% else %}rank-n{% endif %}">{{ i + 1 }}</span></td>
+                            <td>{{ l.titre }}</td>
+                            <td>
+                                <span style="font-family:'DM Mono';font-weight:600;">{{ l.total }}</span>
+                                <span style="color:var(--muted);font-size:0.72rem;"> (✅{{ l.confirme }} ❌{{ l.annule }})</span>
+                            </td>
+                            <td>
+                                <span style="font-family:'DM Mono';font-size:0.8rem;">{{ l.tauxOccup }}%</span>
+                                <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:{{ l.tauxOccup }}%;"></div></div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" style="color:var(--muted);text-align:center;padding:2rem;">Aucun logement</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const labels = {{ labelsMois|json_encode|raw }};
+const resData = {{ reservationsParMois|json_encode|raw }};
+const cmdData = {{ commandesParMois|json_encode|raw }};
+
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+
+new Chart(document.getElementById('chartReservations'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Réservations', data: resData, backgroundColor: 'rgba(108,99,255,0.15)', borderColor: '#6c63ff', borderWidth: 1.5, borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { maxRotation: 45 }, grid: { display: false } } } }
+});
+
+new Chart(document.getElementById('chartStatus'), {
+    type: 'doughnut',
+    data: { labels: ['Confirmées','En attente','Annulées'], datasets: [{ data: [{{ nbConfirmee }},{{ nbEnAttente }},{{ nbAnnulee }}], backgroundColor: ['rgba(0,184,148,0.8)','rgba(253,203,110,0.8)','rgba(225,112,85,0.8)'], borderColor: ['#00b894','#fdcb6e','#e17055'], borderWidth: 1.5 }] },
+    options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 11 } } } } }
+});
+
+new Chart(document.getElementById('chartCommandes'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Commandes', data: cmdData, borderColor: '#00b894', backgroundColor: 'rgba(0,184,148,0.08)', borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: '#00b894', pointRadius: 4 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } }, x: { ticks: { maxRotation: 45 }, grid: { display: false } } } }
+});
+</script>
+{% endblock %}

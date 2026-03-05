@@ -1,0 +1,1270 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}{{ logement.titre }} - Stayzy{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+    /* ═══════════════════════════════════════════════
+       VARIABLES — on hérite la font du template parent
+    ═══════════════════════════════════════════════ */
+    :root {
+        --green:      #077f46;
+        --green-dark: #055c32;
+        --green-soft: #e8f5ee;
+        --gold:       #c9a84c;
+        --text:       #1a1a2e;
+        --text-muted: #6b7280;
+        --border:     #e8eaed;
+        --white:      #ffffff;
+        --bg:         #f7f8fa;
+        --radius:     14px;
+        --shadow:     0 4px 24px rgba(0,0,0,.08);
+        --shadow-lg:  0 12px 48px rgba(0,0,0,.14);
+    }
+
+    /* ═══════════════════════════════════════════════
+       PAGE TITLE — cacher le titre par défaut du template
+    ═══════════════════════════════════════════════ */
+    .page-title { display: none !important; }
+
+    /* ═══════════════════════════════════════════════
+       HERO GALERIE
+    ═══════════════════════════════════════════════ */
+    .prop-hero {
+        position: relative;
+        width: 100%;
+        height: 520px;
+        overflow: hidden;
+        background: #111;
+    }
+
+    /* Le swiper hérite la hauteur du parent */
+    .prop-hero > .swiper,
+    .prop-hero > img {
+        width: 100%;
+        height: 100%;
+    }
+    .prop-hero .swiper-wrapper,
+    .prop-hero .swiper-slide { height: 100%; }
+
+    .prop-hero .swiper-slide img,
+    .prop-hero > img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 6s ease;
+        transform: scale(1.08);
+    }
+
+    /* Ken Burns : zoom-out quand la slide devient active */
+    .prop-hero .swiper-slide-active img {
+        transform: scale(1);
+    }
+
+    /* Overlay dégradé bas */
+    .prop-hero .hero-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to top,
+            rgba(0,0,0,.65) 0%,
+            rgba(0,0,0,.1) 55%,
+            transparent 100%);
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    /* Breadcrumb flottant en haut */
+    .prop-hero .hero-breadcrumb {
+        position: absolute;
+        top: 24px; left: 48px;
+        z-index: 4;
+        display: flex; align-items: center; gap: 8px;
+        font-size: .82rem;
+        color: rgba(255,255,255,.85);
+    }
+    .prop-hero .hero-breadcrumb a {
+        color: #fff; text-decoration: none;
+    }
+    .prop-hero .hero-breadcrumb a:hover { text-decoration: underline; }
+    .prop-hero .hero-breadcrumb .sep { opacity: .5; }
+
+    /* Infos en bas */
+    .prop-hero .hero-info {
+        position: absolute;
+        bottom: 36px; left: 48px; right: 48px;
+        z-index: 4;
+        color: #fff;
+    }
+    .prop-hero .hero-info .badge-row {
+        display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .prop-hero .hero-info .badge-row span {
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-size: .78rem; font-weight: 600;
+        letter-spacing: .04em; text-transform: uppercase;
+    }
+    .badge-avail { background: var(--green); color: #fff; }
+    .badge-type  { background: rgba(255,255,255,.18); color: #fff;
+                   backdrop-filter: blur(6px);
+                   border: 1px solid rgba(255,255,255,.3); }
+
+    .prop-hero .hero-info h1 {
+        font-size: clamp(1.6rem, 3vw, 2.5rem);
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0 0 10px;
+        text-shadow: 0 2px 12px rgba(0,0,0,.35);
+    }
+    .prop-hero .hero-info .hero-addr {
+        font-size: .9rem; opacity: .85;
+        display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Compteur photos */
+    .photo-count {
+        position: absolute;
+        bottom: 24px; right: 48px;
+        z-index: 4;
+        background: rgba(0,0,0,.45);
+        backdrop-filter: blur(8px);
+        color: #fff; border-radius: 50px;
+        padding: 5px 14px;
+        font-size: .8rem;
+        display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── BOUTONS NAVIGATION SWIPER HERO ──
+       On cible directement les classes Swiper
+       sans passer par le JSON config         */
+    .prop-hero .swiper-button-next,
+    .prop-hero .swiper-button-prev {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 50% !important;
+        background: rgba(255,255,255,.22) !important;
+        backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(255,255,255,.3) !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 5 !important;
+    }
+    .prop-hero .swiper-button-next::after,
+    .prop-hero .swiper-button-prev::after {
+        font-size: 14px !important;
+        color: #fff !important;
+        font-weight: 800 !important;
+    }
+    .prop-hero .swiper-button-next { right: 20px !important; }
+    .prop-hero .swiper-button-prev { left: 20px !important; }
+
+    /* ═══════════════════════════════════════════════
+       STATS STRIP
+    ═══════════════════════════════════════════════ */
+    .stats-strip {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    .stats-strip .inner {
+        display: flex; align-items: stretch;
+        max-width: 1320px; margin: 0 auto; padding: 0 24px;
+    }
+    .stat-pill {
+        display: flex; align-items: center; gap: 12px;
+        padding: 18px 28px;
+        border-right: 1px solid var(--border);
+        flex: 1;
+    }
+    .stat-pill:last-child { border-right: none; }
+    .stat-pill .ico {
+        width: 40px; height: 40px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem; flex-shrink: 0;
+    }
+    .stat-pill .ico.green { background: var(--green-soft); color: var(--green); }
+    .stat-pill .ico.gold  { background: #fef9ee; color: var(--gold); }
+    .stat-pill .ico.blue  { background: #eef3ff; color: #3b6fd4; }
+    .stat-pill .ico.rose  { background: #fff0f3; color: #e05273; }
+    .stat-pill .val { font-size: 1.25rem; font-weight: 700; line-height: 1; }
+    .stat-pill .lbl { font-size: .73rem; color: var(--text-muted); margin-top: 3px; }
+    .stat-pill.price-pill {
+        background: var(--green); color: #fff; border-right: none;
+    }
+    .stat-pill.price-pill .val { font-size: 1.5rem; color: #fff; }
+    .stat-pill.price-pill .lbl { color: rgba(255,255,255,.75); }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT PRINCIPAL
+    ═══════════════════════════════════════════════ */
+    .prop-body { padding: 44px 0 48px; background: var(--bg); }
+
+    /* Cards section gauche */
+    .section-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        padding: 30px;
+        margin-bottom: 22px;
+        box-shadow: var(--shadow);
+    }
+    .section-card h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid var(--green-soft);
+        display: flex; align-items: center; gap: 8px;
+        color: var(--green-dark);
+    }
+    .section-card h3 .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        flex-shrink: 0;
+    }
+    .desc-text { line-height: 1.85; color: #374151; font-size: .96rem; }
+
+    /* Amenités */
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+        gap: 10px;
+    }
+    .amenity-tag {
+        display: flex; align-items: center; gap: 8px;
+        background: var(--green-soft);
+        border-radius: 8px;
+        padding: 9px 14px;
+        font-size: .84rem; font-weight: 500;
+        color: var(--green-dark);
+        border: 1px solid rgba(7,127,70,.12);
+    }
+
+    /* Carte */
+    #map-detail {
+        height: 300px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        isolation: isolate;   /* crée un nouveau stacking context */
+        position: relative;
+        z-index: 0;           /* force tous les enfants à rester en dessous de la navbar */
+    }
+
+    /* Fix définitif : les contrôles Leaflet restent DANS leur stacking context */
+    .leaflet-top,
+    .leaflet-bottom,
+    .leaflet-control-container {
+        z-index: 400 !important;  /* valeur Leaflet par défaut, mais confinée au contexte */
+    }
+
+    /* La section carte entière ne dépasse jamais la navbar */
+    .section-card:has(#map-detail) {
+        position: relative;
+        z-index: 0;
+        isolation: isolate;
+    }
+    .map-addr-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--green-soft); color: var(--green-dark);
+        border-radius: 50px; padding: 6px 16px;
+        font-size: .82rem; font-weight: 500;
+        margin-bottom: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDEBAR — FIX : pas sticky, juste normal flow
+       Le problème était que sticky-top forçait la
+       sidebar à remonter quand on scrollait direct
+       en bas. On la laisse en position normale et
+       on active le sticky SEULEMENT sur grands écrans
+       avec un top suffisant.
+    ═══════════════════════════════════════════════ */
+    @media (min-width: 992px) {
+        .prop-sidebar {
+            position: sticky;
+            top: 90px;           /* hauteur navbar ~80px + marge */
+            align-self: flex-start;  /* ← CLEF : la sidebar ne s'étire pas */
+        }
+    }
+
+    /* Booking card */
+    .booking-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+    .booking-card .booking-header {
+        background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+        padding: 22px 24px; color: #fff;
+    }
+    .booking-card .booking-header .price {
+        font-size: 2rem; font-weight: 700; line-height: 1;
+    }
+    .booking-card .booking-header .per {
+        font-size: .84rem; opacity: .8; margin-top: 4px;
+    }
+    .booking-card .booking-header .avail {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,.18);
+        border-radius: 50px; padding: 4px 12px;
+        font-size: .77rem; font-weight: 600; margin-top: 10px;
+    }
+    .booking-card .booking-body { padding: 20px 24px; }
+
+    .btn-book {
+        width: 100%; background: var(--green); color: #fff;
+        border: none; border-radius: 10px; padding: 13px;
+        font-size: .97rem; font-weight: 600; cursor: pointer;
+        transition: background .2s, transform .15s;
+        margin-bottom: 10px;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        text-decoration: none;
+    }
+    .btn-book:hover { background: var(--green-dark); transform: translateY(-1px); color: #fff; }
+
+    .btn-fav, .btn-share {
+        flex: 1; border: 1.5px solid var(--border);
+        background: var(--white); border-radius: 10px;
+        padding: 11px; font-size: .86rem; font-weight: 500;
+        cursor: pointer; transition: all .18s;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        color: var(--text);
+    }
+    .btn-fav:hover   { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+    .btn-share:hover { border-color: #3b6fd4; color: #3b6fd4; background: #eef3ff; }
+    .btn-fav.active  { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* Owner card */
+    .owner-card {
+        background: var(--white); border-radius: var(--radius);
+        border: 1px solid var(--border); padding: 20px 22px;
+        box-shadow: var(--shadow); margin-bottom: 18px;
+    }
+    .owner-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .owner-avatar {
+        width: 54px; height: 54px; border-radius: 50%;
+        object-fit: cover; border: 3px solid var(--green-soft); flex-shrink: 0;
+    }
+    .owner-name  { font-weight: 700; font-size: .97rem; margin-bottom: 2px; }
+    .owner-role  { font-size: .77rem; color: var(--text-muted); }
+    .owner-links { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+    .owner-links a {
+        display: flex; align-items: center; gap: 8px;
+        font-size: .84rem; color: var(--text); text-decoration: none;
+        background: var(--bg); border-radius: 8px; padding: 8px 12px;
+        border: 1px solid var(--border); transition: border-color .15s;
+    }
+    .owner-links a:hover { border-color: var(--green); color: var(--green); }
+    .btn-call {
+        width: 100%; background: var(--green-soft); color: var(--green-dark);
+        border: none; border-radius: 10px; padding: 11px;
+        font-weight: 600; font-size: .88rem; cursor: pointer;
+        transition: background .18s; text-decoration: none;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-call:hover { background: var(--green); color: #fff; }
+
+    /* Contact card */
+    .contact-card {
+        background: var(--white); border-radius: var(--radius);
+        border: 1px solid var(--border); padding: 20px 22px;
+        box-shadow: var(--shadow);
+    }
+    .contact-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+    .contact-card .form-control,
+    .contact-card .form-select {
+        border-radius: 8px; border: 1.5px solid var(--border);
+        font-size: .86rem; padding: 9px 12px;
+        transition: border-color .15s;
+    }
+    .contact-card .form-control:focus,
+    .contact-card .form-select:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(7,127,70,.08);
+    }
+    .btn-send {
+        width: 100%; background: var(--text); color: #fff;
+        border: none; border-radius: 10px; padding: 12px;
+        font-weight: 600; cursor: pointer; transition: background .18s;
+    }
+    .btn-send:hover { background: var(--green); }
+
+    /* ═══════════════════════════════════════════════
+       BARRE LOGEMENTS SIMILAIRES
+    ═══════════════════════════════════════════════ */
+    .similaires-section {
+        background: var(--white);
+        border-top: 1px solid var(--border);
+        padding: 52px 0 64px;
+        margin-top: 0;
+    }
+    .sec-head {
+        display: flex; align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        flex-wrap: wrap; gap: 12px;
+    }
+    .sec-head h2 {
+        font-size: 1.5rem; font-weight: 700; margin: 0;
+    }
+    .sec-head h2 span { color: var(--green); }
+    .sec-head-right { display: flex; align-items: center; gap: 14px; }
+    .sec-head-right a {
+        font-size: .84rem; font-weight: 600;
+        color: var(--green); text-decoration: none;
+        display: flex; align-items: center; gap: 5px;
+    }
+    .sec-head-right a:hover { text-decoration: underline; }
+    .sim-nav { display: flex; gap: 8px; }
+    .sim-nav button {
+        width: 36px; height: 36px; border-radius: 50%;
+        border: 1.5px solid var(--border); background: var(--white);
+        cursor: pointer; display: flex; align-items: center;
+        justify-content: center; font-size: .85rem;
+        transition: all .15s; color: var(--text);
+    }
+    .sim-nav button:hover { background: var(--green); border-color: var(--green); color: #fff; }
+
+    /* Swiper similaires */
+    .sim-swiper { overflow: hidden; }
+    .sim-swiper .swiper-slide { width: 290px; }
+
+    .sim-card {
+        border-radius: 13px; overflow: hidden;
+        border: 1px solid var(--border); background: var(--white);
+        box-shadow: var(--shadow); transition: transform .22s, box-shadow .22s;
+        text-decoration: none; color: var(--text); display: block;
+    }
+    .sim-card:hover {
+        transform: translateY(-5px); box-shadow: var(--shadow-lg);
+        color: var(--text); text-decoration: none;
+    }
+    .sim-card .sim-img { position: relative; height: 180px; overflow: hidden; }
+    .sim-card .sim-img img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform .4s ease;
+    }
+    .sim-card:hover .sim-img img { transform: scale(1.06); }
+    .sim-card .sim-price {
+        position: absolute; bottom: 12px; left: 12px;
+        background: var(--green); color: #fff;
+        font-weight: 700; font-size: .86rem;
+        border-radius: 7px; padding: 4px 11px;
+    }
+    .sim-card .sim-type {
+        position: absolute; top: 12px; right: 12px;
+        background: rgba(255,255,255,.92); backdrop-filter: blur(6px);
+        border-radius: 50px; padding: 3px 11px;
+        font-size: .72rem; font-weight: 600; color: var(--text);
+    }
+    .sim-card .sim-body { padding: 14px 16px; }
+    .sim-card .sim-title {
+        font-weight: 600; font-size: .93rem; margin-bottom: 5px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sim-card .sim-addr {
+        font-size: .77rem; color: var(--text-muted);
+        display: flex; align-items: center; gap: 4px;
+        margin-bottom: 11px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sim-card .sim-specs {
+        display: flex; gap: 12px;
+        padding-top: 11px; border-top: 1px solid var(--border);
+    }
+    .sim-card .sim-specs .sp {
+        display: flex; align-items: center; gap: 4px;
+        font-size: .76rem; color: var(--text-muted);
+    }
+    .sim-card .sim-specs .sp i { color: var(--green); }
+
+    /* ═══════════════════════════════════════════════
+       MÉTÉO — Widget flottant sur le hero
+    ═══════════════════════════════════════════════ */
+    .weather-hero-badge {
+        position: absolute;
+        top: 24px; right: 48px;
+        z-index: 4;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.25);
+        border-radius: 16px;
+        padding: 10px 18px;
+        display: flex; align-items: center; gap: 10px;
+        color: #fff;
+        animation: fadeInDown .5s ease;
+    }
+    @keyframes fadeInDown {
+        from { opacity:0; transform: translateY(-10px); }
+        to   { opacity:1; transform: translateY(0); }
+    }
+    .weather-hero-badge .w-icon { font-size: 2rem; line-height: 1; }
+    .weather-hero-badge .w-temp {
+        font-size: 1.4rem; font-weight: 700; line-height: 1;
+    }
+    .weather-hero-badge .w-city {
+        font-size: .72rem; opacity: .8; margin-top: 2px;
+    }
+    .weather-hero-badge .w-desc {
+        font-size: .75rem; opacity: .75; text-transform: capitalize;
+    }
+
+    /* ═══════════════════════════════════════════════
+       MÉTÉO — Card section gauche (détail complet)
+    ═══════════════════════════════════════════════ */
+    .weather-card {
+        background: linear-gradient(135deg, #0f4c81 0%, #1a7fc4 50%, #2196f3 100%);
+        border-radius: var(--radius);
+        padding: 28px;
+        margin-bottom: 22px;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(21,101,192,.35);
+        position: relative;
+        overflow: hidden;
+    }
+    .weather-card::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.06);
+    }
+    .weather-card::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; left: -20px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.04);
+    }
+    .weather-card h3 {
+        font-size: 1rem; font-weight: 600;
+        opacity: .85; margin-bottom: 20px;
+        display: flex; align-items: center; gap: 8px;
+        border-bottom: 1px solid rgba(255,255,255,.15);
+        padding-bottom: 12px;
+        color: #fff;
+    }
+    .weather-main {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        position: relative; z-index: 1;
+    }
+    .weather-main .big-temp {
+        font-size: 4rem; font-weight: 700; line-height: 1;
+    }
+    .weather-main .big-temp sup { font-size: 1.5rem; font-weight: 400; }
+    .weather-main .w-meta { text-align: right; }
+    .weather-main .w-meta .big-icon { font-size: 3.5rem; line-height: 1; }
+    .weather-main .w-meta .w-desc-big {
+        font-size: .88rem; opacity: .85;
+        text-transform: capitalize; margin-top: 4px;
+    }
+    .weather-main .w-meta .w-city-big {
+        font-size: .8rem; opacity: .7;
+        display: flex; align-items: center; gap: 4px; justify-content: flex-end;
+    }
+
+    .weather-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        position: relative; z-index: 1;
+    }
+    .w-stat {
+        background: rgba(255,255,255,.12);
+        border-radius: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+    .w-stat i { font-size: 1.1rem; margin-bottom: 4px; opacity: .85; }
+    .w-stat .w-val { font-size: .95rem; font-weight: 700; }
+    .w-stat .w-lbl { font-size: .68rem; opacity: .7; margin-top: 2px; }
+
+    /* État de chargement / erreur */
+    .weather-loading {
+        text-align: center; padding: 20px; opacity: .7;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .weather-error { display: none; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 991px) {
+        .prop-hero { height: 360px; }
+        .prop-hero .hero-info   { left: 20px; right: 20px; bottom: 24px; }
+        .prop-hero .hero-breadcrumb { left: 20px; top: 16px; }
+        .photo-count { right: 20px; bottom: 16px; }
+        .stats-strip .inner { flex-wrap: wrap; }
+        .stat-pill { flex: 1 1 45%; border-right: none; border-bottom: 1px solid var(--border); }
+        .sim-swiper .swiper-slide { width: 250px; }
+    }
+    @media (max-width: 575px) {
+        .prop-hero { height: 270px; }
+        .prop-hero .hero-info h1 { font-size: 1.35rem; }
+        .stat-pill { flex: 1 1 100%; }
+    }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    {# ══════════════════════════════════════
+       HERO GALERIE
+    ══════════════════════════════════════ #}
+    <div class="prop-hero">
+
+        {# ── BADGE MÉTÉO flottant — rempli par JS ── #}
+        <div id="weather-hero-badge" class="weather-hero-badge" style="display:none;">
+            <div class="w-icon" id="wh-icon"></div>
+            <div>
+                <div class="w-temp" id="wh-temp"></div>
+                <div class="w-desc" id="wh-desc"></div>
+                <div class="w-city" id="wh-city"></div>
+            </div>
+        </div>
+
+        <div class="hero-breadcrumb">
+            <a href="{{ path('app_home') }}">Accueil</a>
+            <span class="sep">/</span>
+            <a href="{{ path('app_properties') }}">Logements</a>
+            <span class="sep">/</span>
+            <span>{{ logement.titre|slice(0,28) }}{% if logement.titre|length > 28 %}…{% endif %}</span>
+        </div>
+
+        {# ── SWIPER HERO — initialisé en JS pur (pas via JSON config)
+           pour garantir que les boutons next/prev fonctionnent ── #}
+        {% if logement.photoPrincipale or logement.photos %}
+            <div class="swiper" id="heroSwiper">
+                <div class="swiper-wrapper">
+                    {% if logement.photoPrincipale %}
+                        <div class="swiper-slide">
+                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
+                                 alt="{{ logement.titre }}">
+                        </div>
+                    {% endif %}
+                    {% if logement.photos %}
+                        {% for photo in logement.photos %}
+                            <div class="swiper-slide">
+                                <img src="{{ asset('uploads/logements/' ~ photo) }}"
+                                     alt="{{ logement.titre }} {{ loop.index }}">
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div class="swiper-button-next" id="heroNext"></div>
+                <div class="swiper-button-prev" id="heroPrev"></div>
+            </div>
+        {% else %}
+            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}"
+                 alt="{{ logement.titre }}">
+        {% endif %}
+
+        <div class="hero-overlay"></div>
+
+        <div class="hero-info">
+            <div class="badge-row">
+                {% if logement.disponible %}
+                    <span class="badge-avail">✓ Disponible</span>
+                {% endif %}
+                {% if logement.categorie %}
+                    <span class="badge-type">{{ logement.categorie.nom }}</span>
+                {% endif %}
+            </div>
+            <h1>{{ logement.titre }}</h1>
+            <div class="hero-addr">
+                <i class="bi bi-geo-alt-fill"></i>
+                {% if logement.adresse %}
+                    {{ logement.adresse.rue|default('') }},
+                    {{ logement.adresse.ville|default('') }}
+                    {% if logement.adresse.codePostal|default('') %} · {{ logement.adresse.codePostal }}{% endif %}
+                {% else %}
+                    Adresse non renseignée
+                {% endif %}
+            </div>
+        </div>
+
+        {% set totalPhotos = (logement.photoPrincipale ? 1 : 0) + (logement.photos ? logement.photos|length : 0) %}
+        {% if totalPhotos > 1 %}
+            <div class="photo-count">
+                <i class="bi bi-images"></i> {{ totalPhotos }} photos
+            </div>
+        {% endif %}
+    </div>
+
+    {# ══════════════════════════════════════
+       STATS STRIP
+    ══════════════════════════════════════ #}
+    <div class="stats-strip">
+        <div class="inner">
+            <div class="stat-pill">
+                <div class="ico green"><i class="bi bi-house-door"></i></div>
+                <div>
+                    <div class="val">{{ logement.nombreChambres }}</div>
+                    <div class="lbl">Chambre{{ logement.nombreChambres > 1 ? 's' : '' }}</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <div class="ico blue"><i class="bi bi-droplet"></i></div>
+                <div>
+                    <div class="val">{{ logement.nombreSalleDeBain }}</div>
+                    <div class="lbl">Salle{{ logement.nombreSalleDeBain > 1 ? 's' : '' }} de bain</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <div class="ico gold"><i class="bi bi-arrows-angle-expand"></i></div>
+                <div>
+                    <div class="val">{{ logement.superficie }} m²</div>
+                    <div class="lbl">Superficie</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <div class="ico rose"><i class="bi bi-calendar3"></i></div>
+                <div>
+                    <div class="val">{{ logement.createdAt|date('d/m/Y') }}</div>
+                    <div class="lbl">Publié le</div>
+                </div>
+            </div>
+            <div class="stat-pill price-pill">
+                <div>
+                    <div class="val">{{ logement.prix }} €</div>
+                    <div class="lbl">par nuit</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════
+       BODY — 2 colonnes
+       FIX : on utilise align-items-start sur
+       la row pour que sticky fonctionne bien
+    ══════════════════════════════════════ #}
+    <div class="prop-body">
+        <div class="container">
+            <div class="row g-4 align-items-start">
+
+                {# ── GAUCHE ── #}
+                <div class="col-lg-8">
+
+                    <div class="section-card">
+                        <h3><span class="dot"></span> Description du logement</h3>
+                        {% if logement.description %}
+                            <p class="desc-text">{{ logement.description|nl2br }}</p>
+                        {% else %}
+                            <p class="text-muted">Aucune description disponible.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if logement.amenites and logement.amenites|length > 0 %}
+                    <div class="section-card">
+                        <h3><span class="dot"></span> Équipements & Aménités</h3>
+                        {% set icones = {
+                            'wifi':          'bi-wifi',
+                            'parking':       'bi-p-square',
+                            'climatisation': 'bi-thermometer-snow',
+                            'piscine':       'bi-water',
+                            'cuisine':       'bi-egg-fried',
+                            'lave_linge':    'bi-recycle',
+                            'balcon':        'bi-columns-gap',
+                            'jardin':        'bi-tree'
+                        } %}
+                        <div class="amenities-grid">
+                            {% for amenite in logement.amenites %}
+                                <div class="amenity-tag">
+                                    <i class="bi {{ icones[amenite]|default('bi-check2') }}"></i>
+                                    {{ amenite|replace({'_': ' '})|title }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# ── MÉTÉO LOCALE — card détaillée ── #}
+                    <div class="weather-card" id="weather-detail-card">
+                        <h3>
+                            <i class="bi bi-cloud-sun"></i>
+                            Météo actuelle · <span id="wd-city-title">chargement…</span>
+                        </h3>
+                        <div class="weather-loading" id="wd-loading">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Récupération de la météo…
+                        </div>
+                        <div id="wd-content" style="display:none;">
+                            <div class="weather-main">
+                                <div>
+                                    <div class="big-temp">
+                                        <span id="wd-temp"></span><sup>°C</sup>
+                                    </div>
+                                    <div style="font-size:.85rem;opacity:.8;margin-top:6px;">
+                                        Ressenti : <span id="wd-feels"></span>°C
+                                    </div>
+                                </div>
+                                <div class="w-meta">
+                                    <div class="big-icon" id="wd-icon"></div>
+                                    <div class="w-desc-big" id="wd-desc"></div>
+                                    <div class="w-city-big">
+                                        <i class="bi bi-geo-alt-fill"></i>
+                                        <span id="wd-city"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="weather-stats">
+                                <div class="w-stat">
+                                    <i class="bi bi-droplet-fill"></i>
+                                    <div class="w-val"><span id="wd-hum"></span>%</div>
+                                    <div class="w-lbl">Humidité</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-wind"></i>
+                                    <div class="w-val"><span id="wd-wind"></span> km/h</div>
+                                    <div class="w-lbl">Vent</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-eye"></i>
+                                    <div class="w-val"><span id="wd-vis"></span> km</div>
+                                    <div class="w-lbl">Visibilité</div>
+                                </div>
+                                <div class="w-stat">
+                                    <i class="bi bi-speedometer2"></i>
+                                    <div class="w-val"><span id="wd-pressure"></span></div>
+                                    <div class="w-lbl">Pression hPa</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weather-error" id="wd-error">
+                            <i class="bi bi-exclamation-circle"></i> Météo indisponible pour cette ville.
+                        </div>
+                    </div>
+
+                    <div class="section-card">
+                        <h3><span class="dot"></span> Localisation</h3>
+                        {% if logement.adresse %}
+                            <div class="map-addr-chip">
+                                <i class="bi bi-pin-map-fill"></i>
+                                {{ logement.adresse.rue|default('') }},
+                                {{ logement.adresse.ville|default('') }}
+                                {{ logement.adresse.codePostal|default('') }},
+                                {{ logement.adresse.pays|default('') }}
+                            </div>
+                        {% endif %}
+                        <div id="map-detail"></div>
+                    </div>
+
+                </div>
+
+                {# ── DROITE (sidebar sticky) ── #}
+                <div class="col-lg-4">
+                    <div class="prop-sidebar">
+
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                {% set promoActive = logement.promoActive %}
+                                {% if promoActive %}
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="text-decoration:line-through; opacity:.6; font-size:1rem;">{{ logement.prix }}€</span>
+                                        <span class="badge" style="background:#e53935; font-size:.78rem;"> -{{ promoActive.pourcentage }}%</span>
+                                    </div>
+                                    <div class="price">{{ promoActive.prixPromo }} €</div>
+                                    <div class="per">au lieu de {{ logement.prix }}€ · économisez {{ promoActive.economie }}€ !</div>
+                                    {% if promoActive.codePromo %}
+                                        <div style="background:rgba(255,255,255,.15); border-radius:8px; padding:6px 12px; margin-top:8px; font-size:.82rem;">
+                                             Code : <strong>{{ promoActive.codePromo }}</strong>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="price">{{ logement.prix }} €</div>
+                                    <div class="per">par nuit · toutes charges comprises</div>
+                                {% endif %}
+                                {% if logement.disponible %}
+                                    <div class="avail">
+                                        <i class="bi bi-check-circle-fill"></i> Disponible
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="booking-body">
+
+                                <a href="#contact-form" class="btn-book">
+                                    <i class="bi bi-calendar-check"></i> Réserver ce logement
+                                </a>
+
+                                <div style="display:flex;gap:8px;">
+                                    <button class="btn-fav favorite-btn" data-logement-id="{{ logement.id }}">
+                                        <i class="bi bi-heart"></i> Favoris
+                                    </button>
+                                    <button class="btn-share">
+                                        <i class="bi bi-share"></i> Partager
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if logement.proprietaire %}
+                        <div class="owner-card">
+                            <div class="owner-row">
+                                {% if logement.proprietaire.imageUrl %}
+                                    <img src="{{ logement.proprietaire.imageUrl }}" class="owner-avatar" alt="{{ logement.proprietaire.fullName }}">
+                                {% else %}
+                                    <img src="{{ asset('frontOffice/img/real-estate/agent-2.webp') }}" class="owner-avatar" alt="Propriétaire">
+                                {% endif %}
+                                <div>
+                                    <div class="owner-name">{{ logement.proprietaire.fullName }}</div>
+                                    <div class="owner-role">Propriétaire · <span style="color:var(--green)">En ligne</span></div>
+                                </div>
+                            </div>
+                            <div class="owner-links">
+                                {% if logement.proprietaire.tel %}
+                                    <a href="tel:{{ logement.proprietaire.tel }}">
+                                        <i class="bi bi-telephone" style="color:var(--green)"></i>
+                                        {{ logement.proprietaire.tel }}
+                                    </a>
+                                {% endif %}
+                                {% if logement.proprietaire.email %}
+                                    <a href="mailto:{{ logement.proprietaire.email }}">
+                                        <i class="bi bi-envelope" style="color:var(--green)"></i>
+                                        {{ logement.proprietaire.email }}
+                                    </a>
+                                {% endif %}
+                            </div>
+                            {% if logement.proprietaire.tel %}
+                                <a href="tel:{{ logement.proprietaire.tel }}" class="btn-call">
+                                    <i class="bi bi-telephone-fill"></i> Appeler le propriétaire
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="contact-card" id="contact-form">
+                            <h4>📋 Demande de visite</h4>
+                            <form method="post">
+                                <div class="mb-2">
+                                    <input type="text" name="name" class="form-control" placeholder="Nom complet" required>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="email" name="email" class="form-control" placeholder="Adresse email" required>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="tel" name="phone" class="form-control" placeholder="Téléphone">
+                                </div>
+                                <div class="mb-2">
+                                    <select name="subject" class="form-select" required>
+                                        <option value="">Je souhaite…</option>
+                                        <option>Faire une réservation</option>
+                                        <option>Plus d'informations</option>
+                                        <option>Organiser une visite</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <textarea name="message" class="form-control" rows="3"
+                                              placeholder="Votre message…"></textarea>
+                                </div>
+                                <button type="submit" class="btn-send">
+                                    Envoyer ma demande
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {# ══════════════════════════════════════
+       LOGEMENTS SIMILAIRES — barre scrollable
+    ══════════════════════════════════════ #}
+    {% if logementsSimilaires|length > 0 %}
+    <div class="similaires-section">
+        <div class="container">
+            <div class="sec-head">
+                <h2>Logements <span>similaires</span> qui pourraient vous plaire</h2>
+                <div class="sec-head-right">
+                    <div class="sim-nav">
+                        <button id="simPrev"><i class="bi bi-chevron-left"></i></button>
+                        <button id="simNext"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    <a href="{{ path('app_properties') }}">
+                        Voir tous <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="swiper sim-swiper" id="simSwiper">
+                <div class="swiper-wrapper">
+                    {% for similaire in logementsSimilaires %}
+                        <div class="swiper-slide">
+                            <a href="{{ path('app_property_details', {id: similaire.id}) }}" class="sim-card">
+                                <div class="sim-img">
+                                    {% if similaire.photoPrincipale %}
+                                        <img src="{{ asset('uploads/logements/' ~ similaire.photoPrincipale) }}"
+                                             alt="{{ similaire.titre }}">
+                                    {% else %}
+                                        <img src="{{ asset('frontOffice/img/real-estate/property-exterior-4.webp') }}"
+                                             alt="{{ similaire.titre }}">
+                                    {% endif %}
+                                    <span class="sim-price">{{ similaire.prix }} €/nuit</span>
+                                    {% if similaire.categorie %}
+                                        <span class="sim-type">{{ similaire.categorie.nom }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="sim-body">
+                                    <div class="sim-title">{{ similaire.titre }}</div>
+                                    <div class="sim-addr">
+                                        <i class="bi bi-geo-alt"></i>
+                                        {{ similaire.adresse.ville|default('') }}{% if similaire.adresse.pays|default('') %}, {{ similaire.adresse.pays }}{% endif %}
+                                    </div>
+                                    <div class="sim-specs">
+                                        <div class="sp">
+                                            <i class="bi bi-house-door"></i> {{ similaire.nombreChambres }} ch.
+                                        </div>
+                                        <div class="sp">
+                                            <i class="bi bi-droplet"></i> {{ similaire.nombreSalleDeBain }} sdb.
+                                        </div>
+                                        <div class="sp">
+                                            <i class="bi bi-arrows-angle-expand"></i> {{ similaire.superficie }} m²
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+    // ════════════════════════════════════════
+    // FIX SWIPER HERO — init en JS pur
+    // (le init-swiper via JSON config entrait
+    //  en conflit avec les boutons next/prev)
+    // ════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Hero swiper
+        if (document.getElementById('heroSwiper')) {
+            new Swiper('#heroSwiper', {
+                loop:  true,
+                speed: 900,
+                autoplay: { delay: 5000, disableOnInteraction: false },
+                navigation: {
+                    nextEl: '#heroNext',
+                    prevEl: '#heroPrev'
+                }
+            });
+        }
+
+        // Similaires swiper
+        if (document.getElementById('simSwiper')) {
+            new Swiper('#simSwiper', {
+                slidesPerView: 'auto',
+                spaceBetween: 20,
+                freeMode: true,
+                navigation: {
+                    nextEl: '#simNext',
+                    prevEl: '#simPrev'
+                },
+                breakpoints: {
+                    0:   { slidesPerView: 1.2, spaceBetween: 14 },
+                    576: { slidesPerView: 2.1, spaceBetween: 18 },
+                    992: { slidesPerView: 3.2, spaceBetween: 20 }
+                }
+            });
+        }
+
+        // Favoris
+        document.querySelectorAll('.favorite-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const ico = this.querySelector('i');
+                ico.className = this.classList.contains('active')
+                    ? 'bi bi-heart-fill'
+                    : 'bi bi-heart';
+            });
+        });
+
+        // ════════════════════════════════════════
+        // VARIABLES COMMUNES (lat/lng/adresse)
+        // ← déclarées EN PREMIER pour être
+        //   disponibles partout dans le bloc
+        // ════════════════════════════════════════
+        const latSaved     = parseFloat('{{ logement.adresse.latitude|default("")|e("js") }}') || null;
+        const lngSaved     = parseFloat('{{ logement.adresse.longitude|default("")|e("js") }}') || null;
+        const adresseTexte = '{{ ((logement.adresse.rue|default("")) ~ " " ~ (logement.adresse.ville|default("")) ~ " " ~ (logement.adresse.pays|default("")))|trim|e("js") }}';
+        const popupTexte   = '<strong>{{ logement.titre|e("js") }}</strong><br>{{ logement.adresse.ville|default("")|e("js") }}';
+
+        // ════════════════════════════════════════
+        // MÉTÉO — OpenWeatherMap API
+        // ════════════════════════════════════════
+        const OWM_KEY    = 'b4f744b95d35ca8b42d5493363d9e6a0';
+        const villeMeteo = '{{ logement.adresse.ville|default("")|e("js") }}';
+        const paysMeteo  = '{{ logement.adresse.pays|default("")|e("js") }}';
+
+        // Icônes emoji selon le code météo OWM
+        function owmEmoji(code) {
+            if (code >= 200 && code < 300) return '⛈️';
+            if (code >= 300 && code < 400) return '🌦️';
+            if (code >= 500 && code < 600) return '🌧️';
+            if (code >= 600 && code < 700) return '❄️';
+            if (code >= 700 && code < 800) return '🌫️';
+            if (code === 800)              return '☀️';
+            if (code === 801)              return '🌤️';
+            if (code === 802)              return '⛅';
+            if (code >= 803)              return '☁️';
+            return '🌡️';
+        }
+
+        function afficherMeteo(data) {
+            const temp    = Math.round(data.main.temp);
+            const feels   = Math.round(data.main.feels_like);
+            const desc    = data.weather[0].description;
+            const code    = data.weather[0].id;
+            const hum     = data.main.humidity;
+            const wind    = Math.round(data.wind.speed * 3.6); // m/s → km/h
+            const vis     = Math.round((data.visibility || 10000) / 1000);
+            const pressure= data.main.pressure;
+            const city    = data.name;
+            const emoji   = owmEmoji(code);
+
+            // Remplir badge hero
+            document.getElementById('wh-icon').textContent  = emoji;
+            document.getElementById('wh-temp').textContent  = temp + '°C';
+            document.getElementById('wh-desc').textContent  = desc;
+            document.getElementById('wh-city').textContent  = city;
+            document.getElementById('weather-hero-badge').style.display = 'flex';
+
+            // Remplir card détail
+            document.getElementById('wd-city-title').textContent = city;
+            document.getElementById('wd-temp').textContent      = temp;
+            document.getElementById('wd-feels').textContent     = feels;
+            document.getElementById('wd-icon').textContent      = emoji;
+            document.getElementById('wd-desc').textContent      = desc;
+            document.getElementById('wd-city').textContent      = city;
+            document.getElementById('wd-hum').textContent       = hum;
+            document.getElementById('wd-wind').textContent      = wind;
+            document.getElementById('wd-vis').textContent       = vis;
+            document.getElementById('wd-pressure').textContent  = pressure;
+
+            document.getElementById('wd-loading').style.display = 'none';
+            document.getElementById('wd-content').style.display = 'block';
+        }
+
+        function erreurMeteo() {
+            document.getElementById('wd-loading').style.display  = 'none';
+            document.getElementById('wd-error').style.display    = 'block';
+            document.getElementById('wd-city-title').textContent = 'Indisponible';
+        }
+
+        function fetchMeteoParLatLng(lat, lng) {
+            fetch('https://api.openweathermap.org/data/2.5/weather'
+                + '?lat='   + lat
+                + '&lon='   + lng
+                + '&units=metric'
+                + '&lang=fr'
+                + '&appid=' + OWM_KEY)
+            .then(r => r.json())
+            .then(function(d) {
+                if (d.cod === 200) afficherMeteo(d);
+                else fetchMeteoParVille();   // fallback par ville
+            })
+            .catch(fetchMeteoParVille);
+        }
+
+        function fetchMeteoParVille() {
+            if (!villeMeteo) { erreurMeteo(); return; }
+            const q = villeMeteo + (paysMeteo ? ',' + paysMeteo : '');
+            fetch('https://api.openweathermap.org/data/2.5/weather'
+                + '?q='     + encodeURIComponent(q)
+                + '&units=metric'
+                + '&lang=fr'
+                + '&appid=' + OWM_KEY)
+            .then(r => r.json())
+            .then(function(d) {
+                if (d.cod === 200) afficherMeteo(d);
+                else erreurMeteo();
+            })
+            .catch(erreurMeteo);
+        }
+
+        // Lancer la météo : priorité lat/lng enregistrés, sinon ville
+        if (latSaved && lngSaved) {
+            fetchMeteoParLatLng(latSaved, lngSaved);
+        } else if (adresseTexte.trim()) {
+            // Essayer de geocoder l'adresse pour obtenir lat/lng, puis météo
+            fetch('https://nominatim.openstreetmap.org/search'
+                + '?q=' + encodeURIComponent(adresseTexte)
+                + '&format=json&limit=1&accept-language=fr')
+            .then(r => r.json())
+            .then(function(res) {
+                if (res && res.length > 0) {
+                    fetchMeteoParLatLng(parseFloat(res[0].lat), parseFloat(res[0].lon));
+                } else {
+                    fetchMeteoParVille();
+                }
+            })
+            .catch(fetchMeteoParVille);
+        } else {
+            fetchMeteoParVille();
+        }
+
+
+        // ════════════════════════════════════════
+        // MINI-CARTE LEAFLET
+        // ════════════════════════════════════════
+
+        function initMap(lat, lng) {
+            const map = L.map('map-detail', { scrollWheelZoom: false }).setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            L.marker([lat, lng]).addTo(map).bindPopup(popupTexte).openPopup();
+
+            // Fix définitif : forcer le conteneur Leaflet à rester
+            // dans son propre stacking context, sous la navbar
+            const pane = map.getPane('mapPane');
+            if (pane) pane.style.zIndex = '0';
+
+            // Baisser le z-index du container de contrôles
+            const controlContainer = document.querySelector('#map-detail .leaflet-control-container');
+            if (controlContainer) controlContainer.style.zIndex = '1';
+        }
+
+        if (latSaved && lngSaved) {
+            initMap(latSaved, lngSaved);
+        } else if (adresseTexte.trim()) {
+            fetch('https://nominatim.openstreetmap.org/search'
+                + '?q=' + encodeURIComponent(adresseTexte)
+                + '&format=json&limit=1&accept-language=fr')
+            .then(r => r.json())
+            .then(function(res) {
+                if (res && res.length > 0) {
+                    initMap(parseFloat(res[0].lat), parseFloat(res[0].lon));
+                } else {
+                    document.getElementById('map-detail').closest('.section-card').style.display = 'none';
+                }
+            }).catch(function() {
+                document.getElementById('map-detail').closest('.section-card').style.display = 'none';
+            });
+        } else {
+            document.getElementById('map-detail').closest('.section-card').style.display = 'none';
+        }
+
+    }); // end DOMContentLoaded
+    </script>
+{% endblock %}

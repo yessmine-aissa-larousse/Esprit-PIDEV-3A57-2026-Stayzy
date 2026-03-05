@@ -1,0 +1,60 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Modifier visite{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container">
+        <h1>Modifier ma visite</h1>
+    </div>
+</div>
+
+<section class="section">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-8">
+
+<div class="card shadow p-4">
+
+<div class="alert alert-info text-center">
+<h4>✏ Modifier la date ou l'heure de votre visite</h4>
+</div>
+
+<hr>
+
+{{ form_start(form) }}
+
+<div class="mb-3">
+    <label class="form-label"><strong>Date</strong></label>
+    {{ form_widget(form.dateVisite, {'attr': {'class': 'form-control'}}) }}
+</div>
+
+<div class="mb-3">
+    <label class="form-label"><strong>Heure</strong></label>
+    {{ form_widget(form.heureVisite, {'attr': {'class': 'form-control'}}) }}
+</div>
+
+<div class="mb-3">
+    <label class="form-label"><strong>Message</strong></label>
+    {{ form_widget(form.note, {'attr': {'class': 'form-control', 'rows': 3}}) }}
+</div>
+
+<div class="text-center d-flex justify-content-center gap-3 mt-4">
+    <a href="{{ path('client_mes_visites') }}" class="btn btn-outline-secondary">
+        Annuler
+    </a>
+
+    <button class="btn btn-primary">
+        Enregistrer les modifications
+    </button>
+</div>
+
+{{ form_end(form) }}
+
+</div>
+</div>
+</div>
+</div>
+</section>
+
+{% endblock %}

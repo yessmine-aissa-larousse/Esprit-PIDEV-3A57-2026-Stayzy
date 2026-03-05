@@ -1,0 +1,107 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier visite - Stayzy{% endblock %}
+
+{% block body %}
+
+<!-- Page Title -->
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">
+            ✏ Modifier la visite #{{ visite.id }}
+        </h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('prop_visites') }}">Demandes reçues</a></li>
+                <li class="current">Modifier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<!-- End Page Title -->
+
+
+<section class="section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <div class="card shadow-sm border-0" data-aos="zoom-in" data-aos-delay="200">
+
+                    <div class="card-header bg-warning text-dark">
+                        <h4 class="mb-0">
+                            Informations de la visite
+                        </h4>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        {{ form_start(form) }}
+
+                        <!-- Date -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                📅 Date de visite
+                            </label>
+                            {{ form_widget(form.dateVisite, {
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.dateVisite) }}
+                            </div>
+                        </div>
+
+                        <!-- Heure -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                🕐 Heure
+                            </label>
+                            {{ form_widget(form.heureVisite, {
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.heureVisite) }}
+                            </div>
+                        </div>
+
+                        <!-- Statut -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                📌 Statut
+                            </label>
+                            {{ form_widget(form.statut, {
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                            <div class="text-danger small mt-1">
+                                {{ form_errors(form.statut) }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+
+                            <a href="{{ path('prop_visites') }}"
+                               class="btn btn-outline-secondary">
+                                ← Retour
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-success px-4">
+                                ✔ Enregistrer
+                            </button>
+
+                        </div>
+
+                        {{ form_end(form) }}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

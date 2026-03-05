@@ -1,0 +1,349 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Détails du logement - {{ logement.titre }}{% endblock %}
+
+{% block admin_content %}
+    <div class="stayzy-container">
+
+        {# HERO IMAGE #}
+        <div class="hero">
+            {% if logement.photoPrincipale %}
+                <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" class="hero-img">
+            {% endif %}
+
+            <div class="hero-overlay">
+                <h1>{{ logement.titre }}</h1>
+                <p>{{ logement.categorie ? logement.categorie.nom : 'Sans catégorie' }}</p>
+            </div>
+        </div>
+
+
+        <div class="stayzy-grid">
+
+            {# LEFT CONTENT #}
+            <div class="stayzy-main">
+
+                <div class="glass-card">
+                    <h3>Description</h3>
+                    <p>{{ logement.description ?: 'Aucune description disponible.' }}</p>
+                </div>
+
+                {% if logement.adresse %}
+                <div class="location-widget">
+                    <div class="location-header">
+                        <h3>Localisation</h3>
+                        <span class="dot"></span>
+                    </div>
+
+                    <div class="location-body">
+                        <div class="loc-line">
+                            <span class="label">Rue</span>
+                            <span class="value">{{ logement.adresse.rue }}</span>
+                        </div>
+
+                        <div class="loc-line">
+                            <span class="label">Ville</span>
+                            <span class="value">{{ logement.adresse.ville }}</span>
+                        </div>
+
+                        <div class="loc-line">
+                            <span class="label">Code postal</span>
+                            <span class="value">{{ logement.adresse.codePostal }}</span>
+                        </div>
+
+                        <div class="loc-line">
+                            <span class="label">Pays</span>
+                            <span class="value">{{ logement.adresse.pays }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+
+
+                {% if logement.amenites %}
+                <div class="glass-card">
+                    <h3>Aménités</h3>
+
+                    {% set amenitesLabels = {
+                        'wifi': 'WiFi',
+                        'parking': 'Parking',
+                        'climatisation': 'Climatisation',
+                        'piscine': 'Piscine',
+                        'cuisine': 'Cuisine équipée',
+                        'lave_linge': 'Lave-linge',
+                        'balcon': 'Balcon',
+                        'jardin': 'Jardin'
+                    } %}
+
+                    <div class="amenities-grid">
+                        {% for amenite in logement.amenites %}
+                            <div class="amenity-pill">
+                                {{ amenitesLabels[amenite] ?? amenite }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+
+                {% if logement.photos %}
+                <div class="gallery-modern">
+                    {% for photo in logement.photos %}
+                        <img src="{{ asset('uploads/logements/' ~ photo) }}">
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+            </div>
+
+
+            {# RIGHT FLOATING PANEL #}
+            <div class="stayzy-side">
+
+                <div class="price-card">
+                    <div class="price">
+                        {{ logement.prix|number_format(0, ',', ' ') }} €
+                        <span>/ nuit</span>
+                    </div>
+
+                    <div class="meta">
+                        <div><b>{{ logement.nombreChambres }}</b> chambres</div>
+                        <div><b>{{ logement.nombreSalleDeBain }}</b> salles de bain</div>
+                        <div><b>{{ logement.superficie }}</b> m²</div>
+                    </div>
+
+                    <div class="status">
+                        {% if logement.disponible %}
+                            <span class="badge ok">Disponible</span>
+                        {% else %}
+                            <span class="badge no">Indisponible</span>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <a href="{{ path('admin_logement_edit', {id: logement.id}) }}" class="btn-modern edit">Modifier</a>
+                    <a href="{{ path('admin_logement_delete', {id: logement.id}) }}"
+                    onclick="return confirm('Supprimer ?')"
+                    class="btn-modern delete">Supprimer</a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+    {# CSS personnalisé #}
+    <style>
+        /* BACKGROUND */
+        .stayzy-container {
+            background: linear-gradient(135deg,#eef2ff,#f8fafc);
+            padding-bottom: 60px;
+        }
+
+        /* HERO */
+        .hero {
+            position: relative;
+            height: 360px;
+            overflow: hidden;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.05);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 40px;
+            color: white;
+        }
+
+        .hero-overlay h1 {
+            font-size: 34px;
+            font-weight: 600;
+        }
+
+        /* GRID */
+        .stayzy-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 30px 40px;
+        }
+
+        /* GLASS CARD */
+        .glass-card {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(14px);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        /* AMENITIES */
+        .amenities-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .amenity-pill {
+            background: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        /* GALLERY */
+        .gallery-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+            gap: 12px;
+        }
+
+        .gallery-modern img {
+            height: 140px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: 0.3s ease;
+        }
+
+        .gallery-modern img:hover {
+            transform: translateY(-5px);
+        }
+
+        /* SIDE */
+        .price-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            position: sticky;
+            top: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
+
+        .price {
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .price span {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .meta {
+            margin: 15px 0;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* STATUS */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .ok { background:#dcfce7; color:#16a34a; }
+        .no { background:#fee2e2; color:#dc2626; }
+
+        /* BUTTONS */
+        .btn-modern {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .edit { background:#facc15; color:black; }
+        .delete { background:#ef4444; color:white; }
+
+        .muted { color:#888; }
+        /* LOCATION WIDGET (graph style) */
+        .location-widget {
+            background: linear-gradient(135deg,#ffffff,#f1f5f9);
+            border-radius: 18px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* top bar */
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .location-header h3 {
+            font-weight: 600;
+        }
+
+        /* small live dot (dashboard feel) */
+        .location-header .dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #22c55e;
+        }
+
+        /* address lines */
+        .location-body {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* each row like data metric */
+        .loc-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            transition: 0.25s;
+        }
+
+        .loc-line:hover {
+            transform: translateX(6px);
+            background: white;
+        }
+
+        /* label */
+        .loc-line .label {
+            color: #64748b;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* value */
+        .loc-line .value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+
+
+    </style>
+{% endblock %}

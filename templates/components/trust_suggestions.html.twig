@@ -1,0 +1,38 @@
+{# Suggestions IA pour améliorer le score #}
+{% set suggestions = user.trustScoreSuggestions %}
+
+{% if suggestions|length > 0 %}
+<div class="card border-0 shadow-sm" style="border-radius: 16px; margin-top: 20px;">
+    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px 16px 0 0; padding: 20px;">
+        <h6 style="margin: 0; font-weight: 600;">
+            <i class="bi bi-lightbulb-fill me-2"></i>
+            💡 Suggestions IA pour améliorer votre score
+        </h6>
+    </div>
+    <div class="card-body" style="padding: 20px;">
+        {% for suggestion in suggestions %}
+        <div class="alert alert-{{ suggestion.color }} d-flex align-items-center mb-3" style="border-radius: 12px; border-left: 4px solid 
+            {% if suggestion.color == 'warning' %}#f57f17{% else %}#1565c0{% endif %};">
+            <i class="{{ suggestion.icon }} me-3" style="font-size: 24px;"></i>
+            <div style="flex: 1;">
+                {{ suggestion.text }}
+            </div>
+            <span class="badge bg-success" style="font-size: 14px; padding: 8px 12px;">
+                +{{ suggestion.points }} pts
+            </span>
+        </div>
+        {% endfor %}
+        
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                <i class="bi bi-robot me-1"></i> Suggestions générées par IA
+            </small>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-success" style="border-radius: 12px; text-align: center;">
+    <i class="bi bi-check-circle-fill me-2" style="font-size: 20px;"></i>
+    <strong>Parfait!</strong> Votre profil est complet! 🎉
+</div>
+{% endif %}

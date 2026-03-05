@@ -1,0 +1,84 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block body %}
+<<<<<<< HEAD
+<div class="container text-center mt-5">
+    <h2 class="text-success">Paiement réussi ✅</h2>
+    <p>Votre paiement a été effectué avec succès.</p>
+
+    <a href="{{ path('commande_list') }}" class="btn btn-primary mt-3">
+        Retour à mes commandes
+    </a>
+=======
+<style>
+    .success-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #e8f5e9, #ffffff);
+    }
+
+    .success-card {
+        background: #ffffff;
+        padding: 50px 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .success-icon {
+        font-size: 70px;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+
+    .success-title {
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .success-text {
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    .btn-success-custom {
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-success-custom:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(40,167,69,0.3);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="success-container">
+    <div class="success-card">
+        <div class="success-icon">
+            ✔
+        </div>
+        <h2 class="success-title">Paiement réussi</h2>
+        <p class="success-text">
+            Votre paiement a été effectué avec succès. Merci pour votre confiance 💚
+        </p>
+
+        <a href="{{ path('commande_list') }}" class="btn btn-success btn-success-custom">
+            Retour à mes commandes
+        </a>
+    </div>
+>>>>>>> origin/module-user_logement_reservation
+</div>
+{% endblock %}

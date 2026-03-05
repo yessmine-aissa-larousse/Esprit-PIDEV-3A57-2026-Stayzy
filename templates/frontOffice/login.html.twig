@@ -1,0 +1,246 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Se connecter - Stayzy{% endblock %}
+
+{% block body %}
+<main class="main">
+    <section style="padding: 80px 0; background: #f8f9fa; min-height: 70vh; display: flex; align-items: center;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-5 col-md-7">
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle me-2"></i>{{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    <div class="card shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+
+                        <div style="background: #2e7d32; padding: 40px 30px 30px; text-align: center;">
+                            <div style="background: rgba(255,255,255,0.15); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                <i class="bi bi-house-heart" style="font-size: 32px; color: white;"></i>
+                            </div>
+                            <h3 style="color: white; font-weight: 700; margin: 0;">Bienvenue sur Stayzy</h3>
+                            <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0; font-size: 14px;">Connectez-vous à votre compte</p>
+                        </div>
+
+                        <div class="card-body" style="padding: 35px;">
+
+                            {% if error %}
+                                <div class="alert alert-danger d-flex align-items-center">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                                </div>
+                            {% endif %}
+
+                            <form method="post" action="{{ path('app_login') }}">
+
+                                <div class="mb-4">
+                                    <label for="email" class="form-label fw-semibold" style="color: #333;">
+                                        <i class="bi bi-envelope me-1" style="color: #2e7d32;"></i> Adresse Email
+                                    </label>
+                                    <input type="email"
+                                           id="email"
+                                           name="_username"
+                                           class="form-control form-control-lg"
+                                           value="{{ last_username }}"
+                                           placeholder="votre@email.com"
+                                           required autofocus
+                                           style="border-radius: 10px; border: 1.5px solid #ddd; padding: 12px 16px;">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="password" class="form-label fw-semibold" style="color: #333;">
+                                        <i class="bi bi-lock me-1" style="color: #2e7d32;"></i> Mot de passe
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password"
+                                               id="password"
+                                               name="_password"
+                                               class="form-control form-control-lg"
+                                               placeholder="••••••••"
+                                               required
+                                               style="border-radius: 10px 0 0 10px; border: 1.5px solid #ddd; padding: 12px 16px;">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                                onclick="togglePassword()"
+                                                style="border-radius: 0 10px 10px 0;">
+                                            <i class="bi bi-eye" id="toggleIcon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me">
+                                        <label class="form-check-label text-muted" for="remember_me" style="font-size: 14px;">
+                                            Se souvenir de moi
+                                        </label>
+                                    </div>
+                                </div>
+
+                                        <a href="{{ path('app_forgot_password') }}" style="color: #2e7d32; font-size: 14px;">
+                                            Mot de passe oublié?
+                                        </a>                               
+                                     </div>
+
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                                <button type="submit" class="btn btn-lg w-100 fw-semibold"
+                                        style="background: #2e7d32; color: white; border-radius: 10px; padding: 14px; font-size: 16px; border: none;">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Se connecter
+                                </button>
+
+                            </form>
+
+                            {# ===== BOUTON FACE ID ===== #}
+                            <div class="text-center mt-3">
+                                <button type="button"
+                                        onclick="startFaceLogin()"
+                                        class="btn btn-lg w-100 fw-semibold"
+                                        style="background: #1565c0; color: white; border-radius: 10px; padding: 14px; border: none;">
+                                    <i class="bi bi-camera me-2"></i> Se connecter avec mon visage
+                                </button>
+                            </div>
+
+                            {# Modal caméra #}
+                            <div class="modal fade" id="faceModal" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content" style="border-radius: 16px;">
+                                        <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                                            <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Reconnaissance Faciale</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopCamera()"></button>
+                                        </div>
+                                        <div class="modal-body text-center p-4">
+                                            <div id="faceStatus" class="alert alert-info mb-3">
+                                                <i class="bi bi-info-circle me-2"></i>Positionnez votre visage dans le cadre
+                                            </div>
+                                            <div style="position: relative; display: inline-block;">
+                                                <video id="faceVideo" width="350" height="263" autoplay muted
+                                                       style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                                                <canvas id="faceCanvas" width="350" height="263"
+                                                        style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                                            </div>
+                                            <div class="mt-3">
+                                                <div id="loadingFace" class="spinner-border text-primary d-none"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {# ===== FIN BOUTON FACE ID ===== #}
+
+                            <hr style="margin: 25px 0; border-color: #eee;">
+
+                            <div class="text-center">
+                                <p class="text-muted mb-3" style="font-size: 14px;">Vous n'avez pas de compte?</p>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <a href="{{ path('app_register', {'role': 'client'}) }}"
+                                       class="btn btn-outline-success btn-sm"
+                                       style="border-radius: 8px; padding: 8px 20px;">
+                                        <i class="bi bi-person me-1"></i> Client
+                                    </a>
+                                    <a href="{{ path('app_register', {'role': 'proprietaire'}) }}"
+                                       class="btn btn-outline-success btn-sm"
+                                       style="border-radius: 8px; padding: 8px 20px;">
+                                        <i class="bi bi-building me-1"></i> Propriétaire
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function togglePassword() {
+    const pwd = document.getElementById('password');
+    const icon = document.getElementById('toggleIcon');
+    if (pwd.type === 'password') {
+        pwd.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        pwd.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+// ===== FACE LOGIN =====
+let faceStream = null;
+let faceDetectionInterval = null;
+
+async function startFaceLogin() {
+    const modal = new bootstrap.Modal(document.getElementById('faceModal'));
+    modal.show();
+
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage dans le cadre';
+
+    faceStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('faceVideo').srcObject = faceStream;
+
+    faceDetectionInterval = setInterval(detectAndLogin, 2000);
+}
+
+async function detectAndLogin() {
+    const video = document.getElementById('faceVideo');
+
+    document.getElementById('faceStatus').className = 'alert alert-info mb-3';
+    document.getElementById('faceStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Analyse en cours...';
+
+    clearInterval(faceDetectionInterval);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+
+    const response = await fetch('/face/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        document.getElementById('faceStatus').className = 'alert alert-success mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Bienvenue ' + result.name + '! Redirection...';
+        stopCamera();
+        setTimeout(() => window.location.href = result.redirect, 1500);
+    } else {
+        document.getElementById('faceStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('faceStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>' + (result.error || 'Visage non reconnu') + '. Réessayez.';
+        setTimeout(() => {
+            faceDetectionInterval = setInterval(detectAndLogin, 2000);
+        }, 2000);
+    }
+}
+
+function stopCamera() {
+    if (faceStream) {
+        faceStream.getTracks().forEach(t => t.stop());
+        faceStream = null;
+    }
+    if (faceDetectionInterval) {
+        clearInterval(faceDetectionInterval);
+    }
+}
+
+document.getElementById('faceModal')?.addEventListener('hidden.bs.modal', stopCamera);
+// ===== FIN FACE LOGIN =====
+</script>
+{% endblock %}

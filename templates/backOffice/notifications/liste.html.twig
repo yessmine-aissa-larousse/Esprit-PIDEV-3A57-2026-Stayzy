@@ -1,0 +1,70 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block admin_content %}
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">Notifications</h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Notifications</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Toutes les notifications</h3>
+                <div class="card-tools">
+                    {% if notifications|length > 0 %}
+                        <a href="{{ path('admin_notifications_marquer_lues') }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-check2-all"></i> Tout marquer comme lu
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if notifications|length == 0 %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell fs-1 text-muted"></i>
+                        <p class="mt-3">Aucune notification</p>
+                    </div>
+                {% else %}
+                    <table class="table table-hover">
+                        <tbody>
+                            {% for notif in notifications %}
+                                <tr class="{% if not notif.lu %}table-active{% endif %}">
+                                    <td style="width: 50px">
+                                        {% if not notif.lu %}
+                                            <i class="bi bi-circle-fill text-danger"></i>
+                                        {% else %}
+                                            <i class="bi bi-check2 text-success"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_notification_voir', {id: notif.id}) }}" 
+                                           class="text-decoration-none {% if not notif.lu %}fw-bold{% endif %}">
+                                            {{ notif.message }}
+                                        </a>
+                                    </td>
+                                    <td style="width: 150px" class="text-muted">
+                                        {{ notif.createdAt|date('d/m/Y H:i') }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

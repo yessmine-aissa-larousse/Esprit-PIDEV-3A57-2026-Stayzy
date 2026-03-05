@@ -1,0 +1,508 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Publier un logement - Stayzy{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    {# ===================================================
+       API EXTERNE 1 : Leaflet.js — Bibliothèque de carte
+       Chargée depuis internet (CDN), rien à installer
+    =================================================== #}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* La carte fait 350px de hauteur */
+        #map {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 16px;
+        }
+
+        /* Barre de recherche au-dessus de la carte */
+        #search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        #search-bar input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        #search-bar button {
+            padding: 8px 16px;
+            background: #ffc107;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #search-bar button:hover { background: #e0a800; }
+
+        /* Info sous la carte */
+        #map-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #856404;
+            margin-bottom: 16px;
+        }
+
+        /* Champ rempli automatiquement → bordure verte */
+        .auto-filled {
+            border-color: #198754 !important;
+            background-color: #f0fdf4 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">📝 Publier un logement</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('proprietaire_logement_list') }}">Mes Logements</a></li>
+                <li class="current">Publier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 60px 0; background: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                {# ──────────────────────────────────────────────────────
+                   BLOC 1 : Informations de base — IDENTIQUE à ton fichier
+                ────────────────────────────────────────────────────── #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-1-circle"></i> Informations de base</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                {{ form_label(form.titre, 'Titre de l\'annonce *') }}
+                                {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Appartement cosy au centre-ville'}}) }}
+                                {{ form_errors(form.titre) }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.categorie, 'Type de logement *') }}
+                                {{ form_widget(form.categorie, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.categorie) }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description') }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez votre logement, ses atouts, son environnement...'}}) }}
+                            <small class="text-muted">Soyez précis pour attirer plus de clients !</small>
+                        </div>
+                    </div>
+                </div>
+
+                {# ──────────────────────────────────────────────────────
+                   BLOC 2 : Caractéristiques — IDENTIQUE à ton fichier
+                ────────────────────────────────────────────────────── #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-2-circle"></i> Caractéristiques</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.prix, 'Prix par nuit (€) *') }}
+                                <div class="input-group">
+                                    {{ form_widget(form.prix, {'attr': {'class': 'form-control', 'placeholder': '150'}}) }}
+                                    <span class="input-group-text">€</span>
+                                </div>
+                                {{ form_errors(form.prix) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.superficie, 'Superficie (m²) *') }}
+                                <div class="input-group">
+                                    {{ form_widget(form.superficie, {'attr': {'class': 'form-control', 'placeholder': '75'}}) }}
+                                    <span class="input-group-text">m²</span>
+                                </div>
+                                {{ form_errors(form.superficie) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.nombreChambres, 'Chambres *') }}
+                                {{ form_widget(form.nombreChambres, {'attr': {'class': 'form-control', 'placeholder': '2'}}) }}
+                                {{ form_errors(form.nombreChambres) }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_label(form.nombreSalleDeBain, 'Salles de bain *') }}
+                                {{ form_widget(form.nombreSalleDeBain, {'attr': {'class': 'form-control', 'placeholder': '1'}}) }}
+                                {{ form_errors(form.nombreSalleDeBain) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ──────────────────────────────────────────────────────
+                   BLOC 3 : Localisation
+                   ↓↓ C'EST ICI QU'ON INTÈGRE L'API ↓↓
+
+                   AVANT (ton fichier original) :
+                   → Le propriétaire tapait rue, ville, code postal à la main
+
+                   APRÈS (avec l'API) :
+                   → Une carte s'affiche
+                   → Le propriétaire clique sur la carte OU tape une adresse
+                   → L'API Nominatim (OpenStreetMap) est appelée automatiquement
+                   → Les champs rue, ville, codePostal, pays se remplissent tout seuls
+                ────────────────────────────────────────────────────── #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-3-circle"></i> Localisation</h5>
+                    </div>
+                    <div class="card-body">
+
+                        {# NOUVEAU : Barre de recherche d'adresse par texte
+                           Le propriétaire peut taper "Nabeul" ou "Tunis, Lac"
+                           → l'API cherche et déplace la carte automatiquement #}
+                        <label class="form-label fw-semibold">
+                             Rechercher une adresse sur la carte
+                        </label>
+                        <div id="search-bar">
+                            <input type="text"
+                                   id="map-search-input"
+                                   placeholder="Ex: Nabeul, Tunis, 5 rue de la Liberté...">
+                            <button type="button" onclick="rechercherAdresse()">
+                                <i class="bi bi-search"></i> Rechercher
+                            </button>
+                        </div>
+
+                        {# NOUVEAU : La carte Leaflet s'affiche ici
+                           Elle est rendue par le JavaScript en bas de page #}
+                        <div id="map"></div>
+
+                        {# NOUVEAU : Message d'aide pour le propriétaire #}
+                        <div id="map-info">
+                            💡 <strong>Cliquez sur la carte</strong> ou
+                            <strong>déplacez le marqueur</strong> pour positionner
+                            votre logement. Les champs ci-dessous se remplissent
+                            automatiquement via l'API OpenStreetMap (Nominatim).
+                        </div>
+
+                        {# NOUVEAU : Champs cachés — envoient lat/lng au Controller
+                           Le Controller les sauvegarde dans le JSON adresse en base #}
+                        <input type="hidden" id="latitude"  name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+
+                        {# TES CHAMPS ORIGINAUX — exactement les mêmes qu'avant
+                           Ils se remplissent automatiquement grâce à l'API
+                           Le propriétaire peut aussi les corriger manuellement #}
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="rue" class="form-label">Adresse *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="rue"
+                                       name="rue"
+                                       placeholder="Rempli automatiquement — ou saisir manuellement">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="ville" class="form-label">Ville *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="ville"
+                                       name="ville"
+                                       placeholder="Ville">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="codePostal" class="form-label">Code postal *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="codePostal"
+                                       name="codePostal"
+                                       placeholder="Code postal">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="pays" class="form-label">Pays *</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="pays"
+                                       name="pays"
+                                       value="Tunisie">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                {# ──────────────────────────────────────────────────────
+                   BLOC 4 : Photos — IDENTIQUE à ton fichier
+                ────────────────────────────────────────────────────── #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-4-circle"></i> Photos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form_label(form.photoPrincipale, 'Photo principale *') }}
+                            {{ form_widget(form.photoPrincipale, {'attr': {'class': 'form-control'}}) }}
+                            <small class="text-muted">Cette photo sera la première visible par les clients</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form_label(form.photos, 'Photos supplémentaires') }}
+                            {{ form_widget(form.photos, {'attr': {'class': 'form-control'}}) }}
+                            <small class="text-muted">Vous pouvez ajouter plusieurs photos</small>
+                        </div>
+                    </div>
+                </div>
+
+                {# ──────────────────────────────────────────────────────
+                   BLOC 5 : Équipements — IDENTIQUE à ton fichier
+                ────────────────────────────────────────────────────── #}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-5-circle"></i> Équipements</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Aménités disponibles</label>
+                            <div class="row">
+                                {{ form_widget(form.amenites) }}
+                            </div>
+                        </div>
+                        <div class="form-check form-switch">
+                            {{ form_widget(form.disponible, {'attr': {'class': 'form-check-input', 'role': 'switch'}}) }}
+                            {{ form_label(form.disponible, 'Logement disponible à la location', {'label_attr': {'class': 'form-check-label'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Boutons — IDENTIQUES à ton fichier #}
+                <div class="d-flex gap-3 justify-content-end">
+                    <a href="{{ path('proprietaire_logement_list') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                    {{ form_widget(form.save, {'attr': {'class': 'btn btn-primary'}}) }}
+                </div>
+
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    {# ===================================================
+       API EXTERNE : Leaflet.js — JS de la carte
+       Chargé depuis internet (CDN), rien à installer
+    =================================================== #}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+    // ============================================================
+    // ÉTAPE 4 : Initialisation de la carte Leaflet
+    // Centre par défaut = Tunisie (lat: 33.88, lng: 9.53, zoom: 6)
+    // ============================================================
+    const map = L.map('map').setView([33.8869, 9.5375], 6);
+
+    // Tuiles OpenStreetMap — gratuites, sans clé
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Marqueur draggable (le propriétaire peut le déplacer à la main)
+    let marker = L.marker([33.8869, 9.5375], { draggable: true }).addTo(map);
+    marker.bindPopup('📍 Cliquez sur la carte pour positionner votre logement').openPopup();
+
+
+    // ============================================================
+    // DÉCLENCHEUR 1 — Clic sur la carte
+    // Le propriétaire clique sur un endroit de la carte
+    // → Le marqueur se déplace à cet endroit
+    // → L'API Nominatim est appelée pour obtenir l'adresse
+    // ============================================================
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        appellerNominatimReverse(e.latlng.lat, e.latlng.lng);
+    });
+
+
+    // ============================================================
+    // DÉCLENCHEUR 2 — Drag du marqueur (déplacement manuel)
+    // Le propriétaire fait glisser le marqueur
+    // → L'API Nominatim est appelée à la fin du drag
+    // ============================================================
+    marker.on('dragend', function() {
+        const pos = marker.getLatLng();
+        appellerNominatimReverse(pos.lat, pos.lng);
+    });
+
+
+    // ============================================================
+    // L'API EXTERNE : NOMINATIM (OpenStreetMap)
+    // ============================================================
+    // Qu'est-ce que c'est ?
+    //   C'est un service web gratuit d'OpenStreetMap.
+    //   Il fait le "reverse geocoding" :
+    //   tu lui donnes des coordonnées GPS → il te retourne une adresse.
+    //
+    // Comment on l'appelle ?
+    //   Avec fetch() : le navigateur envoie une requête HTTP à l'URL
+    //   https://nominatim.openstreetmap.org/reverse?lat=36.8&lon=10.1&format=json
+    //   et reçoit une réponse JSON avec l'adresse complète.
+    //
+    // Exemple de réponse JSON reçue :
+    // {
+    //   "address": {
+    //     "house_number": "5",
+    //     "road": "Rue Habib Bourguiba",
+    //     "city": "Tunis",
+    //     "postcode": "1001",
+    //     "country": "Tunisie"
+    //   }
+    // }
+    // ============================================================
+    function appellerNominatimReverse(lat, lng) {
+
+        // 1. Stocker lat/lng dans les champs cachés du formulaire
+        document.getElementById('latitude').value  = lat.toFixed(6);
+        document.getElementById('longitude').value = lng.toFixed(6);
+
+        // 2. URL de l'API Nominatim — reverse geocoding
+        const url = 'https://nominatim.openstreetmap.org/reverse'
+                  + '?lat='    + lat
+                  + '&lon='    + lng
+                  + '&format=json'
+                  + '&accept-language=fr';
+
+        // 3. Appel réseau vers l'API externe avec fetch()
+        fetch(url)
+            .then(function(reponse) {
+                return reponse.json();  // Transformer la réponse en objet JS
+            })
+            .then(function(donnees) {
+                // 4. Réponse reçue → remplir les champs du formulaire
+                if (donnees && donnees.address) {
+                    remplirChampsAdresse(donnees.address);
+                }
+            })
+            .catch(function(erreur) {
+                console.error('Erreur appel API Nominatim :', erreur);
+            });
+    }
+
+
+    // ============================================================
+    // REMPLISSAGE AUTOMATIQUE des champs rue, ville, codePostal, pays
+    // Appelée après chaque réponse de l'API Nominatim
+    // ============================================================
+    function remplirChampsAdresse(adresse) {
+
+        // Rue = numéro + nom de rue
+        const rue = [
+            adresse.house_number || '',
+            adresse.road || adresse.pedestrian || adresse.footway || ''
+        ].filter(Boolean).join(' ');
+
+        // Ville : plusieurs noms possibles selon le type de lieu
+        const ville = adresse.city
+                   || adresse.town
+                   || adresse.village
+                   || adresse.municipality
+                   || '';
+
+        const codePostal = adresse.postcode || '';
+        const pays       = adresse.country  || '';
+
+        // Injecter dans les champs originaux de ton formulaire
+        remplirChamp('rue',        rue);
+        remplirChamp('ville',      ville);
+        remplirChamp('codePostal', codePostal);
+        remplirChamp('pays',       pays);
+    }
+
+    // Remplit un champ et affiche une animation verte pendant 2 secondes
+    function remplirChamp(id, valeur) {
+        const champ = document.getElementById(id);
+        if (!champ) return;
+        champ.value = valeur;
+        champ.classList.add('auto-filled');
+        setTimeout(function() { champ.classList.remove('auto-filled'); }, 2000);
+    }
+
+
+    // ============================================================
+    // DÉCLENCHEUR 3 — Recherche par texte
+    // Le propriétaire tape "Nabeul" dans la barre et clique Rechercher
+    // → L'API Nominatim cherche les coordonnées de ce texte
+    // → La carte et le marqueur se déplacent
+    // → Les champs adresse se remplissent
+    //
+    // API NOMINATIM — Geocoding direct (texte → coordonnées GPS)
+    // URL : https://nominatim.openstreetmap.org/search?q=Nabeul&format=json
+    // ============================================================
+    function rechercherAdresse() {
+        const texte = document.getElementById('map-search-input').value.trim();
+        if (!texte) return;
+
+        const url = 'https://nominatim.openstreetmap.org/search'
+                  + '?q='      + encodeURIComponent(texte)
+                  + '&format=json'
+                  + '&addressdetails=1'
+                  + '&limit=1'
+                  + '&accept-language=fr';
+
+        fetch(url)
+            .then(function(reponse) { return reponse.json(); })
+            .then(function(resultats) {
+                if (resultats && resultats.length > 0) {
+                    const r   = resultats[0];
+                    const lat = parseFloat(r.lat);
+                    const lng = parseFloat(r.lon);
+
+                    // Déplacer carte + marqueur vers le résultat
+                    map.setView([lat, lng], 15);
+                    marker.setLatLng([lat, lng]);
+
+                    // Sauvegarder les coordonnées
+                    document.getElementById('latitude').value  = lat.toFixed(6);
+                    document.getElementById('longitude').value = lng.toFixed(6);
+
+                    // Remplir les champs adresse
+                    remplirChampsAdresse(r.address);
+
+                } else {
+                    alert('Adresse introuvable. Essayez un autre terme.');
+                }
+            })
+            .catch(function(erreur) {
+                console.error('Erreur recherche Nominatim :', erreur);
+            });
+    }
+
+    // Lancer la recherche avec la touche Entrée
+    document.getElementById('map-search-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            rechercherAdresse();
+        }
+    });
+
+    </script>
+
+{% endblock %}

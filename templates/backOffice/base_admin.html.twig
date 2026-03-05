@@ -10,6 +10,15 @@
         
         {# Main Content Area #}
         <main class="app-main">
+        {% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert alert-{{ label }} alert-dismissible fade show m-3">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endfor %}
+
             {% block admin_content %}
                 {# Le contenu des pages sera ici #}
             {% endblock %}
@@ -25,4 +34,19 @@
             All rights reserved.
         </footer>
     </div>
+    {{ encore_entry_script_tags('app') }}
+
+    {# Chart.js via CDN #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+{# Symfony UX Chartjs stimulus controller #}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('canvas[data-controller="symfony--ux-chartjs--chart"]').forEach(function (canvas) {
+        const data = JSON.parse(canvas.getAttribute('data-symfony--ux-chartjs--chart-view-value'));
+        new Chart(canvas, data);
+    });
+});
+</script>
+{{ encore_entry_link_tags('app') }}
 {% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes réponses{% endblock %}
+
+{% block body %}
+
+<!-- Page Title -->
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Liste des réponses</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="current">Mes réponses</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section">
+<div class="container">
+
+<!-- Recherche -->
+<div class="card mb-4 shadow-sm border-0">
+    <div class="card-body">
+        <form method="get" action="{{ path('prop_reponses') }}" class="row g-3 align-items-center">
+
+            <div class="col-md-5">
+                <input type="number"
+                       name="id_reclamation"
+                       value="{{ app.request.get('id_reclamation') }}"
+                       class="form-control"
+                       placeholder="🔎 ID Réclamation">
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ path('prop_reponses') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Tableau -->
+<div class="card shadow-sm border-0">
+    <div class="card-body table-responsive">
+
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Contenu</th>
+                    <th>Date</th>
+                    <th>Réclamation</th>
+                    <th>🤖 Score IA</th>
+                    <th width="170">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% if reponses is not empty %}
+
+                {% for reponse in reponses %}
+                    {% set s = scores[reponse.id] ?? null %}
+                    {% set q = s ? s.quality : null %}
+                    {% set d = s ? s.delay   : null %}
+                    <tr>
+                        <td>{{ reponse.id }}</td>
+
+                        <td>
+                            {{ reponse.contenu|slice(0,60) }}
+                            {% if reponse.contenu|length > 60 %}...{% endif %}
+                        </td>
+
+                        <td>
+                            {{ reponse.dateReponse ? reponse.dateReponse|date('d/m/Y H:i') : '-' }}
+                        </td>
+
+                        <td>
+                            #{{ reponse.reclamation ? reponse.reclamation.id : '-' }}
+                        </td>
+
+                        {# ── Score IA ── #}
+                        <td>
+                            {% if q %}
+                                <span class="badge bg-{{ q.color }} mb-1">
+                                    {{ q.icon }} {{ q.label|upper }} — {{ q.score }}/100
+                                </span>
+                                <div class="progress" style="height:6px; border-radius:3px;">
+                                    <div class="progress-bar bg-{{ q.color }}"
+                                         style="width:{{ q.score }}%"></div>
+                                </div>
+                                {% if d and d.hours is not null %}
+                                    <small class="text-{{ d.color }} d-block mt-1">
+                                        ⏱ {{ d.hours }}h — {{ d.label }}
+                                    </small>
+                                {% endif %}
+                                {% if s.fallback is defined and s.fallback %}
+                                    <small class="text-muted">(hors-ligne)</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="d-flex gap-2">
+
+                            <a href="{{ path('prop_reponse_edit', {'id': reponse.id}) }}"
+                               class="btn btn-sm btn-primary">
+                               Modifier
+                            </a>
+
+                            <form method="post"
+                                  action="{{ path('prop_reponse_delete', {'id': reponse.id}) }}"
+                                  onsubmit="return confirm('Supprimer cette réponse ?');">
+
+                                <input type="hidden"
+                                       name="_token"
+                                       value="{{ csrf_token('delete' ~ reponse.id) }}">
+
+                                <button class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        Aucune réponse trouvée
+                    </td>
+                </tr>
+            {% endif %}
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+
+</div>
+</section>
+
+{% endblock %}

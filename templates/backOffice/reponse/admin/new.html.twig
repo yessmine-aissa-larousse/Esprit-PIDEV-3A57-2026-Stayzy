@@ -1,0 +1,68 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Répondre à la réclamation{% endblock %}
+
+{% block admin_content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card card-primary card-outline shadow-sm">
+
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Répondre à la réclamation #{{ reclamation.id }}
+                    </h3>
+                </div>
+
+                <div class="card-body">
+
+                    {{ form_start(form) }}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Votre réponse
+                        </label>
+
+                        {{ form_widget(form.contenu, {
+                            'attr': {
+                                'class': 'form-control',
+                                'rows': 6,
+                                'placeholder': 'Écrire votre réponse ici...'
+                            }
+                        }) }}
+
+                        <div class="text-danger small mt-1">
+                            {{ form_errors(form.contenu) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+
+                        <a href="{{ path('admin_reclamations') }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Annuler
+                        </a>
+
+                        <button class="btn btn-success px-4">
+                            <i class="bi bi-send"></i>
+                            Envoyer la réponse
+                        </button>
+
+                    </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

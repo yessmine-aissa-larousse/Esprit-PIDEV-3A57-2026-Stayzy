@@ -1,0 +1,263 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Détails utilisateur - Stayzy{% endblock %}
+
+{% block admin_content %}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0"><i class="bi bi-eye"></i> Détails de l'utilisateur</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ path('app_user_index') }}">Utilisateurs</a></li>
+                        <li class="breadcrumb-item active">Détails</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    {# Actions principales #}
+                    <div class="mb-3">
+                        <a href="{{ path('app_user_edit', {id: user.id}) }}" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <a href="{{ path('app_user_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour à la liste
+                        </a>
+                        <form action="{{ path('app_user_delete', {id: user.id}) }}" 
+                              method="post" 
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');" 
+                              style="display:inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+
+                    {# Profil utilisateur #}
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="bi bi-person-circle"></i> Profil de {{ user.fullName }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {# Colonne gauche - Photo et badges #}
+                                <div class="col-md-4 text-center">
+                                    <div class="mb-3">
+                                        {% if user.imageUrl %}
+                                            <img src="{{ user.imageUrl }}" 
+                                                 alt="{{ user.fullName }}" 
+                                                 class="img-fluid rounded-circle shadow" 
+                                                 style="max-width: 200px; height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                                 style="width: 200px; height: 200px;">
+                                                <i class="bi bi-person-circle" style="font-size: 150px; color: #ccc;"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <h4>{{ user.fullName }}</h4>
+                                    
+                                    <div class="mt-3">
+                                        {% for roleName in user.roleNames %}
+                                            <span class="badge bg-{{ roleName == 'ADMIN' ? 'danger' : (roleName == 'PROPRIETAIRE' ? 'info' : 'primary') }} mb-1" 
+                                                  style="font-size: 14px;">
+                                                {{ roleName }}
+                                            </span><br>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="mt-3">
+                                        {% if user.isActive %}
+                                            <span class="badge bg-success" style="font-size: 13px;">
+                                                <i class="bi bi-check-circle"></i> Compte Actif
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger" style="font-size: 13px;">
+                                                <i class="bi bi-x-circle"></i> Compte Inactif
+                                            </span>
+                                        {% endif %}
+                                        
+                                        {% if user.isVerified %}
+                                            <br><span class="badge bg-success mt-1" style="font-size: 13px;">
+                                                <i class="bi bi-patch-check"></i> Vérifié
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {# Colonne droite - Informations #}
+                                <div class="col-md-8">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 200px;">
+                                                <i class="bi bi-hash"></i> ID
+                                            </th>
+                                            <td><code>{{ user.id }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <i class="bi bi-person"></i> Nom complet
+                                            </th>
+                                            <td><strong>{{ user.fullName }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <i class="bi bi-envelope"></i> Email
+                                            </th>
+                                            <td>
+                                                <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <i class="bi bi-telephone"></i> Téléphone
+                                            </th>
+                                            <td>
+                                                {% if user.tel %}
+                                                    <a href="tel:{{ user.tel }}">{{ user.tel }}</a>
+                                                {% else %}
+                                                    <span class="text-muted">Non renseigné</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <i class="bi bi-geo-alt"></i> Adresse
+                                            </th>
+                                            <td>{{ user.adresse ?? '<span class="text-muted">Non renseignée</span>'|raw }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>
+                                                <i class="bi bi-calendar-plus"></i> Date de création
+                                            </th>
+                                            <td>{{ user.createdAt|date('d/m/Y à H:i') }}</td>
+                                        </tr>
+                                        
+                                        {% if user.lastLogin %}
+                                            <tr>
+                                                <th>
+                                                    <i class="bi bi-clock-history"></i> Dernière connexion
+                                                </th>
+                                                <td>{{ user.lastLogin|date('d/m/Y à H:i') }}</td>
+                                            </tr>
+                                        {% endif %}
+                                    </table>
+
+                                    {# Informations propriétaire si applicable #}
+                                    {% if user.isProprietaire %}
+                                        <div class="alert alert-info">
+                                            <h5><i class="bi bi-info-circle"></i> Informations Propriétaire</h5>
+                                            <table class="table table-sm table-bordered mb-0">
+                                                <tr>
+                                                    <th style="width: 200px;">Statut d'approbation</th>
+                                                    <td>
+                                                        {% if user.isPending %}
+                                                            <span class="badge bg-warning">En attente</span>
+                                                        {% elseif user.isApproved %}
+                                                            <span class="badge bg-success">Approuvé</span>
+                                                        {% elseif user.isRejected %}
+                                                            <span class="badge bg-danger">Rejeté</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                
+                                                {% if user.approvalDate %}
+                                                    <tr>
+                                                        <th>Date de traitement</th>
+                                                        <td>{{ user.approvalDate|date('d/m/Y à H:i') }}</td>
+                                                    </tr>
+                                                {% endif %}
+                                                
+                                                {% if user.rejectionReason %}
+                                                    <tr>
+                                                        <th>Raison du rejet</th>
+                                                        <td><span class="text-danger">{{ user.rejectionReason }}</span></td>
+                                                    </tr>
+                                                {% endif %}
+                                            </table>
+
+                                            {# Actions propriétaire #}
+                                            {% if user.isPending %}
+                                                <div class="mt-3">
+                                                    <form action="{{ path('app_user_approve', {id: user.id}) }}" 
+                                                          method="post" 
+                                                          style="display:inline;"
+                                                          onsubmit="return confirm('Approuver ce propriétaire ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('approve' ~ user.id) }}">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="bi bi-check-circle"></i> Approuver maintenant
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                                        <i class="bi bi-x-circle"></i> Rejeter
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> 
+Compte créé le {{ user.createdAt|date('d/m/Y') }}
+                                </small>
+                                <div>
+                                    <a href="{{ path('app_user_edit', {id: user.id}) }}" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i> Modifier
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Modal Rejet #}
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Rejeter la demande</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ path('app_user_reject', {id: user.id}) }}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ user.id) }}">
+                        <div class="mb-3">
+                            <label class="form-label">Raison du rejet (optionnel)</label>
+                            <textarea name="rejection_reason" class="form-control" rows="3" 
+                                      placeholder="Expliquez pourquoi vous rejetez cette demande..."></textarea>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Un email sera envoyé à l'utilisateur pour l'informer du rejet.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> Confirmer le rejet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
