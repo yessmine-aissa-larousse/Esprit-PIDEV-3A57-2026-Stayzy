@@ -17,72 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class LogementController extends AbstractController
 {
-    // =========================================================================
-    // AJOUTER UN LOGEMENT (backoffice admin)
-    // =========================================================================
-    #[Route('/admin/logement/add', name: 'admin_logement_add')]
-    #[IsGranted('ROLE_PROPRIETAIRE')]
-    public function addLogement(Request $request, EntityManagerInterface $em): Response
-    {
-        $logement = new Logement();
-        $form = $this->createForm(LogementType::class, $logement);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-            // ── ÉTAPE 6 : Récupérer lat/lng envoyés par Leaflet ──
-            $adresse = [
-                'rue'        => $request->request->get('rue'),
-                'ville'      => $request->request->get('ville'),
-                'codePostal' => $request->request->get('codePostal'),
-                'pays'       => $request->request->get('pays'),
-                'latitude'   => $request->request->get('latitude'),   // ← nouveau
-                'longitude'  => $request->request->get('longitude'),  // ← nouveau
-            ];
-            $logement->setAdresse($adresse);
-
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-
-            $photoPrincipaleFile = $form->get('photoPrincipale')->getData();
-            if ($photoPrincipaleFile && $photoPrincipaleFile->isValid()) {
-                $newFilename = uniqid() . '_principal.' . $photoPrincipaleFile->guessExtension();
-                $photoPrincipaleFile->move($uploadDir, $newFilename);
-                $logement->setPhotoPrincipale($newFilename);
-            }
-
-            $photosFiles = $form->get('photos')->getData();
-            $photosArray = [];
-            if ($photosFiles) {
-                foreach ($photosFiles as $index => $file) {
-                    if ($file && $file->isValid()) {
-                        $newFilename = uniqid() . '.' . $file->guessExtension();
-                        $file->move($uploadDir, $newFilename);
-                        $photosArray[] = $newFilename;
-                        if ($index === 0 && !$logement->getPhotoPrincipale()) {
-                            $logement->setPhotoPrincipale($newFilename);
-                        }
-                    }
-                }
-            }
-            $logement->setPhotos($photosArray);
-            $logement->setNoteMoyenne(null);
-            $logement->setTotalAvis(0);
-
-            /** @var User $user */
-            $user = $this->getUser();
-            $logement->setProprietaire($user);
-
-            $em->persist($logement);
-            $em->flush();
-            $this->creerNotificationAdmin($em, $logement);
-
-            $this->addFlash('success', 'Logement ajouté avec succès !');
-            return $this->redirectToRoute('admin_logement_list');
-        }
-
-        return $this->render('backOffice/logement/add.html.twig', ['form' => $form]);
-    }
+    
 
     // =========================================================================
     // MODIFIER UN LOGEMENT (backoffice)
@@ -131,7 +66,7 @@ final class LogementController extends AbstractController
             $categorieId = $request->request->get('categorie');
             $categorie = $em->getRepository(Categorie::class)->find($categorieId);
             $logement->setCategorie($categorie);
-            $amenites = $request->request->all('amenites') ?? [];
+            $amenites = $request->request->all('amenites') ;
             $logement->setAmenites($amenites);
 
             $violations = $validator->validate($logement);
@@ -400,8 +335,10 @@ final class LogementController extends AbstractController
             $logement->setPhotos($photosArray);
             $logement->setNoteMoyenne(null);
             $logement->setTotalAvis(0);
-            $logement->setProprietaire($this->getUser());
-
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $logement->setProprietaire($user);
+            
             $em->persist($logement);
             $em->flush();
             $this->creerNotificationAdmin($em, $logement);
@@ -458,7 +395,7 @@ final class LogementController extends AbstractController
             $categorieId = $request->request->get('categorie');
             $categorie   = $em->getRepository(Categorie::class)->find($categorieId);
             $logement->setCategorie($categorie);
-            $amenites = $request->request->all('amenites') ?? [];
+            $amenites = $request->request->all('amenites');
             $logement->setAmenites($amenites);
 
             $uploadDir     = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';

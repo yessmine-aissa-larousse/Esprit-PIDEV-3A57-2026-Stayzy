@@ -33,8 +33,8 @@ class SmsService
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
         curl_setopt($ch, CURLOPT_USERPWD, "{$accountSid}:{$authToken}");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // ✅ Fix SSL local
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); 
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         $response = curl_exec($ch);
         $error    = curl_error($ch);
         curl_close($ch);
@@ -46,8 +46,8 @@ class SmsService
 
         $json = json_decode($response, true);
 
-        if (isset($json['error_code']) && $json['error_code'] !== null) {
-            $this->logger->error('[SMS] ❌ Erreur Twilio', ['response' => $json]);
+        if (isset($json['error_code'])) {
+                $this->logger->error('[SMS] ❌ Erreur Twilio', ['response' => $json]);
             throw new \RuntimeException('Erreur Twilio : ' . $json['error_message']);
         }
 

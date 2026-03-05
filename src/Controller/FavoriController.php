@@ -25,7 +25,7 @@ class FavoriController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté pour accéder à vos favoris');
             return $this->redirectToRoute('app_login'); // Remplace par ta route de connexion
         }
-
+        /** @var \App\Entity\User $user */
         $favoris = $user->getFavoris();
 
         return $this->render('backOffice/favoris/favoris.html.twig', [
@@ -45,7 +45,7 @@ class FavoriController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
-
+        /** @var \App\Entity\User $user */
         $favoris = $user->getFavoris();
 
         return $this->render('frontOffice/favoris/favoris.html.twig', [
@@ -65,7 +65,7 @@ class FavoriController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
-
+        /** @var \App\Entity\User $user */
         // Récupérer les logements du propriétaire connecté
         $mesLogements = $user->getLogements();
 
@@ -111,7 +111,7 @@ class FavoriController extends AbstractController
         if (!$logement) {
             return new JsonResponse(['success' => false, 'message' => 'Logement introuvable'], 404);
         }
-
+        /** @var \App\Entity\User $user */
         if ($user->isFavori($logement)) {
             // Retirer des favoris
             $user->removeFavori($logement);
@@ -151,7 +151,7 @@ class FavoriController extends AbstractController
         if (!$logement) {
             return new JsonResponse(['isFavorite' => false]);
         }
-
+        /** @var \App\Entity\User $user */
         return new JsonResponse([
             'isFavorite' => $user->isFavori($logement)
         ]);
@@ -168,7 +168,7 @@ class FavoriController extends AbstractController
         if (!$user) {
             return new JsonResponse(['count' => 0]);
         }
-
+        /** @var \App\Entity\User $user */
         return new JsonResponse([
             'count' => $user->getNombreFavoris()
         ]);

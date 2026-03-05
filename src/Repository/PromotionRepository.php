@@ -45,6 +45,8 @@ class PromotionRepository extends ServiceEntityRepository
      * Retourne la promotion ACTIVE EN COURS pour un logement donné
      * (priorité à la plus récente si plusieurs)
      */
+
+
     public function findPromoActiveByLogement(int $logementId): ?Promotion
     {
         $now = new \DateTime();
@@ -56,7 +58,7 @@ class PromotionRepository extends ServiceEntityRepository
             ->andWhere('p.dateFin >= :now')
             ->setParameter('logementId', $logementId)
             ->setParameter('now', $now)
-            ->orderBy('p.pourcentage', 'DESC') // La plus grosse réduction d'abord
+            ->orderBy('p.pourcentage', 'DESC') 
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();

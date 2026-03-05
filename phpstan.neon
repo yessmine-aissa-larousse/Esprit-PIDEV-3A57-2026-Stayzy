@@ -1,0 +1,7 @@
+parameters:
+  level: 5
+  paths:
+    - src
+  ignoreErrors:
+        - '#is never assigned int so it can be removed from the property type#'
+        - '#curl_setopt expects#'

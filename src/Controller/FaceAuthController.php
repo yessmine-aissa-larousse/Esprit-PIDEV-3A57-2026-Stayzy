@@ -41,7 +41,7 @@ class FaceAuthController extends AbstractController
                 'error' => $flaskResponse['error'] ?? 'Visage non détecté'
             ]);
         }
-
+        /** @var \App\Entity\User $user */
         $user->setFaceDescriptor(json_encode($flaskResponse['descriptor']));
         $em->flush();
 

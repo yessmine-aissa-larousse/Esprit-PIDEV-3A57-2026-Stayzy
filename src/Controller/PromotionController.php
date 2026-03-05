@@ -51,8 +51,9 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
 {
     $logement = $this->getLogementSecurise($logementId, $em);
 
-    $promoEnCours = $em->getRepository(Promotion::class)
-        ->findPromoActiveByLogement($logement->getId());
+    /** @var \App\Repository\PromotionRepository $repo */
+    $repo = $em->getRepository(Promotion::class);
+    $promoEnCours = $repo->findPromoActiveByLogement($logement->getId());
 
     if ($promoEnCours) {
         $this->addFlash('warning', '⚠️ Une promotion est déjà en cours sur ce logement.');
@@ -170,7 +171,7 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             ->getResult();
 
         $promotions = [];
-        if (!empty($logements)) {
+        if (count($logements) > 0) {
             $promotions = $em->getRepository(Promotion::class)
                 ->createQueryBuilder('p')
                 ->join('p.logement', 'l')
@@ -222,8 +223,9 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             $nbIgnores   = 0;
 
             foreach ($logements as $logement) {
-                $promoEnCours = $em->getRepository(Promotion::class)
-                    ->findPromoActiveByLogement($logement->getId());
+                /** @var \App\Repository\PromotionRepository $repo */
+                $repo = $em->getRepository(Promotion::class);
+                $promoEnCours = $repo->findPromoActiveByLogement($logement->getId());
 
                 if ($promoEnCours) { $nbIgnores++; continue; }
 
@@ -251,7 +253,7 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
         }
 
         $prixMoyen = 0;
-        if (!empty($logements)) {
+        if (count($logements) > 0) {
             foreach ($logements as $l) { $prixMoyen += $l->getPrix(); }
             $prixMoyen = round($prixMoyen / count($logements), 2);
         }
@@ -410,9 +412,8 @@ public function testSmsDebug(): Response
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
     curl_setopt($ch, CURLOPT_USERPWD, "{$accountSid}:{$authToken}");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // ✅ Désactive SSL temporairement pour tester
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     $response = curl_exec($ch);
     $error = curl_error($ch);
     curl_close($ch);
