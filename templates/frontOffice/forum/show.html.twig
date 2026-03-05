@@ -1,0 +1,221 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}{{ post.title }} - Forum{% endblock %}
+
+{% block body %}
+    <!-- Blog Details Section -->
+    <section class="blog-details section">
+        <div class="container" data-aos="fade-up">
+            <article>
+                <div class="article-header">
+                    <h1 class="title">{{ post.title }}</h1>
+                    <div class="article-meta">
+                        <div class="author">
+                            <div class="author-img">
+                                <img src="https://ui-avatars.com/api/?name={{ post.author|url_encode }}&background=random" alt="{{ post.author }}" width="60" height="60" />
+                            </div>
+                            <div class="author-info">
+                                <h4>{{ post.author }}</h4>
+                                <span>Auteur</span>
+                            </div>
+                        </div>
+                        <div class="post-info">
+                            <span><i class="bi bi-calendar3"></i> {{ post.createdAt|date('d M Y') }}</span>
+                            <span><i class="bi bi-chat-dots"></i> {{ post.commentsCount }} commentaire{{ post.commentsCount > 1 ? 's' : '' }}</span>
+                            <span class="avis-wrap d-flex gap-2 align-items-center">
+                                <form method="post" action="{{ path('forum_post_avis', {id: post.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="J'aime">
+                                        <i class="bi bi-hand-thumbs-up"></i> {{ post.avisCount }}
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('forum_post_dislike', {id: post.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="Je n'aime pas">
+                                        <i class="bi bi-hand-thumbs-down"></i> {{ post.dislikeCount }}
+                                    </button>
+                                </form>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="article-actions mt-3" id="post-actions" style="display:none;">
+                        <a href="{{ path('forum_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('forum_post_delete', {id: post.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_post' ~ post.id) }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="article-wrapper">
+                    {% if post.image %}
+                        <div class="article-image mb-4">
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid rounded" />
+                        </div>
+                    {% endif %}
+                    <div class="article-content">
+                        <div class="content-section">
+                            {% if post.excerpt %}
+                                <p class="lead">{{ post.excerpt }}</p>
+                            {% endif %}
+                            <div class="content-body">
+                                {{ post.content|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Comments Section -->
+            <div class="blog-comments mt-5">
+                <div class="comments-header">
+                    <h3 class="title">Commentaires</h3>
+                    <div class="comments-stats">
+                        <span class="count">{{ post.commentsCount }}</span>
+                        <span class="label">commentaires</span>
+                    </div>
+                </div>
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+
+                <!-- Comment Form -->
+                <div class="blog-comment-form mb-5">
+                    <div class="form-header">
+                        <h3>Laisser un commentaire</h3>
+                        <p>Votre adresse email ne sera pas publiée.</p>
+                    </div>
+                    {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
+                    <div class="input-group mb-3">
+                        {{ form_label(form.author) }}
+                        {{ form_widget(form.author, {attr: {placeholder: 'Votre nom'}}) }}
+                        {{ form_errors(form.author) }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content, {attr: {placeholder: 'Votre commentaire...'}}) }}
+                        {{ form_errors(form.content) }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form_label(form.image) }}
+                        {{ form_widget(form.image, {attr: {class: 'form-control'}}) }}
+                        {{ form_errors(form.image) }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+                    {{ form_end(form) }}
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-container">
+                    {% for comment in root_comments %}
+                        {% include 'frontOffice/forum/_comment_thread.html.twig' with { comment: comment, post: post, current_author: current_author } %}
+                    {% else %}
+                        <p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à réagir !</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        // Store current author from session (server-side) - persists across page refreshes
+        const currentSessionAuthor = '{{ current_author }}'.trim();
+        
+        function getStoredAuthor() {
+            // First, try to get from session (passed by server)
+            if (currentSessionAuthor) {
+                return currentSessionAuthor;
+            }
+            // Fallback to localStorage
+            return localStorage.getItem('forumAuthor')?.trim() || '';
+        }
+        
+        function setStoredAuthor(author) {
+            if (author && author.trim()) {
+                localStorage.setItem('forumAuthor', author.trim());
+                return true;
+            }
+            return false;
+        }
+
+        // Function to show/hide action buttons based on stored author
+        function updateActionButtons() {
+            const storedAuthor = getStoredAuthor();
+            const postAuthor = '{{ post.author }}'.trim();
+            
+            // Show post actions if author matches
+            const postActionsDiv = document.getElementById('post-actions');
+            if (storedAuthor && storedAuthor.toLowerCase() === postAuthor.toLowerCase() && postActionsDiv) {
+                postActionsDiv.style.display = 'block';
+            }
+            
+            // Show comment actions if author matches
+            document.querySelectorAll('[data-comment-author]').forEach(function(commentBlock) {
+                const commentAuthor = commentBlock.getAttribute('data-comment-author')?.trim() || '';
+                const actionsDiv = commentBlock.querySelector('.comment-actions-container');
+                if (storedAuthor && storedAuthor.toLowerCase() === commentAuthor.toLowerCase() && actionsDiv) {
+                    actionsDiv.classList.remove('d-none');
+                    actionsDiv.style.display = 'inline-block';
+                }
+            });
+        }
+
+        // Save author to localStorage when typing in author field
+        function setupAuthorSaving() {
+            document.querySelectorAll('input[name*="[author]"]').forEach(function(input) {
+                // Save on input (as user types)
+                input.addEventListener('input', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Save on blur (when user leaves the field)
+                input.addEventListener('blur', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Also save on form submit as backup
+                input.form?.addEventListener('submit', function() {
+                    setStoredAuthor(input.value);
+                });
+            });
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateActionButtons();
+            setupAuthorSaving();
+            
+            // Handle reply button clicks
+            document.querySelectorAll('.reply-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = this.getAttribute('data-comment-id');
+                    var wrap = document.getElementById('reply-form-' + id);
+                    if (wrap) {
+                        wrap.classList.toggle('d-none');
+                    }
+                });
+            });
+            
+            // Update buttons immediately if author field already has value
+            document.querySelectorAll('input[name*="[author]"]').forEach(function(input) {
+                if (input.value.trim()) {
+                    setStoredAuthor(input.value);
+                    updateActionButtons();
+                }
+            });
+        });
+        
+        // Re-update buttons when the page becomes visible (back from another tab/app)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateActionButtons();
+            }
+        });
+    </script>
+    {% include 'frontOffice/forum/_chatbot.html.twig' %}
+{% endblock %}

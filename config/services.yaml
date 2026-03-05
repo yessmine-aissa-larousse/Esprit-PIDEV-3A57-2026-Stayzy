@@ -9,6 +9,8 @@ parameters:
     stripe_publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
     mailer_from: '%env(MAILER_FROM)%'
     mailer_always_to: '%env(MAILER_ALWAYS_TO)%'
+    forum.openai_api_key_default: ''
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -32,6 +34,24 @@ services:
         tags: ['console.command']
 
 
+
+    App\Service\DislikeAlertMailer:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $mailerFrom: '%env(MAILER_FROM)%'
+
+    App\Service\ForumAiAssistant:
+        arguments:
+            $apiKey: '%env(default:forum.openai_api_key_default:OPENAI_API_KEY)%'
+
+    App\Service\FileUploadService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Command\TestMailCommand:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $mailerFrom: '%env(MAILER_FROM)%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

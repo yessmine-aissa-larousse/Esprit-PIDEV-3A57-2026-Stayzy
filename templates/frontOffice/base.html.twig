@@ -205,8 +205,10 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
             <div class="col-lg-2 col-6 footer-links">
                 <h4>Liens utiles</h4>
                 <ul>
-                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li><a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
+                    <li><a href="{{ path('app_properties') }}" class="{{ 'app_properties' in app.request.attributes.get('_route', '') ? 'active' : '' }}">Nos Logements</a></li>
+                    <li><a href="{{ path('forum_index') }}" class="{{ 'forum' in app.request.attributes.get('_route', '') ? 'active' : '' }}">Forum</a></li>
                     <li><a href="#">Services</a></li>
                 </ul>
             </div>
