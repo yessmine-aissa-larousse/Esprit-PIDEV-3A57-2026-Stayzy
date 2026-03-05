@@ -36,9 +36,25 @@
                             </span>
                         </div>
                     </div>
+                    <div class="article-actions mt-3" id="post-actions" style="display:none;">
+                        <a href="{{ path('forum_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('forum_post_delete', {id: post.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_post' ~ post.id) }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="article-wrapper">
+                    {% if post.image %}
+                        <div class="article-image mb-4">
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid rounded" />
+                        </div>
+                    {% endif %}
                     <div class="article-content">
                         <div class="content-section">
                             {% if post.excerpt %}
@@ -75,7 +91,7 @@
                         <h3>Laisser un commentaire</h3>
                         <p>Votre adresse email ne sera pas publiée.</p>
                     </div>
-                    {{ form_start(form, {attr: {class: 'comment-form'}}) }}
+                    {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
                     <div class="input-group mb-3">
                         {{ form_label(form.author) }}
                         {{ form_widget(form.author, {attr: {placeholder: 'Votre nom'}}) }}
@@ -85,6 +101,11 @@
                         {{ form_label(form.content) }}
                         {{ form_widget(form.content, {attr: {placeholder: 'Votre commentaire...'}}) }}
                         {{ form_errors(form.content) }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form_label(form.image) }}
+                        {{ form_widget(form.image, {attr: {class: 'form-control'}}) }}
+                        {{ form_errors(form.image) }}
                     </div>
                     <button type="submit" class="btn btn-primary">Publier le commentaire</button>
                     {{ form_end(form) }}
@@ -102,14 +123,98 @@
         </div>
     </section>
     <script>
-        document.querySelectorAll('.reply-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var id = this.getAttribute('data-comment-id');
-                var wrap = document.getElementById('reply-form-' + id);
-                if (wrap) {
-                    wrap.classList.toggle('d-none');
+        // Store current author from session (server-side) - persists across page refreshes
+        const currentSessionAuthor = '{{ current_author }}'.trim();
+        
+        function getStoredAuthor() {
+            // First, try to get from session (passed by server)
+            if (currentSessionAuthor) {
+                return currentSessionAuthor;
+            }
+            // Fallback to localStorage
+            return localStorage.getItem('forumAuthor')?.trim() || '';
+        }
+        
+        function setStoredAuthor(author) {
+            if (author && author.trim()) {
+                localStorage.setItem('forumAuthor', author.trim());
+                return true;
+            }
+            return false;
+        }
+
+        // Function to show/hide action buttons based on stored author
+        function updateActionButtons() {
+            const storedAuthor = getStoredAuthor();
+            const postAuthor = '{{ post.author }}'.trim();
+            
+            // Show post actions if author matches
+            const postActionsDiv = document.getElementById('post-actions');
+            if (storedAuthor && storedAuthor.toLowerCase() === postAuthor.toLowerCase() && postActionsDiv) {
+                postActionsDiv.style.display = 'block';
+            }
+            
+            // Show comment actions if author matches
+            document.querySelectorAll('[data-comment-author]').forEach(function(commentBlock) {
+                const commentAuthor = commentBlock.getAttribute('data-comment-author')?.trim() || '';
+                const actionsDiv = commentBlock.querySelector('.comment-actions-container');
+                if (storedAuthor && storedAuthor.toLowerCase() === commentAuthor.toLowerCase() && actionsDiv) {
+                    actionsDiv.classList.remove('d-none');
+                    actionsDiv.style.display = 'inline-block';
                 }
             });
+        }
+
+        // Save author to localStorage when typing in author field
+        function setupAuthorSaving() {
+            document.querySelectorAll('input[name*="[author]"]').forEach(function(input) {
+                // Save on input (as user types)
+                input.addEventListener('input', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Save on blur (when user leaves the field)
+                input.addEventListener('blur', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Also save on form submit as backup
+                input.form?.addEventListener('submit', function() {
+                    setStoredAuthor(input.value);
+                });
+            });
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateActionButtons();
+            setupAuthorSaving();
+            
+            // Handle reply button clicks
+            document.querySelectorAll('.reply-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var id = this.getAttribute('data-comment-id');
+                    var wrap = document.getElementById('reply-form-' + id);
+                    if (wrap) {
+                        wrap.classList.toggle('d-none');
+                    }
+                });
+            });
+            
+            // Update buttons immediately if author field already has value
+            document.querySelectorAll('input[name*="[author]"]').forEach(function(input) {
+                if (input.value.trim()) {
+                    setStoredAuthor(input.value);
+                    updateActionButtons();
+                }
+            });
+        });
+        
+        // Re-update buttons when the page becomes visible (back from another tab/app)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateActionButtons();
+            }
         });
     </script>
     {% include 'frontOffice/forum/_chatbot.html.twig' %}

@@ -9,6 +9,7 @@ use App\Form\PostType;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Service\DislikeAlertMailer;
+use App\Service\FileUploadService;
 use App\Service\ForumAiAssistant;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ final class ForumController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly DislikeAlertMailer $dislikeAlertMailer,
         private readonly ForumAiAssistant $forumAiAssistant,
+        private readonly FileUploadService $fileUploadService,
     ) {
     }
 
@@ -74,6 +76,13 @@ final class ForumController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle image upload
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $imagePath = $this->fileUploadService->uploadFile($imageFile);
+                $post->setImage($imagePath);
+            }
+
             $this->entityManager->persist($post);
             $this->entityManager->flush();
             $request->getSession()->set(self::SESSION_AUTHOR_KEY, $post->getAuthor());
@@ -115,6 +124,14 @@ final class ForumController extends AbstractController
                     }
                 }
             }
+
+            // Handle image upload
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                $imagePath = $this->fileUploadService->uploadFile($imageFile);
+                $comment->setImage($imagePath);
+            }
+
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
             $request->getSession()->set(self::SESSION_AUTHOR_KEY, $comment->getAuthor());
@@ -140,10 +157,24 @@ final class ForumController extends AbstractController
             throw $this->createNotFoundException('Ce post n\'existe pas ou n\'est pas publié.');
         }
 
+        $oldImage = $post->getImage();
+
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle image upload
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                // Delete old image if it exists
+                if ($oldImage) {
+                    $this->fileUploadService->deleteFile($oldImage);
+                }
+                // Upload new image
+                $imagePath = $this->fileUploadService->uploadFile($imageFile);
+                $post->setImage($imagePath);
+            }
+
             $this->entityManager->flush();
             $this->addFlash('success', 'Post modifié.');
             return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
@@ -159,6 +190,10 @@ final class ForumController extends AbstractController
     public function deletePost(Request $request, Post $post): Response
     {
         if ($this->isCsrfTokenValid('delete_post' . $post->getId(), (string) $request->request->get('_token'))) {
+            // Delete image if it exists
+            if ($post->getImage()) {
+                $this->fileUploadService->deleteFile($post->getImage());
+            }
             $this->entityManager->remove($post);
             $this->entityManager->flush();
             $this->addFlash('success', 'Post supprimé.');
@@ -171,10 +206,24 @@ final class ForumController extends AbstractController
     #[Route('/comment/{id}/edit', name: 'forum_comment_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editComment(Request $request, Comment $comment): Response
     {
+        $oldImage = $comment->getImage();
+
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle image upload
+            $imageFile = $form->get('image')->getData();
+            if ($imageFile) {
+                // Delete old image if it exists
+                if ($oldImage) {
+                    $this->fileUploadService->deleteFile($oldImage);
+                }
+                // Upload new image
+                $imagePath = $this->fileUploadService->uploadFile($imageFile);
+                $comment->setImage($imagePath);
+            }
+
             $this->entityManager->flush();
             $this->addFlash('success', 'Commentaire modifié.');
             return $this->redirectToRoute('forum_post_show', ['id' => $comment->getPost()->getId()]);
@@ -190,6 +239,10 @@ final class ForumController extends AbstractController
     public function deleteComment(Request $request, Comment $comment): Response
     {
         if ($this->isCsrfTokenValid('delete_comment' . $comment->getId(), (string) $request->request->get('_token'))) {
+            // Delete image if it exists
+            if ($comment->getImage()) {
+                $this->fileUploadService->deleteFile($comment->getImage());
+            }
             $this->entityManager->remove($comment);
             $this->entityManager->flush();
             $this->addFlash('success', 'Commentaire supprimé.');

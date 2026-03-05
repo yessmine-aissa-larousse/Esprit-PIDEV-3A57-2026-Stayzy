@@ -15,7 +15,7 @@
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success">{{ message }}</div>
             {% endfor %}
-            {{ form_start(form, {attr: {class: 'comment-form'}}) }}
+            {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
             <div class="mb-3">
                 {{ form_label(form.title) }}
                 {{ form_widget(form.title) }}
@@ -36,6 +36,11 @@
                 {{ form_widget(form.author) }}
                 {{ form_errors(form.author) }}
             </div>
+            <div class="mb-3">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image) }}
+                {{ form_errors(form.image) }}
+            </div>
             <div class="mb-4 d-none">
                 {{ form_widget(form.isPublished) }}
             </div>
@@ -44,4 +49,34 @@
             {{ form_end(form) }}
         </div>
     </section>
+    <script>
+        // Function to set forum author in localStorage
+        function setStoredAuthor(author) {
+            if (author && author.trim()) {
+                localStorage.setItem('forumAuthor', author.trim());
+                return true;
+            }
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Save author to localStorage when typing
+            document.querySelectorAll('input[name*="[author]"]').forEach(function(input) {
+                // Save on input (as user types)
+                input.addEventListener('input', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Save on blur (when user leaves the field)
+                input.addEventListener('blur', function() {
+                    setStoredAuthor(this.value);
+                });
+                
+                // Also save on form submit as backup
+                input.form?.addEventListener('submit', function() {
+                    setStoredAuthor(input.value);
+                });
+            });
+        });
+    </script>
 {% endblock %}

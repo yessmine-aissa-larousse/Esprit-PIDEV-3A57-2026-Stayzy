@@ -49,6 +49,10 @@ class Post
     #[ORM\Column(name: 'updated_at', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: 'Le chemin de l\'image ne peut pas dépasser {{ limit }} caractères')]
+    private ?string $image = null;
+
     #[ORM\Column(name: 'avis_count', options: ['default' => 0])]
     private int $avisCount = 0;
 
@@ -147,6 +151,17 @@ class Post
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
         return $this;
     }
 

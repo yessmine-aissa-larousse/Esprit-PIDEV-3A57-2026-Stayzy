@@ -30,6 +30,10 @@ services:
         arguments:
             $apiKey: '%env(default:forum.openai_api_key_default:OPENAI_API_KEY)%'
 
+    App\Service\FileUploadService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Command\TestMailCommand:
         arguments:
             $adminEmail: '%env(ADMIN_EMAIL)%'

@@ -1,4 +1,4 @@
-<div class="comment-thread{% if comment.parent %} ms-4 mt-3{% endif %}" id="comment-{{ comment.id }}">
+<div class="comment-thread{% if comment.parent %} ms-4 mt-3{% endif %}" id="comment-{{ comment.id }}" data-comment-author="{{ comment.author }}">
     <div class="comment-box">
         <div class="comment-wrapper">
             <div class="avatar-wrapper">
@@ -26,18 +26,25 @@
                     </div>
                 </div>
                 <div class="comment-body">
+                    {% if comment.image %}
+                        <div class="comment-image mb-2">
+                            <img src="{{ comment.image }}" alt="Image du commentaire" class="img-fluid rounded" style="max-width: 100%; max-height: 300px;" />
+                        </div>
+                    {% endif %}
                     <p>{{ comment.content|nl2br }}</p>
                 </div>
                 <div class="reply-form-toggle mt-2 d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary reply-btn" data-comment-id="{{ comment.id }}" data-author="{{ comment.author }}">Répondre</button>
-                    <a href="{{ path('forum_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier">Modifier</a>
-                    <form method="post" action="{{ path('forum_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">Supprimer</button>
-                    </form>
+                    <div class="comment-actions-container" style="display: none;">
+                        <a href="{{ path('forum_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i> Modifier</a>
+                        <form method="post" action="{{ path('forum_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i> Supprimer</button>
+                        </form>
+                    </div>
                 </div>
                 <div class="reply-form-wrapper d-none mt-2" id="reply-form-{{ comment.id }}">
-                    <form method="post" action="{{ path('forum_post_show', {id: post.id}) }}" class="border-start border-3 border-secondary ps-3">
+                    <form method="post" action="{{ path('forum_post_show', {id: post.id}) }}" class="border-start border-3 border-secondary ps-3" enctype="multipart/form-data">
                         <input type="hidden" name="parent_id" value="{{ comment.id }}">
                         <input type="hidden" name="comment_type[_token]" value="{{ csrf_token('comment_type') }}">
                         <div class="mb-2">
@@ -47,6 +54,10 @@
                         <div class="mb-2">
                             <label class="form-label">Réponse</label>
                             <textarea name="comment_type[content]" class="form-control" rows="3" required placeholder="Votre réponse..." minlength="3" maxlength="2000"></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Image (optionnel)</label>
+                            <input type="file" name="comment_type[image]" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
                         </div>
                         <button type="submit" class="btn btn-primary btn-sm">Envoyer la réponse</button>
                     </form>
@@ -58,3 +69,14 @@
         {% include 'frontOffice/forum/_comment_thread.html.twig' with { comment: reply, post: post, current_author: current_author } %}
     {% endfor %}
 </div>
+<script>
+    // Handle reply form submission to save author to localStorage
+    document.querySelectorAll('#reply-form-{{ comment.id }} form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            const authorInput = form.querySelector('input[name="comment_type[author]"]');
+            if (authorInput && authorInput.value.trim()) {
+                localStorage.setItem('forumAuthor', authorInput.value.trim());
+            }
+        });
+    });
+</script>
