@@ -43,14 +43,6 @@ class PostType extends AbstractType
                     new Length(['max' => 500]),
                 ],
             ])
-            ->add('author', TextType::class, [
-                'label' => 'Auteur',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Nom de l\'auteur'],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'auteur est obligatoire']),
-                    new Length(['max' => 180]),
-                ],
-            ])
             ->add('image', FileType::class, [
                 'label' => 'Image du post (optionnel)',
                 'required' => false,

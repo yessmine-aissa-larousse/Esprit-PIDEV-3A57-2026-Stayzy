@@ -35,32 +35,38 @@
                 </div>
                 <div class="reply-form-toggle mt-2 d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary reply-btn" data-comment-id="{{ comment.id }}" data-author="{{ comment.author }}">Répondre</button>
-                    <div class="comment-actions-container" style="display: none;">
-                        <a href="{{ path('forum_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i> Modifier</a>
-                        <form method="post" action="{{ path('forum_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
-                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i> Supprimer</button>
-                        </form>
-                    </div>
+                    {% if app.user and comment.user and comment.user.id == app.user.id %}
+                        <div class="comment-actions-container">
+                            <a href="{{ path('forum_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i> Modifier</a>
+                            <form method="post" action="{{ path('forum_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i> Supprimer</button>
+                            </form>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="reply-form-wrapper d-none mt-2" id="reply-form-{{ comment.id }}">
-                    <form method="post" action="{{ path('forum_post_show', {id: post.id}) }}" class="border-start border-3 border-secondary ps-3" enctype="multipart/form-data">
-                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                        <input type="hidden" name="comment_type[_token]" value="{{ csrf_token('comment_type') }}">
-                        <div class="mb-2">
-                            <label class="form-label">Votre nom</label>
-                            <input type="text" name="comment_type[author]" class="form-control" required placeholder="Votre nom" maxlength="180">
+                    {% if not app.user %}
+                        <div class="alert alert-warning">
+                            <p>Vous devez être connecté pour répondre à ce commentaire.</p>
+                            <a href="{{ path('app_login') }}" class="btn btn-sm btn-primary">Se connecter</a>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label">Réponse</label>
-                            <textarea name="comment_type[content]" class="form-control" rows="3" required placeholder="Votre réponse..." minlength="3" maxlength="2000"></textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Image (optionnel)</label>
-                            <input type="file" name="comment_type[image]" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-sm">Envoyer la réponse</button>
-                    </form>
+                    {% else %}
+                        <form method="post" action="{{ path('forum_post_show', {id: post.id}) }}" class="border-start border-3 border-secondary ps-3" enctype="multipart/form-data">
+                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                            <input type="hidden" name="comment_type[_token]" value="{{ csrf_token('comment_type') }}">
+                            <p class="text-muted small">Répondre en tant que {{ app.user.prenom }} {{ app.user.nom }}</p>
+                            <div class="mb-2">
+                                <label class="form-label">Réponse</label>
+                                <textarea name="comment_type[content]" class="form-control" rows="3" required placeholder="Votre réponse..." minlength="3" maxlength="2000"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Image (optionnel)</label>
+                                <input type="file" name="comment_type[image]" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Envoyer la réponse</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

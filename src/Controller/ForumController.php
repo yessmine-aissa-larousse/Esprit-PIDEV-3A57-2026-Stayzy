@@ -70,30 +70,7 @@ final class ForumController extends AbstractController
     #[Route('/post/new', name: 'forum_post_new', methods: ['GET', 'POST'])]
     public function newPost(Request $request): Response
     {
-        $post = new Post();
-        $post->setIsPublished(true);
-        $form = $this->createForm(PostType::class, $post);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Handle image upload
-            $imageFile = $form->get('image')->getData();
-            if ($imageFile) {
-                $imagePath = $this->fileUploadService->uploadFile($imageFile);
-                $post->setImage($imagePath);
-            }
-
-            $this->entityManager->persist($post);
-            $this->entityManager->flush();
-            $request->getSession()->set(self::SESSION_AUTHOR_KEY, $post->getAuthor());
-            $this->addFlash('success', 'Votre post a été créé.');
-            return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
-        }
-
-        return $this->render('frontOffice/forum/post_new.html.twig', [
-            'post' => $post,
-            'form' => $form,
-        ]);
+        return new Response('TEST RESPONSE FROM CONTROLLER', 200);
     }
 
     #[Route('/post', name: 'forum_post_list', methods: ['GET'])]
@@ -115,6 +92,11 @@ final class ForumController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$this->getUser()) {
+                $this->addFlash('error', 'Vous devez être connecté pour commenter.');
+                return $this->redirectToRoute('app_login');
+            }
+
             if ($request->request->has('parent_id')) {
                 $parentId = (int) $request->request->get('parent_id');
                 if ($parentId > 0) {
@@ -132,9 +114,15 @@ final class ForumController extends AbstractController
                 $comment->setImage($imagePath);
             }
 
+            // Set the authenticated user
+            $user = $this->getUser();
+            $comment->setUser($user);
+            // Keep the author field for backward compatibility, but use user's name
+            $comment->setAuthor($user->getPrenom() . ' ' . $user->getNom());
+
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
-            $request->getSession()->set(self::SESSION_AUTHOR_KEY, $comment->getAuthor());
+
             $this->addFlash('success', 'Votre commentaire a été publié.');
             return $this->redirectToRoute('forum_post_show', ['id' => $post->getId()]);
         }
@@ -153,8 +141,18 @@ final class ForumController extends AbstractController
     #[Route('/post/{id}/edit', name: 'forum_post_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editPost(Request $request, Post $post): Response
     {
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour modifier un post.');
+            return $this->redirectToRoute('app_login');
+        }
+
         if (!$post->isPublished()) {
             throw $this->createNotFoundException('Ce post n\'existe pas ou n\'est pas publié.');
+        }
+
+        // Check if the current user owns this post
+        if ($post->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres posts.');
         }
 
         $oldImage = $post->getImage();
@@ -189,6 +187,16 @@ final class ForumController extends AbstractController
     #[Route('/post/{id}/delete', name: 'forum_post_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function deletePost(Request $request, Post $post): Response
     {
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour supprimer un post.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Check if the current user owns this post
+        if ($post->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres posts.');
+        }
+
         if ($this->isCsrfTokenValid('delete_post' . $post->getId(), (string) $request->request->get('_token'))) {
             // Delete image if it exists
             if ($post->getImage()) {
@@ -206,6 +214,16 @@ final class ForumController extends AbstractController
     #[Route('/comment/{id}/edit', name: 'forum_comment_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function editComment(Request $request, Comment $comment): Response
     {
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour modifier un commentaire.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Check if the current user owns this comment
+        if ($comment->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que vos propres commentaires.');
+        }
+
         $oldImage = $comment->getImage();
 
         $form = $this->createForm(CommentType::class, $comment);
@@ -238,6 +256,16 @@ final class ForumController extends AbstractController
     #[Route('/comment/{id}/delete', name: 'forum_comment_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function deleteComment(Request $request, Comment $comment): Response
     {
+        if (!$this->getUser()) {
+            $this->addFlash('error', 'Vous devez être connecté pour supprimer un commentaire.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Check if the current user owns this comment
+        if ($comment->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres commentaires.');
+        }
+
         if ($this->isCsrfTokenValid('delete_comment' . $comment->getId(), (string) $request->request->get('_token'))) {
             // Delete image if it exists
             if ($comment->getImage()) {

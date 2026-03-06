@@ -26,14 +26,6 @@ class CommentType extends AbstractType
                     new Length(['min' => 3, 'max' => 2000]),
                 ],
             ])
-            ->add('author', TextType::class, [
-                'label' => 'Auteur',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Votre nom'],
-                'constraints' => [
-                    new NotBlank(['message' => 'L\'auteur est obligatoire']),
-                    new Length(['max' => 180]),
-                ],
-            ])
             ->add('image', FileType::class, [
                 'label' => 'Image du commentaire (optionnel)',
                 'required' => false,

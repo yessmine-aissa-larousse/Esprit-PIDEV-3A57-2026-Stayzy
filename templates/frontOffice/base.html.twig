@@ -105,6 +105,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
                 <li><a href="#">Services</a></li>
                 <li><a href="#">Aide</a></li>
+                {% if app.user and is_granted('ROLE_ADMIN') %}
+                    <li><a href="{{ path('route_list') }}">Routes</a></li>
+                {% endif %}
 
                 {% if app.user %}
                     <li class="user-menu-item">

@@ -1,0 +1,46 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Liste des routes{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <h1 class="mb-4">Toutes les routes du projet</h1>
+    <div class="mb-3">
+        <input id="routeFilter" type="text" class="form-control" placeholder="Rechercher une route...">
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover" id="routesTable">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>URL</th>
+                    <th>Méthodes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in routes %}
+                    <tr>
+                        <td>{{ r.name }}</td>
+                        <td>{{ r.path }}</td>
+                        <td>{{ r.methods }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.getElementById('routeFilter').addEventListener('input', function() {
+            var filter = this.value.toLowerCase();
+            document.querySelectorAll('#routesTable tbody tr').forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                row.style.display = text.indexOf(filter) !== -1 ? '' : 'none';
+            });
+        });
+    </script>
+{% endblock %}
+
+{% endblock %}

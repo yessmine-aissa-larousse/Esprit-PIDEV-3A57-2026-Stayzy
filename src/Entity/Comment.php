@@ -29,6 +29,10 @@ class Comment
     #[Assert\Length(max: 180, maxMessage: 'L\'auteur ne peut pas dépasser {{ limit }} caractères')]
     private ?string $author = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
+
     #[ORM\Column(name: 'created_at')]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -193,6 +197,17 @@ class Comment
                 $reply->setParent(null);
             }
         }
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
         return $this;
     }
 }

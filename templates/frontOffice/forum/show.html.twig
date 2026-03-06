@@ -36,16 +36,18 @@
                             </span>
                         </div>
                     </div>
-                    <div class="article-actions mt-3" id="post-actions" style="display:none;">
-                        <a href="{{ path('forum_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil"></i> Modifier
-                        </a>
-                        <form method="post" action="{{ path('forum_post_delete', {id: post.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_post' ~ post.id) }}">
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i> Supprimer
-                            </button>
-                        </form>
+                    <div class="article-actions mt-3">
+                        {% if app.user and post.user and post.user.id == app.user.id %}
+                            <a href="{{ path('forum_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </a>
+                            <form method="post" action="{{ path('forum_post_delete', {id: post.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_post' ~ post.id) }}">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -89,26 +91,26 @@
                 <div class="blog-comment-form mb-5">
                     <div class="form-header">
                         <h3>Laisser un commentaire</h3>
-                        <p>Votre adresse email ne sera pas publiée.</p>
+                        {% if not app.user %}
+                            <p class="text-warning">Vous devez être connecté pour commenter.</p>
+                            <a href="{{ path('app_login') }}" class="btn btn-primary">Se connecter</a>
+                        {% else %}
+                            <p>Connecté en tant que {{ app.user.prenom }} {{ app.user.nom }}</p>
+                            {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
+                            <div class="input-group mb-3">
+                                {{ form_label(form.content) }}
+                                {{ form_widget(form.content, {attr: {placeholder: 'Votre commentaire...'}}) }}
+                                {{ form_errors(form.content) }}
+                            </div>
+                            <div class="input-group mb-3">
+                                {{ form_label(form.image) }}
+                                {{ form_widget(form.image, {attr: {class: 'form-control'}}) }}
+                                {{ form_errors(form.image) }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+                            {{ form_end(form) }}
+                        {% endif %}
                     </div>
-                    {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
-                    <div class="input-group mb-3">
-                        {{ form_label(form.author) }}
-                        {{ form_widget(form.author, {attr: {placeholder: 'Votre nom'}}) }}
-                        {{ form_errors(form.author) }}
-                    </div>
-                    <div class="input-group mb-3">
-                        {{ form_label(form.content) }}
-                        {{ form_widget(form.content, {attr: {placeholder: 'Votre commentaire...'}}) }}
-                        {{ form_errors(form.content) }}
-                    </div>
-                    <div class="input-group mb-3">
-                        {{ form_label(form.image) }}
-                        {{ form_widget(form.image, {attr: {class: 'form-control'}}) }}
-                        {{ form_errors(form.image) }}
-                    </div>
-                    <button type="submit" class="btn btn-primary">Publier le commentaire</button>
-                    {{ form_end(form) }}
                 </div>
 
                 <!-- Comments List -->

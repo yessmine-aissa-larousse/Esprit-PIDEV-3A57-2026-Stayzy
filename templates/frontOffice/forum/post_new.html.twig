@@ -7,43 +7,43 @@
         <div class="container" data-aos="fade-up">
             <div class="section-header">
                 <h2 class="title">Créer un nouveau post</h2>
-                <p>Partagez une discussion avec la communauté.</p>
+                {% if not app.user %}
+                    <p class="text-warning">Vous devez être connecté pour créer un post.</p>
+                    <a href="{{ path('app_login') }}" class="btn btn-primary">Se connecter</a>
+                {% else %}
+                    <p>Créer un post en tant que {{ app.user.prenom }} {{ app.user.nom }}</p>
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+                    {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
+                    <div class="mb-3">
+                        {{ form_label(form.title) }}
+                        {{ form_widget(form.title) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content) }}
+                        {{ form_errors(form.content) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.excerpt) }}
+                        {{ form_widget(form.excerpt) }}
+                        {{ form_errors(form.excerpt) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form_label(form.image) }}
+                        {{ form_widget(form.image) }}
+                        {{ form_errors(form.image) }}
+                    </div>
+                    <div class="mb-4 d-none">
+                        {{ form_widget(form.isPublished) }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier le post</button>
+                    <a href="{{ path('forum_index') }}" class="btn btn-outline-secondary ms-2">Annuler</a>
+                    {{ form_end(form) }}
+                {% endif %}
             </div>
-            {% for message in app.flashes('success') %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-            {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
-            <div class="mb-3">
-                {{ form_label(form.title) }}
-                {{ form_widget(form.title) }}
-                {{ form_errors(form.title) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.content) }}
-                {{ form_widget(form.content) }}
-                {{ form_errors(form.content) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.excerpt) }}
-                {{ form_widget(form.excerpt) }}
-                {{ form_errors(form.excerpt) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.author) }}
-                {{ form_widget(form.author) }}
-                {{ form_errors(form.author) }}
-            </div>
-            <div class="mb-3">
-                {{ form_label(form.image) }}
-                {{ form_widget(form.image) }}
-                {{ form_errors(form.image) }}
-            </div>
-            <div class="mb-4 d-none">
-                {{ form_widget(form.isPublished) }}
-            </div>
-            <button type="submit" class="btn btn-primary">Publier le post</button>
-            <a href="{{ path('forum_index') }}" class="btn btn-outline-secondary ms-2">Annuler</a>
-            {{ form_end(form) }}
         </div>
     </section>
     <script>
