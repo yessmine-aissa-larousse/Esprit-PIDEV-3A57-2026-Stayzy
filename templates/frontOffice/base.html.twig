@@ -85,6 +85,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                             Les Réclamations
                         </a>
                     </li>
+                    <li><a href="{{ path('forum_index') }}">Forum</a></li>
                 {% endif %}
 
                 {% if app.user and app.user.isClient() %}
@@ -94,6 +95,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                             <span class="badge bg-primary comparateur-count-badge" style="display:none; font-size: 0.7em; margin-left: 5px;">0</span>
                         </a>
                     </li>
+                    
                     <li><a href="{{ path('front_reservation_list') }}">Mes Réservations</a></li>
                     <li>
                         <a href="{{ path('client_reclamation_new') }}">
@@ -101,8 +103,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                         </a>
                     </li>
                     <li><a href="{{ path('commande_list') }}">Paiement</a></li>
-                {% endif %}
+                                         <li><a href="{{ path('forum_index') }}">Forum</a></li>
 
+                {% endif %}
                 <li><a href="#">Services</a></li>
                 <li><a href="#">Aide</a></li>
 
@@ -134,7 +137,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                                 <a href="{{ path('prop_reponses') }}">
                                     <i class="bi bi-clock-history me-2"></i>Historique des réponses
                                 </a>
-                                <a href="{{ path('proprietaire_favoris_clients') }}">
+                                <a href="{{ path('proprieyaire_favoris_clients') }}">
                                     <i class="bi bi-star me-2"></i>Favoris de mes clients
                                 </a>
                                 <div class="dropdown-divider"></div>
@@ -208,6 +211,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                     <li><a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">Accueil</a></li>
                     <li><a href="#">Qui sommes-nous</a></li>
                     <li><a href="{{ path('app_properties') }}" class="{{ 'app_properties' in app.request.attributes.get('_route', '') ? 'active' : '' }}">Nos Logements</a></li>
+                    
                     <li><a href="{{ path('forum_index') }}" class="{{ 'forum' in app.request.attributes.get('_route', '') ? 'active' : '' }}">Forum</a></li>
                     <li><a href="#">Services</a></li>
                 </ul>
@@ -263,6 +267,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
             if (dropdown && !userMenu.contains(event.target)) dropdown.classList.remove('show');
         });
     </script>
+    {% include 'frontOffice/forum/_chatbot.html.twig' %}
 {% endblock %}
 
 </body>

@@ -1,15 +1,14 @@
 <?php
 
 namespace App\Controller;
-use App\Service\MLScoringService;
 
 use App\Entity\Logement;
-use Psr\Log\LoggerInterface;
 use App\Entity\Reservation;
 use App\Entity\Commande;
 use App\Entity\User;
 use App\Form\ReservationType;
 use App\Form\ReservationBackType;
+use App\Service\MLScoringService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +18,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
+use Psr\Log\LoggerInterface;
 
 #[Route('/reservation', name: 'front_reservation_')]
 class ReservationController extends AbstractController
@@ -65,13 +65,11 @@ class ReservationController extends AbstractController
         ]);
     }
 
-    // Liste des réservations du client
     #[Route('/list', name: 'list')]
-public function list(
-    EntityManagerInterface $em,
-    HttpClientInterface $httpClient
-): Response
-    {
+    public function list(
+        EntityManagerInterface $em,
+        HttpClientInterface $httpClient
+    ): Response {
         $user         = $this->getUser();
         $reservations = $em->getRepository(Reservation::class)->findBy(['user' => $user]);
 
