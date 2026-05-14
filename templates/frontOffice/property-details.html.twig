@@ -645,30 +645,43 @@
         {# ── SWIPER HERO — initialisé en JS pur (pas via JSON config)
            pour garantir que les boutons next/prev fonctionnent ── #}
         {% if logement.photoPrincipale or logement.photos %}
-            <div class="swiper" id="heroSwiper">
-                <div class="swiper-wrapper">
-                    {% if logement.photoPrincipale %}
-                        <div class="swiper-slide">
-                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}"
-                                 alt="{{ logement.titre }}">
-                        </div>
-                    {% endif %}
-                    {% if logement.photos %}
-                        {% for photo in logement.photos %}
-                            <div class="swiper-slide">
-                                <img src="{{ asset('uploads/logements/' ~ photo) }}"
-                                     alt="{{ logement.titre }} {{ loop.index }}">
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                <div class="swiper-button-next" id="heroNext"></div>
-                <div class="swiper-button-prev" id="heroPrev"></div>
+<div class="swiper" id="heroSwiper">
+    <div class="swiper-wrapper">
+
+        {# Photo principale #}
+        {% if logement.photoPrincipale %}
+            <div class="swiper-slide">
+                <img
+                    src="{% if 'http' in logement.photoPrincipale %}
+                            {{ logement.photoPrincipale }}
+                         {% else %}
+                            {{ asset('uploads/logements/' ~ logement.photoPrincipale) }}
+                         {% endif %}"
+                    alt="{{ logement.titre }}">
             </div>
-        {% else %}
-            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}"
-                 alt="{{ logement.titre }}">
         {% endif %}
+
+        {# Galerie photos #}
+        {% if logement.photos %}
+            {% for photo in logement.photos %}
+                <div class="swiper-slide">
+                    <img
+                        src="{% if 'http' in photo %}
+                                {{ photo }}
+                             {% else %}
+                                {{ asset('uploads/logements/' ~ photo) }}
+                             {% endif %}"
+                        alt="{{ logement.titre }} {{ loop.index }}">
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+</div>
+{% endif %}
 
         <div class="hero-overlay"></div>
 
@@ -892,11 +905,9 @@
                                 {% endif %}
                             </div>
                             <div class="booking-body">
-
-                                <a href="#contact-form" class="btn-book">
-                                    <i class="bi bi-calendar-check"></i> Réserver ce logement
-                                </a>
-
+                               <a href="{{ path('front_reservation_new', {id: logement.id}) }}" class="btn-book">
+    <i class="bi bi-calendar-check"></i> Réserver ce logement
+</a>
                                 <div style="display:flex;gap:8px;">
                                     <button class="btn-fav favorite-btn" data-logement-id="{{ logement.id }}">
                                         <i class="bi bi-heart"></i> Favoris
@@ -942,43 +953,9 @@
                             {% endif %}
                         </div>
                         {% endif %}
+<div class="contact-card p-4 text-center" id="contact-form">
 
-                        <div class="contact-card" id="contact-form">
-                            <h4>📋 Demande de visite</h4>
-                            <form method="post">
-                                <div class="mb-2">
-                                    <input type="text" name="name" class="form-control" placeholder="Nom complet" required>
-                                </div>
-                                <div class="mb-2">
-                                    <input type="email" name="email" class="form-control" placeholder="Adresse email" required>
-                                </div>
-                                <div class="mb-2">
-                                    <input type="tel" name="phone" class="form-control" placeholder="Téléphone">
-                                </div>
-                                <div class="mb-2">
-                                    <select name="subject" class="form-select" required>
-                                        <option value="">Je souhaite…</option>
-                                        <option>Faire une réservation</option>
-                                        <option>Plus d'informations</option>
-                                        <option>Organiser une visite</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <textarea name="message" class="form-control" rows="3"
-                                              placeholder="Votre message…"></textarea>
-                                </div>
-                                <button type="submit" class="btn-send">
-                                    Envoyer ma demande
-                                </button>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
+    
 
     {# ══════════════════════════════════════
        LOGEMENTS SIMILAIRES — barre scrollable
@@ -1005,13 +982,18 @@
                         <div class="swiper-slide">
                             <a href="{{ path('app_property_details', {id: similaire.id}) }}" class="sim-card">
                                 <div class="sim-img">
-                                    {% if similaire.photoPrincipale %}
-                                        <img src="{{ asset('uploads/logements/' ~ similaire.photoPrincipale) }}"
-                                             alt="{{ similaire.titre }}">
-                                    {% else %}
-                                        <img src="{{ asset('frontOffice/img/real-estate/property-exterior-4.webp') }}"
-                                             alt="{{ similaire.titre }}">
-                                    {% endif %}
+                                   {% if similaire.photoPrincipale %}
+    <img src="{% if 'http' in similaire.photoPrincipale %}
+                {{ similaire.photoPrincipale }}
+              {% else %}
+                {{ asset('uploads/logements/' ~ similaire.photoPrincipale) }}
+              {% endif %}"
+         alt="{{ similaire.titre }}"
+         onerror="this.src='{{ asset('frontOffice/img/real-estate/property-exterior-4.webp') }}'">
+{% else %}
+    <img src="{{ asset('frontOffice/img/real-estate/property-exterior-4.webp') }}"
+         alt="{{ similaire.titre }}">
+{% endif %}
                                     <span class="sim-price">{{ similaire.prix }} €/nuit</span>
                                     {% if similaire.categorie %}
                                         <span class="sim-type">{{ similaire.categorie.nom }}</span>
