@@ -20,6 +20,10 @@ final class AiAssistantController extends AbstractController
     // =========================================================================
     // HELPER : appelle le script Python et retourne le tableau décodé
     // =========================================================================
+    /**
+     * @param array<mixed> $payload
+     * @return array<mixed>
+     */
     private function callPython(array $payload, string $kernelDir): array
     {
         $scriptPath = $kernelDir . self::SCRIPT_PATH;
@@ -52,6 +56,9 @@ final class AiAssistantController extends AbstractController
     // =========================================================================
     // HELPER : récupérer les données du propriétaire
     // =========================================================================
+    /**
+     * @return array<mixed>
+     */
     private function getProprietaireData(EntityManagerInterface $em): array
     {
         $user      = $this->getUser();
@@ -121,7 +128,10 @@ final class AiAssistantController extends AbstractController
         $data['mode']   = 'chat';
         $data['question'] = $question;
 
-        $result = $this->callPython($data, $this->getParameter('kernel.project_dir'));
+        //$result = $this->callPython($data, $this->getParameter('kernel.project_dir'));
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $result = $this->callPython($data, $projectDir);
 
         return $this->json($result);
     }
@@ -155,7 +165,10 @@ final class AiAssistantController extends AbstractController
             ],
         ];
 
-        $result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        //$result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $result = $this->callPython($payload, $projectDir);
         return $this->json($result);
     }
 
@@ -193,7 +206,10 @@ final class AiAssistantController extends AbstractController
             'tous_logements'=> $data['logements'],
         ];
 
-        $result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        //$result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $result = $this->callPython($payload, $projectDir);
         return $this->json($result);
     }
 
@@ -219,7 +235,10 @@ final class AiAssistantController extends AbstractController
             'reservations' => array_values($reservations),
         ];
 
-        $result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        //$result = $this->callPython($payload, $this->getParameter('kernel.project_dir'));
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $result = $this->callPython($payload, $projectDir);
         return $this->json($result);
     }
 }

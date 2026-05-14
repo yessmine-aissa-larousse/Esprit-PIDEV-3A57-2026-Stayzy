@@ -50,7 +50,7 @@ class ResetPasswordController extends AbstractController
                 try {
                     $emailMessage = (new Email())
                         ->from('noreply@stayzy.com')
-                        ->to($user->getEmail())
+                        ->to((string) $user->getEmail())
                         ->subject('Réinitialisation de votre mot de passe - Stayzy')
                         ->html('
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -105,8 +105,8 @@ class ResetPasswordController extends AbstractController
         $error = null;
 
         if ($request->isMethod('POST')) {
-            $password = $request->request->get('password');
-            $confirm = $request->request->get('confirm_password');
+            $password = (string) $request->request->get('password');
+            $confirm  = (string) $request->request->get('confirm_password');
 
             if (strlen($password) < 6) {
                 $error = 'Le mot de passe doit contenir au moins 6 caractères.';

@@ -66,6 +66,6 @@ class ReservationValidator
         }
 
         $interval = $reservation->getDateDebut()->diff($reservation->getDateFin());
-        return $interval->days;
+        return (int) $interval->days;
     }
 }

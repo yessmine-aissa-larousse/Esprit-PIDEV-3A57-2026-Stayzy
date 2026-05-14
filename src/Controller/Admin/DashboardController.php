@@ -62,7 +62,9 @@ class DashboardController extends AbstractController
             'pending_proprietaires' => $pendingProprietaires,
         ]);
     }
-
+    /**
+     * @return array{labels: string[], data: int[]}
+     */
     private function getMonthlyRegistrations(UserRepository $userRepository): array
     {
         $months = [];

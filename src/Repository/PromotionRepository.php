@@ -67,6 +67,7 @@ class PromotionRepository extends ServiceEntityRepository
     /**
      * Retourne toutes les promotions actives en cours (pour la page liste)
      */
+    /** @return Promotion[] */
     public function findAllActives(): array
     {
         $now = new \DateTime();

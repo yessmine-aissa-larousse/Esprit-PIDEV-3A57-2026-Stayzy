@@ -17,32 +17,23 @@ class Categorie
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : ?string → string (non-nullable, correspond à la BDD)
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: "Le nom de la catégorie est obligatoire")]
-    #[Assert\Length(
-        min: 3,
-        max: 100,
-        minMessage: "Le nom doit contenir au moins {{ limit }} caractères",
-        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
-    )]
-    private ?string $nom = null;
-
+    #[Assert\Length(min: 3, max: 100)]
+    private string $nom = '';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\NotBlank(message: "La description de la catégorie est obligatoire")]
-    #[Assert\Length(
-        min: 10,
-        max: 100,
-        minMessage: "La description doit contenir au moins {{ limit }} caractères",
-        maxMessage: "La description ne peut pas dépasser {{ limit }} caractères"
-    )]
+    #[Assert\Length(min: 10, max: 100)]
     private ?string $description = null;
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $icone = null;
 
-    
-    #[ORM\OneToMany(targetEntity: Logement::class, mappedBy: 'categorie', orphanRemoval: true)]
+    /** @var Collection<int, Logement> */
+    // ✅ FIX : cascade persist ajouté (orphanRemoval=true sans cascade persist causait un warning)
+    #[ORM\OneToMany(targetEntity: Logement::class, mappedBy: 'categorie', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $logements;
 
     public function __construct()
@@ -50,54 +41,19 @@ class Categorie
         $this->logements = new ArrayCollection();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
+    public function getNom(): string { return $this->nom; }
+    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
 
-    public function setNom(?string $nom): static
-    {
-        $this->nom = $nom;
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $description): static { $this->description = $description; return $this; }
 
-        return $this;
-    }
+    public function getIcone(): ?string { return $this->icone; }
+    public function setIcone(?string $icone): static { $this->icone = $icone; return $this; }
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(?string $description): static
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    public function getIcone(): ?string
-    {
-        return $this->icone;
-    }
-
-    public function setIcone(?string $icone): static
-    {
-        $this->icone = $icone;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Logement>
-     */
-    public function getLogements(): Collection
-    {
-        return $this->logements;
-    }
+    /** @return Collection<int, Logement> */
+    public function getLogements(): Collection { return $this->logements; }
 
     public function addLogement(Logement $logement): static
     {
@@ -105,19 +61,16 @@ class Categorie
             $this->logements->add($logement);
             $logement->setCategorie($this);
         }
-
         return $this;
     }
 
     public function removeLogement(Logement $logement): static
     {
         if ($this->logements->removeElement($logement)) {
-            // set the owning side to null (unless already changed)
             if ($logement->getCategorie() === $this) {
                 $logement->setCategorie(null);
             }
         }
-
         return $this;
     }
 }

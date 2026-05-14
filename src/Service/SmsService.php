@@ -44,8 +44,18 @@ class SmsService
             throw new \RuntimeException('Erreur curl : ' . $error);
         }
 
-        $json = json_decode($response, true);
+        $response = curl_exec($ch);
+        if ($response === false) {
+            throw new \RuntimeException('curl_exec a échoué');
+        }
+        $response = curl_exec($ch);
+        $error    = curl_error($ch);
+        curl_close($ch);
 
+        if (!is_string($response) || $error) {
+            throw new \RuntimeException('Erreur curl : ' . $error);
+        }
+        $json = json_decode($response, true);
         if (isset($json['error_code'])) {
                 $this->logger->error('[SMS] ❌ Erreur Twilio', ['response' => $json]);
             throw new \RuntimeException('Erreur Twilio : ' . $json['error_message']);

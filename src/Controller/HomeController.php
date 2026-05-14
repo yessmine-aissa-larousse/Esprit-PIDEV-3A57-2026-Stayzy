@@ -104,7 +104,7 @@ final class HomeController extends AbstractController
             $logements = array_filter($logements, function($logement) use ($ville) {
                 $adresse = $logement->getAdresse();
                 if ($adresse && isset($adresse['ville'])) {
-                    return stripos($adresse['ville'], $ville) !== false;
+                    return stripos($adresse['ville'], (string) $ville) !== false;
                 }
                 return false;
             });

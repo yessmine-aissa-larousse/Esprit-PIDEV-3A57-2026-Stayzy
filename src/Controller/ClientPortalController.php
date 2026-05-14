@@ -53,8 +53,10 @@ class ClientPortalController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
 
                 try {
+                    /** @var string $projectDir */
+                    $projectDir = $this->getParameter('kernel.project_dir');
                     $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/profiles',
+                        $projectDir . '/public/uploads/profiles',
                         $newFilename
                     );
                     $user->setProfilePicture($newFilename);

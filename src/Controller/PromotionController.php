@@ -53,7 +53,8 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
 
     /** @var \App\Repository\PromotionRepository $repo */
     $repo = $em->getRepository(Promotion::class);
-    $promoEnCours = $repo->findPromoActiveByLogement($logement->getId());
+    $promoEnCours = $repo->findPromoActiveByLogement((int) $logement->getId());
+    
 
     if ($promoEnCours) {
         $this->addFlash('warning', '⚠️ Une promotion est déjà en cours sur ce logement.');
@@ -225,14 +226,14 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
             foreach ($logements as $logement) {
                 /** @var \App\Repository\PromotionRepository $repo */
                 $repo = $em->getRepository(Promotion::class);
-                $promoEnCours = $repo->findPromoActiveByLogement($logement->getId());
+                $promoEnCours = $repo->findPromoActiveByLogement((int) $logement->getId());
 
                 if ($promoEnCours) { $nbIgnores++; continue; }
 
                 $nouvellePromo = new Promotion();
                 $nouvellePromo->setLogement($logement);
-                $nouvellePromo->setTitre($promoTemplate->getTitre());
-                $nouvellePromo->setPourcentage($promoTemplate->getPourcentage());
+                $nouvellePromo->setTitre($promoTemplate->getTitre() ?? '');
+                $nouvellePromo->setPourcentage($promoTemplate->getPourcentage()  ?? 0);
                 $nouvellePromo->setDateDebut($promoTemplate->getDateDebut());
                 $nouvellePromo->setDateFin($promoTemplate->getDateFin());
                 $nouvellePromo->setCodePromo($promoTemplate->getCodePromo());
@@ -307,7 +308,14 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
     {
         $promotion = $em->getRepository(Promotion::class)->find($id);
         if (!$promotion) throw $this->createNotFoundException('Promotion introuvable.');
-        if ($promotion->getLogement()->getProprietaire() !== $this->getUser()) {
+        /*if ($promotion->getLogement()->getProprietaire() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Accès non autorisé.');
+        }*/
+        $logementProprietaire = $promotion->getLogement();
+        if ($logementProprietaire === null) {
+            throw $this->createNotFoundException('Logement introuvable.');
+        }
+        if ($logementProprietaire->getProprietaire() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Accès non autorisé.');
         }
         return $promotion;
@@ -373,9 +381,7 @@ public function new(int $logementId, Request $request, EntityManagerInterface $e
     private function formaterTelephone(string $tel): ?string
     {
         // Supprime espaces, tirets, parenthèses
-        $tel = preg_replace('/[\s\-\(\)]/', '', $tel);
-
-        // Déjà au format international
+        $tel = preg_replace('/[\s\-\(\)]/', '', $tel) ?? '';
         if (str_starts_with($tel, '+')) return $tel;
 
         // Numéro tunisien sans indicatif (8 chiffres)
@@ -418,7 +424,12 @@ public function testSmsDebug(): Response
     $error = curl_error($ch);
     curl_close($ch);
 
-    $json = json_decode($response, true);
+    $response = curl_exec($ch);
+
+if (!is_string($response)) {
+    return new Response('Erreur curl');
+}
+$json = json_decode($response, true);
 
     return new Response('<pre>' . 
         'Error curl: ' . $error . "\n" .

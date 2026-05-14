@@ -19,23 +19,23 @@ use Symfony\Component\Mime\Email;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
-    // ========== LISTE DES UTILISATEURS ==========
     #[Route('/', name: 'app_user_index')]
     public function index(Request $request, UserRepository $userRepository): Response
     {
-        $search = $request->query->get('search');
-        $role = $request->query->get('role');
+        $search = (string) $request->query->get('search', '');
+        $role   = (string) $request->query->get('role', '');
 
-        if ($search || $role) {
-            $users = $userRepository->search($search, $role);
+        // ✅ FIX : $users toujours défini
+        if ($search !== '' || $role !== '') {
+            $users = $userRepository->search($search ?: null, $role ?: null);
         } else {
             $users = $userRepository->findAll();
         }
 
         return $this->render('backOffice/user/index.html.twig', [
-            'users' => $users,
+            'users'  => $users,
             'search' => $search,
-            'role' => $role,
+            'role'   => $role,
         ]);
     }
 
@@ -116,7 +116,7 @@ class UserController extends AbstractController
     #[Route('/{id}/delete', name: 'app_user_delete', methods: ['POST'])]
     public function delete(Request $request, User $user, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $user->getId(), (string) $request->request->get('_token'))) {
             $em->remove($user);
             $em->flush();
             $this->addFlash('success', 'Utilisateur supprimé avec succès!');
@@ -128,7 +128,7 @@ class UserController extends AbstractController
     #[Route('/{id}/toggle-status', name: 'app_user_toggle_status', methods: ['POST'])]
     public function toggleStatus(Request $request, User $user, EntityManagerInterface $em): Response
     {
-        if ($this->isCsrfTokenValid('toggle' . $user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('toggle' . $user->getId(), (string) $request->request->get('_token'))) {
             $user->setIsActive(!$user->isActive());
             $em->flush();
             $status = $user->isActive() ? 'activé' : 'désactivé';
@@ -148,16 +148,15 @@ class UserController extends AbstractController
         if (!$user->isProprietaire()) {
             throw $this->createNotFoundException('Utilisateur non propriétaire');
         }
-        if ($this->isCsrfTokenValid('approve' . $user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('approve' . $user->getId(), (string) $request->request->get('_token'))) {
             $user->setApprovalStatus(User::STATUS_APPROVED);
             $user->setApprovalDate(new \DateTime());
             $em->flush();
 
-            // Envoyer email d'approbation
             try {
                 $email = (new Email())
                     ->from('no-reply@stayzy.com')
-                    ->to($user->getEmail())
+                    ->to((string) $user->getEmail()) // ✅ un seul ->to() avec cast
                     ->subject('✅ Votre compte propriétaire a été approuvé - Stayzy')
                     ->html($this->renderView('emails/proprietaire_approved.html.twig', [
                         'user' => $user
@@ -183,20 +182,19 @@ class UserController extends AbstractController
             throw $this->createNotFoundException('Utilisateur non propriétaire');
         }
         $reason = $request->request->get('rejection_reason');
-        if ($this->isCsrfTokenValid('reject' . $user->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('reject' . $user->getId(), (string) $request->request->get('_token'))) {
             $user->setApprovalStatus(User::STATUS_REJECTED);
             $user->setApprovalDate(new \DateTime());
-            $user->setRejectionReason($reason);
+            $user->setRejectionReason((string) $request->request->get('rejection_reason'));
             $em->flush();
 
-            // Envoyer email de rejet
             try {
                 $email = (new Email())
                     ->from('no-reply@stayzy.com')
-                    ->to($user->getEmail())
+                    ->to((string) $user->getEmail()) // ✅ cast string
                     ->subject('❌ Résultat de votre demande propriétaire - Stayzy')
                     ->html($this->renderView('emails/proprietaire_rejected.html.twig', [
-                        'user' => $user,
+                        'user'   => $user,
                         'reason' => $reason
                     ]));
                 $mailer->send($email);

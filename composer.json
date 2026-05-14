@@ -95,6 +95,7 @@
         }
     },
     "require-dev": {
+        "ahmed-bhs/doctrine-doctor": "*",
         "phpstan/phpstan": "*",
         "phpunit/phpunit": "*",
         "symfony/browser-kit": "6.4.*",

@@ -19,6 +19,7 @@ class UserRepository extends ServiceEntityRepository
     /**
      * Recherche par nom, prénom, email ou téléphone, avec filtre optionnel par rôle
      */
+    /** @return User[] */
     public function search(?string $search = null, ?string $role = null): array
     {
         $qb = $this->createQueryBuilder('u');
@@ -42,6 +43,7 @@ class UserRepository extends ServiceEntityRepository
      * Trouver les utilisateurs par rôle avec un statut d'approbation donné
      * $limit = null pour tout récupérer, sinon nombre max de résultats
      */
+    /** @return User[] */
     public function findByRoleAndStatus(string $role, string $status, ?int $limit = null): array
     {
         $qb = $this->createQueryBuilder('u')
@@ -61,6 +63,7 @@ class UserRepository extends ServiceEntityRepository
     /**
      * Trouver les utilisateurs par rôle
      */
+    /** @return User[] */
     public function findByRole(string $role): array
     {
         return $this->createQueryBuilder('u')

@@ -20,15 +20,17 @@ class Promotion
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Logement $logement = null;
 
+    // ✅ FIX : ?string → string (non-nullable)
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank(message: 'Le titre de la promotion est obligatoire')]
     #[Assert\Length(max: 100)]
-    private ?string $titre = null;
+    private string $titre = '';
 
+    // ✅ FIX : ?int → int (non-nullable)
     #[ORM\Column]
     #[Assert\NotBlank(message: 'Le pourcentage est obligatoire')]
-    #[Assert\Range(min: 1, max: 99, notInRangeMessage: 'Le pourcentage doit être entre 1% et 99%')]
-    private ?int $pourcentage = null;
+    #[Assert\Range(min: 1, max: 99)]
+    private int $pourcentage = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\NotBlank(message: 'La date de début est obligatoire')]
@@ -36,26 +38,25 @@ class Promotion
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     #[Assert\NotBlank(message: 'La date de fin est obligatoire')]
-    #[Assert\GreaterThan(propertyPath: 'dateDebut', message: 'La date de fin doit être après la date de début')]
     private ?\DateTime $dateFin = null;
 
     #[ORM\Column(length: 30, nullable: true)]
-    #[Assert\Length(max: 30)]
-    #[Assert\Regex(
-        pattern: '/^[A-Z0-9]+$/',
-        message: 'Le code promo doit contenir uniquement des lettres majuscules et chiffres',
-        match: true
-    )]
     private ?string $codePromo = null;
 
     #[ORM\Column]
     private bool $active = true;
 
+    // ✅ FIX : ?\DateTime → \DateTime (non-nullable, initialisé dans PrePersist)
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTime $createdAt = null;
+    private \DateTime $createdAt;
 
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTime();
+    }
+
+    public function __construct()
     {
         $this->createdAt = new \DateTime();
     }
@@ -65,10 +66,10 @@ class Promotion
     public function getLogement(): ?Logement { return $this->logement; }
     public function setLogement(?Logement $logement): static { $this->logement = $logement; return $this; }
 
-    public function getTitre(): ?string { return $this->titre; }
+    public function getTitre(): string { return $this->titre; }
     public function setTitre(string $titre): static { $this->titre = $titre; return $this; }
 
-    public function getPourcentage(): ?int { return $this->pourcentage; }
+    public function getPourcentage(): int { return $this->pourcentage; }
     public function setPourcentage(int $pourcentage): static { $this->pourcentage = $pourcentage; return $this; }
 
     public function getDateDebut(): ?\DateTime { return $this->dateDebut; }
@@ -78,20 +79,12 @@ class Promotion
     public function setDateFin(?\DateTime $dateFin): static { $this->dateFin = $dateFin; return $this; }
 
     public function getCodePromo(): ?string { return $this->codePromo; }
-    public function setCodePromo(?string $codePromo): static
-    {
-        $this->codePromo = $codePromo ? strtoupper($codePromo) : null;
-        return $this;
-    }
+    public function setCodePromo(?string $codePromo): static { $this->codePromo = $codePromo ? strtoupper($codePromo) : null; return $this; }
 
     public function isActive(): bool { return $this->active; }
     public function setActive(bool $active): static { $this->active = $active; return $this; }
 
-    public function getCreatedAt(): ?\DateTime { return $this->createdAt; }
-
-    // ══════════════════════════════════════════════
-    // STATUT
-    // ══════════════════════════════════════════════
+    public function getCreatedAt(): \DateTime { return $this->createdAt; }
 
     public function isEnCours(): bool
     {
@@ -105,9 +98,8 @@ class Promotion
     public function isFuture(): bool
     {
         if (!$this->active || !$this->dateDebut) return false;
-        $now   = new \DateTime();
         $debut = clone $this->dateDebut; $debut->setTime(0, 0, 0);
-        return $debut > $now;
+        return $debut > new \DateTime();
     }
 
     public function isExpiree(): bool
@@ -125,19 +117,15 @@ class Promotion
         return 'inactive';
     }
 
-    // ══════════════════════════════════════════════
-    // CALCULS PRIX
-    // ══════════════════════════════════════════════
-
     public function getPrixPromo(): float
     {
         $prix = $this->logement?->getPrix() ?? 0;
-        return round($prix * (1 - ($this->pourcentage ?? 0) / 100), 2);
+        return round($prix * (1 - $this->pourcentage / 100), 2);
     }
 
     public function getEconomie(): float
     {
         $prix = $this->logement?->getPrix() ?? 0;
-        return round($prix * ($this->pourcentage ?? 0) / 100, 2);
+        return round($prix * $this->pourcentage / 100, 2);
     }
 }

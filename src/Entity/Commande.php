@@ -14,17 +14,20 @@ class Commande
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : ?DateTime → \DateTime (non-nullable)
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dateDebut = null;
+    private \DateTime $dateDebut;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dateFin = null;
+    private \DateTime $dateFin;
 
-    #[ORM\Column]
-    private ?float $prixTotal = null;
+    // ✅ FIX : float pour argent → decimal stocké en string
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    private ?string $prixTotal = null;
 
+    // ✅ FIX : ?string → string (non-nullable)
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $paymentMethode = null;
@@ -38,127 +41,50 @@ class Commande
     #[ORM\Column(nullable: true)]
     private ?\DateTime $dateTransaction = null;
 
+    // ✅ FIX : orphanRemoval ajouté côté Reservation, cascade onDelete côté FK
     #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'commandes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Reservation $reservation = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandes')]
     private ?User $user = null;
 
-    // ===== Getters & Setters =====
-
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->dateDebut = new \DateTime();
+        $this->dateFin   = new \DateTime();
     }
 
-    public function getDateDebut(): ?\DateTime
-    {
-        return $this->dateDebut;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setDateDebut(\DateTime $dateDebut): static
-    {
-        $this->dateDebut = $dateDebut;
-        return $this;
-    }
+    public function getDateDebut(): \DateTime { return $this->dateDebut; }
+    public function setDateDebut(\DateTime $dateDebut): static { $this->dateDebut = $dateDebut; return $this; }
 
-    public function getDateFin(): ?\DateTime
-    {
-        return $this->dateFin;
-    }
+    public function getDateFin(): \DateTime { return $this->dateFin; }
+    public function setDateFin(\DateTime $dateFin): static { $this->dateFin = $dateFin; return $this; }
 
-    public function setDateFin(\DateTime $dateFin): static
-    {
-        $this->dateFin = $dateFin;
-        return $this;
-    }
+    // ✅ getter retourne float pour compatibilité avec le reste du code
+    public function getPrixTotal(): ?float { return $this->prixTotal !== null ? (float) $this->prixTotal : null; }
+    public function setPrixTotal(float $prixTotal): static { $this->prixTotal = (string) $prixTotal; return $this; }
 
-    public function getPrixTotal(): ?float
-    {
-        return $this->prixTotal;
-    }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): static { $this->status = $status; return $this; }
 
-    public function setPrixTotal(float $prixTotal): static
-    {
-        $this->prixTotal = $prixTotal;
-        return $this;
-    }
+    public function getPaymentMethode(): ?string { return $this->paymentMethode; }
+    public function setPaymentMethode(?string $paymentMethode): static { $this->paymentMethode = $paymentMethode; return $this; }
 
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
+    public function getPaymentStatus(): ?string { return $this->paymentStatus; }
+    public function setPaymentStatus(?string $paymentStatus): static { $this->paymentStatus = $paymentStatus; return $this; }
 
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-        return $this;
-    }
+    public function getTransactionId(): ?string { return $this->transactionId; }
+    public function setTransactionId(?string $transactionId): static { $this->transactionId = $transactionId; return $this; }
 
-    public function getPaymentMethode(): ?string
-    {
-        return $this->paymentMethode;
-    }
+    public function getDateTransaction(): ?\DateTime { return $this->dateTransaction; }
+    public function setDateTransaction(?\DateTime $dateTransaction): static { $this->dateTransaction = $dateTransaction; return $this; }
 
-    public function setPaymentMethode(?string $paymentMethode): static
-    {
-        $this->paymentMethode = $paymentMethode;
-        return $this;
-    }
+    public function getReservation(): ?Reservation { return $this->reservation; }
+    public function setReservation(?Reservation $reservation): static { $this->reservation = $reservation; return $this; }
 
-    public function getPaymentStatus(): ?string
-    {
-        return $this->paymentStatus;
-    }
-
-    public function setPaymentStatus(?string $paymentStatus): static
-    {
-        $this->paymentStatus = $paymentStatus;
-        return $this;
-    }
-
-    public function getTransactionId(): ?string
-    {
-        return $this->transactionId;
-    }
-
-    public function setTransactionId(?string $transactionId): static
-    {
-        $this->transactionId = $transactionId;
-        return $this;
-    }
-
-    public function getDateTransaction(): ?\DateTime
-    {
-        return $this->dateTransaction;
-    }
-
-    public function setDateTransaction(?\DateTime $dateTransaction): static
-    {
-        $this->dateTransaction = $dateTransaction;
-        return $this;
-    }
-
-    public function getReservation(): ?Reservation
-    {
-        return $this->reservation;
-    }
-
-    public function setReservation(?Reservation $reservation): static
-    {
-        $this->reservation = $reservation;
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-        return $this;
-    }
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): static { $this->user = $user; return $this; }
 }

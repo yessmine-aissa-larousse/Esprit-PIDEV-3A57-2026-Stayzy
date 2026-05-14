@@ -42,7 +42,8 @@ class FaceAuthController extends AbstractController
             ]);
         }
         /** @var \App\Entity\User $user */
-        $user->setFaceDescriptor(json_encode($flaskResponse['descriptor']));
+        $encoded = json_encode($flaskResponse['descriptor']);
+        $user->setFaceDescriptor($encoded !== false ? $encoded : null);
         $em->flush();
 
         return new JsonResponse(['success' => true]);
@@ -125,7 +126,10 @@ class FaceAuthController extends AbstractController
             'distance' => $bestDistance
         ]);
     }
-
+    /**
+     * @param array<mixed> $data
+     * @return array<mixed>
+     */
     private function callFlask(string $route, array $data): array
     {
         $ch = curl_init($this->flaskUrl . $route);
@@ -137,6 +141,13 @@ class FaceAuthController extends AbstractController
         $response = curl_exec($ch);
         curl_close($ch);
 
+        //return json_decode($response, true) ?? ['success' => false];
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        if (!is_string($response)) {
+            return ['success' => false];
+        }
         return json_decode($response, true) ?? ['success' => false];
-    }
+            }
 }

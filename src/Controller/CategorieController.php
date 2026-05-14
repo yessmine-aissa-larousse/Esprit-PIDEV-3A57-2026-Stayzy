@@ -35,7 +35,10 @@ final class CategorieController extends AbstractController
             // Gestion de l'upload de l'icône
             $iconeFile = $form->get('icone')->getData();
             if ($iconeFile && $iconeFile->isValid()) {
-                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $uploadDir = $projectDir . '/public/uploads/categories/';
+                //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
@@ -75,7 +78,10 @@ final class CategorieController extends AbstractController
             $iconeFile = $form->get('icone')->getData();
             
             if ($iconeFile && $iconeFile->isValid()) {
-                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $uploadDir = $projectDir . '/public/uploads/categories/';
+                //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
                 
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
@@ -125,7 +131,11 @@ final class CategorieController extends AbstractController
 
         // Supprimer l'icône du serveur
         if ($categorie->getIcone()) {
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
+            // ✅ Remplace PARTOUT dans ces fichiers
+            /** @var string $projectDir */
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $uploadDir = $projectDir . '/public/uploads/categories';
+            //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/categories/';
             $iconPath = $uploadDir . $categorie->getIcone();
             if (file_exists($iconPath)) {
                 unlink($iconPath);

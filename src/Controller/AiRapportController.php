@@ -88,7 +88,9 @@ final class AiRapportController extends AbstractController
         ], JSON_UNESCAPED_UNICODE);
 
         // ── 4. Appeler le script Python ──
-        $scriptPath = $this->getParameter('kernel.project_dir') . '/ai/analyze.py';
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $scriptPath = $projectDir . '/ai/analyze.py';
         $pythonPath = self::PYTHON_PATH;
 
         // Passe par un fichier JSON temporaire

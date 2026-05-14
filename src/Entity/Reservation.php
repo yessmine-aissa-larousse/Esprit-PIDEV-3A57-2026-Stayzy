@@ -17,34 +17,35 @@ class Reservation
     #[ORM\Column]
     private ?int $id = null;
 
+    // ✅ FIX : ?\DateTime → \DateTime (non-nullable)
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de début est obligatoire.")]
-    private ?\DateTime $dateDebut = null;
+    private \DateTime $dateDebut;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: "La date de fin est obligatoire.")]
-    #[Assert\Expression(
-        "this.getDateFin() > this.getDateDebut()",
-        message: "La date de fin doit être postérieure à la date de début."
-    )]
-    private ?\DateTime $dateFin = null;
+    private \DateTime $dateFin;
 
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Positive]
     private ?int $nombrePersonnes = null;
 
-    #[ORM\Column]
-    private ?float $prixTotal = null;
+    // ✅ FIX : float pour prix → decimal stocké en string
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
+    private ?string $prixTotal = null;
 
+    // ✅ FIX : ?string → string (non-nullable)
     #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    private string $status = '';
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(max: 500)]
     private ?string $messageDemande = null;
 
-    #[ORM\OneToMany(mappedBy: 'reservation', targetEntity: Commande::class, cascade: ['persist', 'remove'])]
+    /** @var Collection<int, Commande> */
+    // ✅ FIX : orphanRemoval=true ajouté
+    #[ORM\OneToMany(mappedBy: 'reservation', targetEntity: Commande::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $commandes;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
@@ -57,86 +58,34 @@ class Reservation
 
     public function __construct()
     {
-        $this->commandes = new ArrayCollection();
+        $this->commandes  = new ArrayCollection();
+        $this->dateDebut  = new \DateTime();
+        $this->dateFin    = new \DateTime();
     }
 
-    // ===== Getters & Setters =====
+    public function getId(): ?int { return $this->id; }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getDateDebut(): \DateTime { return $this->dateDebut; }
+    public function setDateDebut(\DateTime $dateDebut): static { $this->dateDebut = $dateDebut; return $this; }
 
-    public function getDateDebut(): ?\DateTime
-    {
-        return $this->dateDebut;
-    }
+    public function getDateFin(): \DateTime { return $this->dateFin; }
+    public function setDateFin(\DateTime $dateFin): static { $this->dateFin = $dateFin; return $this; }
 
-    public function setDateDebut(\DateTime $dateDebut): static
-    {
-        $this->dateDebut = $dateDebut;
-        return $this;
-    }
+    public function getNombrePersonnes(): ?int { return $this->nombrePersonnes; }
+    public function setNombrePersonnes(int $nombrePersonnes): static { $this->nombrePersonnes = $nombrePersonnes; return $this; }
 
-    public function getDateFin(): ?\DateTime
-    {
-        return $this->dateFin;
-    }
+    // ✅ getter retourne float pour compatibilité
+    public function getPrixTotal(): ?float { return $this->prixTotal !== null ? (float) $this->prixTotal : null; }
+    public function setPrixTotal(float $prixTotal): static { $this->prixTotal = (string) $prixTotal; return $this; }
 
-    public function setDateFin(\DateTime $dateFin): static
-    {
-        $this->dateFin = $dateFin;
-        return $this;
-    }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): static { $this->status = $status; return $this; }
 
-    public function getNombrePersonnes(): ?int
-    {
-        return $this->nombrePersonnes;
-    }
+    public function getMessageDemande(): ?string { return $this->messageDemande; }
+    public function setMessageDemande(?string $messageDemande): static { $this->messageDemande = $messageDemande; return $this; }
 
-    public function setNombrePersonnes(int $nombrePersonnes): static
-    {
-        $this->nombrePersonnes = $nombrePersonnes;
-        return $this;
-    }
-
-    public function getPrixTotal(): ?float
-    {
-        return $this->prixTotal;
-    }
-
-    public function setPrixTotal(float $prixTotal): static
-    {
-        $this->prixTotal = $prixTotal;
-        return $this;
-    }
-
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
-
-    public function setStatus(string $status): static
-    {
-        $this->status = $status;
-        return $this;
-    }
-
-    public function getMessageDemande(): ?string
-    {
-        return $this->messageDemande;
-    }
-
-    public function setMessageDemande(?string $messageDemande): static
-    {
-        $this->messageDemande = $messageDemande;
-        return $this;
-    }
-
-    public function getCommandes(): Collection
-    {
-        return $this->commandes;
-    }
+    /** @return Collection<int, Commande> */
+    public function getCommandes(): Collection { return $this->commandes; }
 
     public function addCommande(Commande $commande): static
     {
@@ -157,25 +106,9 @@ class Reservation
         return $this;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
+    public function getUser(): ?User { return $this->user; }
+    public function setUser(?User $user): static { $this->user = $user; return $this; }
 
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-        return $this;
-    }
-
-    public function getLogement(): ?Logement
-    {
-        return $this->logement;
-    }
-
-    public function setLogement(?Logement $logement): static
-    {
-        $this->logement = $logement;
-        return $this;
-    }
+    public function getLogement(): ?Logement { return $this->logement; }
+    public function setLogement(?Logement $logement): static { $this->logement = $logement; return $this; }
 }

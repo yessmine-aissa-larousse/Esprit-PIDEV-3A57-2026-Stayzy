@@ -44,8 +44,8 @@ final class LogementController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
-            $logement->setTitre($request->request->get('titre', ''));
-            $logement->setDescription($request->request->get('description'));
+            $logement->setTitre((string) $request->request->get('titre', ''));
+            $logement->setDescription((string) $request->request->get('description'));
             $logement->setPrix((float) $request->request->get('prix', 0));
             $logement->setSuperficie((int) $request->request->get('superficie', 0));
             $logement->setNombreChambres((int) $request->request->get('nombreChambres', 0));
@@ -79,7 +79,12 @@ final class LogementController extends AbstractController
                 ]);
             }
 
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+
+            // ✅ APRÈS
+            /** @var string $projectDir */
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $uploadDir = $projectDir . '/public/uploads/logements/';
+            //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
             $uploadedFiles = $request->files->all();
 
@@ -181,7 +186,12 @@ final class LogementController extends AbstractController
             return $this->redirectToRoute('admin_logement_list');
         }
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+
+        // ✅ APRÈS
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $uploadDir = $projectDir . '/public/uploads/logements/';
+        //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
         if ($logement->getPhotoPrincipale()) {
             $path = $uploadDir . $logement->getPhotoPrincipale();
             if (file_exists($path)) unlink($path);
@@ -215,7 +225,10 @@ final class LogementController extends AbstractController
             if ($key !== false) {
                 unset($photos[$key]);
                 $logement->setPhotos(array_values($photos));
-                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+                /** @var string $projectDir */
+                $projectDir = $this->getParameter('kernel.project_dir');
+                $uploadDir = $projectDir . '/public/uploads/logements/';
+                //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
                 $path = $uploadDir . $photoName;
                 if (file_exists($path)) unlink($path);
                 $em->flush();
@@ -236,7 +249,11 @@ final class LogementController extends AbstractController
         }
 
         if ($logement->getPhotoPrincipale()) {
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            // ✅ APRÈS
+            /** @var string $projectDir */
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $uploadDir = $projectDir . '/public/uploads/logements/';
+            //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
             $path = $uploadDir . $logement->getPhotoPrincipale();
             if (file_exists($path)) unlink($path);
             $logement->setPhotoPrincipale(null);
@@ -307,8 +324,11 @@ final class LogementController extends AbstractController
                 'longitude'  => $request->request->get('longitude'),  // ← Leaflet
             ];
             $logement->setAdresse($adresse);
-
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            // ✅ APRÈS
+            /** @var string $projectDir */
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $uploadDir = $projectDir . '/public/uploads/logements/';
+            //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
             if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
             $photoPrincipaleFile = $form->get('photoPrincipale')->getData();
@@ -373,8 +393,8 @@ final class LogementController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
-            $logement->setTitre($request->request->get('titre', ''));
-            $logement->setDescription($request->request->get('description'));
+            $logement->setTitre((string) $request->request->get('titre', ''));
+            $logement->setDescription((string) $request->request->get('description'));
             $logement->setPrix((float) $request->request->get('prix', 0));
             $logement->setSuperficie((int) $request->request->get('superficie', 0));
             $logement->setNombreChambres((int) $request->request->get('nombreChambres', 0));
@@ -398,7 +418,11 @@ final class LogementController extends AbstractController
             $amenites = $request->request->all('amenites');
             $logement->setAmenites($amenites);
 
-            $uploadDir     = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+            // ✅ APRÈS
+            /** @var string $projectDir */
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $uploadDir = $projectDir . '/public/uploads/logements/';
+            //$uploadDir     = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
             $uploadedFiles = $request->files->all();
 
             if (isset($uploadedFiles['photoPrincipale']) && $uploadedFiles['photoPrincipale']->isValid()) {
@@ -460,7 +484,11 @@ final class LogementController extends AbstractController
             return $this->redirectToRoute('proprietaire_logement_list');
         }
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
+        // ✅ APRÈS
+        /** @var string $projectDir */
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $uploadDir = $projectDir . '/public/uploads/logements/';
+        //$uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/logements/';
         if ($logement->getPhotoPrincipale()) {
             $path = $uploadDir . $logement->getPhotoPrincipale();
             if (file_exists($path)) unlink($path);
