@@ -53,13 +53,15 @@ class Logement
     #[Assert\Positive(message: "Le nombre de salles de bain doit être un nombre positif")]
     private ?int $nombreSalleDeBain = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, type: Types::JSON)]
+    #[Assert\DisableAutoMapping]
     private $amenites = null;
 
     #[ORM\Column]
     private ?bool $disponible = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, type: Types::JSON)]
+    #[Assert\DisableAutoMapping]
     private $photos = null;
 
     #[ORM\Column(length: 255, nullable: true)]
