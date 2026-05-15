@@ -1,0 +1,350 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Inscription - StayZy{% endblock %}
+
+{% block body %}
+<div class="min-vh-100 d-flex align-items-center" style="background: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+
+                <!-- Bouton retour -->
+                <div class="mb-4">
+                    <a href="{{ path('app_home') }}" class="btn btn-light">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+
+                        <!-- Titre -->
+                        <div class="text-center mb-4">
+                            <i class="bi bi-{{ role == 'client' ? 'person-plus-fill text-success' : 'building text-warning' }}"
+                               style="font-size: 3rem;"></i>
+                            <h2 class="fw-bold mt-2">Créer un compte</h2>
+                            <p class="text-muted">Remplissez le formulaire ci-dessous</p>
+                        </div>
+
+                        <!-- Toggle Client / Propriétaire -->
+                        <div class="d-flex justify-content-center mb-4">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{{ path('app_register', {role: 'client'}) }}"
+                                   class="btn btn-{{ role == 'client' ? 'success' : 'outline-success' }} fw-semibold">
+                                    <i class="bi bi-person-circle me-1"></i> Client
+                                </a>
+                                <a href="{{ path('app_register', {role: 'proprietaire'}) }}"
+                                   class="btn btn-{{ role == 'proprietaire' ? 'warning' : 'outline-warning' }} fw-semibold">
+                                    <i class="bi bi-building me-1"></i> Propriétaire
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Flash messages -->
+                        {% for message in app.flashes('success') %}
+                            <div class="alert alert-success alert-dismissible fade show">
+                                <i class="bi bi-check-circle"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                        {% for message in app.flashes('error') %}
+                            <div class="alert alert-danger alert-dismissible fade show">
+                                <i class="bi bi-exclamation-triangle"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Formulaire -->
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+                        <div class="row g-3">
+
+                            <div class="col-12">
+                                {{ form_row(form.email, {'label': 'Email', 'attr': {'class': 'form-control', 'placeholder': 'exemple@email.com'}}) }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form_row(form.nom, {'label': 'Nom', 'attr': {'class': 'form-control', 'placeholder': 'Nom'}}) }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form_row(form.prenom, {'label': 'Prénom', 'attr': {'class': 'form-control', 'placeholder': 'Prénom'}}) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.tel, {'label': 'Téléphone', 'attr': {'class': 'form-control', 'placeholder': '+216 XX XXX XXX'}}) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.adresse, {'label': 'Adresse', 'attr': {'class': 'form-control', 'placeholder': 'Votre adresse'}}) }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form_row(form.password, {'label': 'Mot de passe', 'attr': {'class': 'form-control', 'placeholder': 'Minimum 6 caractères'}}) }}
+                            </div>
+
+                            <!-- Champs cachés nécessaires -->
+                            <div style="display:none">{{ form_widget(form.roles) }}</div>
+                            <div style="display:none">{{ form_widget(form.isActive) }}</div>
+                            <div style="display:none">{{ form_widget(form.imageUrl) }}</div>
+
+                            <!-- CAPTCHA centré -->
+                            <div class="col-12">
+                                <div style="background:#f8f9fa;border:1.5px solid #e0e0e0;border-radius:12px;padding:20px 16px;">
+
+                                    <p style="text-align:center;font-weight:600;color:#333;font-size:14px;margin-bottom:12px;">
+                                        <i class="bi bi-shield-lock" style="color:#2e7d32;margin-right:6px;"></i>
+                                        Vérification de sécurité
+                                    </p>
+
+                                    <!-- Image + bouton refresh centrés -->
+                                    <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:12px;">
+                                        <img id="captchaImg"
+                                             src="{{ path('captcha_image') }}"
+                                             alt="CAPTCHA"
+                                             style="display:block;border-radius:10px;border:2px solid #c8e6c9;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1);"
+                                             title="Cliquer pour rafraîchir">
+                                        <button type="button"
+                                                onclick="refreshCaptcha()"
+                                                style="background:#e8f5e9;border:1.5px solid #c8e6c9;border-radius:8px;color:#2e7d32;padding:6px 10px;cursor:pointer;font-size:16px;">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Input centré -->
+                                    <div style="display:flex;justify-content:center;">
+                                        <input type="text"
+                                               name="captcha_code"
+                                               placeholder="Entrez le code"
+                                               required
+                                               autocomplete="off"
+                                               maxlength="6"
+                                               style="width:200px;text-align:center;letter-spacing:8px;font-weight:700;font-size:18px;text-transform:uppercase;border:2px solid #c8e6c9;border-radius:10px;padding:10px;outline:none;background:#fff;">
+                                    </div>
+
+                                    <p style="text-align:center;font-size:11px;color:#888;margin-top:8px;margin-bottom:0;">
+                                        Cliquez sur l'image pour en obtenir un nouveau
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <button type="submit"
+                                        class="btn btn-{{ role == 'client' ? 'success' : 'warning' }} btn-lg w-100 fw-semibold">
+                                    <i class="bi bi-person-plus"></i>
+                                    Créer mon compte {{ role == 'client' ? 'Client' : 'Propriétaire' }}
+                                </button>
+                            </div>
+
+                            <!-- Google registration -->
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-2 my-1">
+                                    <hr class="flex-grow-1 m-0"><span class="text-muted small">ou</span><hr class="flex-grow-1 m-0">
+                                </div>
+                                <a href="{{ path('connect_google') }}"
+                                   class="btn btn-lg w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold"
+                                   style="border: 1.5px solid #ddd; border-radius: 10px; padding: 12px; color: #333; background: #fff;">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="22" height="22" alt="Google">
+                                    S'inscrire avec Google
+                                </a>
+                            </div>
+
+                        </div>
+                        {{ form_end(form) }}
+
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-0">
+                                Déjà un compte ?
+                                <a href="{{ path('app_login') }}" class="fw-bold">Se connecter</a>
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 text-muted">
+                    <small><i class="bi bi-shield-check"></i> Vos données sont sécurisées et confidentielles</small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+/* ── Même logique que ValidationUtil.java ── */
+const RULES = {
+    email: {
+        pattern : /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+        validate(v) {
+            if (!v)           return '❌ Email est obligatoire';
+            if (v.length>100) return '❌ Email trop long (max 100 caractères)';
+            if (!this.pattern.test(v)) return '❌ Format email invalide';
+            return '✅ Email valide';
+        }
+    },
+    nom: {
+        pattern : /^[a-zA-ZÀ-ÿ\s'-]{2,50}$/,
+        validate(v) {
+            if (!v)          return '❌ Nom est obligatoire';
+            if (v.length<2)  return '❌ Nom doit contenir au moins 2 caractères';
+            if (v.length>50) return '❌ Nom trop long (max 50 caractères)';
+            if (!this.pattern.test(v)) return '❌ Nom : lettres, espaces, tirets et apostrophes uniquement';
+            return '✅ Nom valide';
+        }
+    },
+    prenom: {
+        pattern : /^[a-zA-ZÀ-ÿ\s'-]{2,50}$/,
+        validate(v) {
+            if (!v)          return '❌ Prénom est obligatoire';
+            if (v.length<2)  return '❌ Prénom doit contenir au moins 2 caractères';
+            if (v.length>50) return '❌ Prénom trop long (max 50 caractères)';
+            if (!this.pattern.test(v)) return '❌ Prénom : lettres, espaces, tirets et apostrophes uniquement';
+            return '✅ Prénom valide';
+        }
+    },
+    tel: {
+        pattern : /^\+?216?[0-9]{8}$|^\+?[0-9]{10,15}$/,
+        validate(v) {
+            if (!v) return '';                         // optionnel
+            const c = v.replace(/[\s()-]/g,'');
+            if (!this.pattern.test(c)) return '❌ Téléphone invalide (format : +216 XX XXX XXX ou international)';
+            return '✅ Téléphone valide';
+        }
+    },
+    adresse: {
+        validate(v) {
+            if (!v)          return '';                // optionnel
+            if (v.length<5)  return '❌ Adresse trop courte (min 5 caractères)';
+            if (v.length>100)return '❌ Adresse trop longue (max 100 caractères)';
+            return '✅ Adresse valide';
+        }
+    },
+    password: {
+        pattern : /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/,
+        validate(v) {
+            if (!v)           return '❌ Mot de passe est obligatoire';
+            if (v.length<8)   return '❌ Mot de passe doit contenir au moins 8 caractères';
+            if (v.length>50)  return '❌ Mot de passe trop long (max 50 caractères)';
+            if (!this.pattern.test(v))
+                return '❌ Mot de passe faible — doit contenir : majuscule, minuscule, chiffre, caractère spécial';
+            return '✅ Mot de passe valide';
+        }
+    }
+};
+
+function showFeedback(field, msg) {
+    let fb = field.parentElement.querySelector('.val-feedback');
+    if (!fb) {
+        fb = document.createElement('small');
+        fb.className = 'val-feedback d-block mt-1 fw-semibold';
+        field.parentElement.appendChild(fb);
+    }
+    fb.textContent = msg;
+    fb.style.color  = msg.startsWith('✅') ? '#2e7d32' : '#c62828';
+    field.style.borderColor = msg.startsWith('✅') ? '#2e7d32'
+                            : msg === ''           ? ''
+                            : '#c62828';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Map field id (Symfony generates e.g. "user_email") to rule key
+    const fieldMap = {
+        email: 'email', nom: 'nom', prenom: 'prenom',
+        tel: 'tel', adresse: 'adresse', password: 'password'
+    };
+
+    Object.entries(fieldMap).forEach(([key, rule]) => {
+        // Symfony names fields like user[email] → id="user_email"
+        const el = document.querySelector(`[name$="[${key}]"], [name="${key}"], #field_${key}`);
+        if (!el || !RULES[rule]) return;
+
+        const validate = () => {
+            const msg = RULES[rule].validate(el.value.trim());
+            showFeedback(el, msg);
+        };
+
+        el.addEventListener('input', validate);
+        el.addEventListener('blur',  validate);
+    });
+
+    // ── Checklist mot de passe ──
+    const pwdEl = document.querySelector('[name$="[password]"], [name="password"], #field_password');
+    if (pwdEl) {
+
+        const rules = [
+            { id: 'r-len',   test: v => v.length >= 8,            label: 'Au moins 8 caractères'      },
+            { id: 'r-upper', test: v => /[A-Z]/.test(v),          label: 'Une lettre MAJUSCULE (A-Z)' },
+            { id: 'r-lower', test: v => /[a-z]/.test(v),          label: 'Une lettre minuscule (a-z)' },
+            { id: 'r-digit', test: v => /\d/.test(v),             label: 'Un chiffre (0-9)'           },
+            { id: 'r-spec',  test: v => /[^a-zA-Z\d]/.test(v),   label: 'Un caractère spécial (@ # ! %)' },
+        ];
+
+        // Build checklist block
+        const wrap = document.createElement('div');
+        wrap.id = 'pwd-checklist';
+        wrap.style.cssText = 'margin-top:8px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #e0e0e0;display:none;';
+        wrap.innerHTML = rules.map(r => `
+            <div id="${r.id}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#888;margin-bottom:4px;transition:color .2s;">
+                <span class="rule-icon" style="font-size:14px;">○</span>
+                <span>${r.label}</span>
+            </div>`).join('') +
+            `<div style="margin-top:8px;">
+                <div style="height:5px;border-radius:4px;background:#e0e0e0;">
+                    <div id="pwd-strength-bar" style="height:100%;border-radius:4px;width:0;transition:width .3s,background .3s;"></div>
+                </div>
+                <small id="pwd-strength-label" style="font-size:11px;color:#888;"></small>
+             </div>`;
+        pwdEl.parentElement.appendChild(wrap);
+
+        pwdEl.addEventListener('focus', () => wrap.style.display = 'block');
+        pwdEl.addEventListener('blur',  () => { if (!pwdEl.value) wrap.style.display = 'none'; });
+
+        pwdEl.addEventListener('input', function () {
+            const v = this.value;
+            wrap.style.display = 'block';
+            let passed = 0;
+
+            rules.forEach(r => {
+                const ok  = r.test(v);
+                const div = document.getElementById(r.id);
+                const ico = div.querySelector('.rule-icon');
+                if (ok) {
+                    div.style.color  = '#2e7d32';
+                    ico.textContent  = '✔';
+                    ico.style.color  = '#2e7d32';
+                    passed++;
+                } else {
+                    div.style.color  = '#888';
+                    ico.textContent  = '○';
+                    ico.style.color  = '#bbb';
+                }
+            });
+
+            const bar   = document.getElementById('pwd-strength-bar');
+            const label = document.getElementById('pwd-strength-label');
+            const pct   = (passed / rules.length) * 100;
+            const colors = ['', '#c62828', '#e64a19', '#f9a825', '#558b2f', '#2e7d32'];
+            const labels = ['', 'Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort ✅'];
+            bar.style.width      = pct + '%';
+            bar.style.background = colors[passed] || '#e0e0e0';
+            label.textContent    = passed > 0 ? labels[passed] : '';
+            label.style.color    = colors[passed] || '#888';
+        });
+    }
+
+    // CAPTCHA refresh
+    const captchaImg = document.getElementById('captchaImg');
+    if (captchaImg) {
+        captchaImg.addEventListener('click', () => {
+            captchaImg.src = '{{ path('captcha_image') }}?' + Date.now();
+        });
+    }
+    window.refreshCaptcha = () => {
+        if (captchaImg) captchaImg.src = '{{ path('captcha_image') }}?' + Date.now();
+    };
+});
+</script>
+{% endblock %}

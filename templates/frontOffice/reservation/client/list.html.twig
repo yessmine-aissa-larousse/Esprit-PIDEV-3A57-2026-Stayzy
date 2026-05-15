@@ -1,0 +1,238 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Réservations{% endblock %}
+
+{% block body %}
+
+<style>
+    .reservations-container {
+        min-height: 85vh;
+        background: linear-gradient(135deg, #f9f9ff, #ffffff);
+        padding-bottom: 60px;
+    }
+
+    .reservations-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #6c63ff;
+        letter-spacing: 1px;
+    }
+
+    .modern-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .table tbody tr {
+        transition: 0.3s;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f4f3ff;
+        transform: scale(1.01);
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .btn-modern {
+        border-radius: 30px;
+        padding: 6px 16px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-modern:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .ia-card {
+        border-left: 4px solid #6c63ff !important;
+        background: linear-gradient(135deg, #f4f3ff, #ffffff);
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        color: #888;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="reservations-container">
+
+    <div class="mb-4 mt-5 text-center">
+        <h2 class="reservations-title">📅 Mes Réservations</h2>
+        <p class="text-muted">Gérez vos réservations et analyses intelligentes</p>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show small mx-auto" style="max-width:800px;" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+
+    {# ═══════════════════════ IA DATES OPTIMALES ═══════════════════════ #}
+    {% if datesOptimales is not empty %}
+    <div class="card modern-card ia-card mb-4 mx-auto" style="max-width: 1400px;">
+        <div class="card-body py-3">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span style="font-size:1.2rem;">🤖</span>
+                <span class="fw-semibold text-secondary small">
+                    Suggestions IA — Meilleures dates pour réserver
+                </span>
+            </div>
+
+            <div class="row g-3">
+                {% for s in datesOptimales %}
+                <div class="col-md-4">
+                    <div class="p-3 rounded-4 border shadow-sm
+                        {% if s.badge == 'success' %}border-success bg-success bg-opacity-10
+                        {% elseif s.badge == 'info' %}border-info bg-info bg-opacity-10
+                        {% else %}border-warning bg-warning bg-opacity-10{% endif %}">
+                        <div class="fw-semibold">{{ s.semaine }}</div>
+                        <div class="small text-muted">{{ s.disponible }}</div>
+                        <div class="mt-2">
+                            {% if s.reduction > 0 %}
+                                <span class="badge bg-success bg-opacity-25 text-success">
+                                    💰 {{ s.reduction }}% moins cher — {{ s.prix_estime }} DT/nuit
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis">
+                                    🔥 Période très demandée
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ═══════════════════════ TABLE RÉSERVATIONS ═══════════════════════ #}
+    <div class="card modern-card mx-auto" style="max-width: 1400px;">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted">
+                    <tr>
+                        <th>Logement</th>
+                        <th>Date Début</th>
+                        <th>Date Fin</th>
+                        <th>Personnes</th>
+                        <th>Prix</th>
+                        <th>Analyse IA</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for reservation in reservations %}
+
+                    {% set alerte = alertes24h[reservation.id] ?? {'niveau': 'ok', 'message': null, 'peut_modifier': true} %}
+                    {% set prix   = analysesPrix[reservation.id] ?? {'badge': 'info', 'message': 'N/A', 'diff_pct': 0} %}
+
+                    <tr>
+                        <td class="fw-semibold">{{ reservation.logement.titre }}</td>
+                        <td>{{ reservation.dateDebut|date('d/m/Y') }}</td>
+                        <td>{{ reservation.dateFin|date('d/m/Y') }}</td>
+                        <td>{{ reservation.nombrePersonnes }}</td>
+
+                        <td class="fw-bold text-primary">
+                            {{ reservation.prixTotal }} DT
+                            <div class="small mt-1
+                                {% if prix.badge == 'success' %}text-success
+                                {% elseif prix.badge == 'warning' %}text-warning
+                                {% elseif prix.badge == 'danger' %}text-danger
+                                {% else %}text-muted{% endif %}">
+                                {{ prix.message }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="badge
+                                {% if prix.badge == 'success' %}bg-success bg-opacity-25 text-success
+                                {% elseif prix.badge == 'warning' %}bg-warning bg-opacity-25 text-warning-emphasis
+                                {% elseif prix.badge == 'danger' %}bg-danger bg-opacity-25 text-danger
+                                {% else %}bg-secondary bg-opacity-25 text-secondary{% endif %}">
+                                {{ prix.message }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if reservation.status == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning bg-opacity-25 text-warning-emphasis">⏳ En attente</span>
+                            {% elseif reservation.status == 'CONFIRMÉE' %}
+                                <span class="badge bg-success bg-opacity-25 text-success">✔ Confirmée</span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-25 text-danger">✖ Annulée</span>
+                            {% endif %}
+
+                            {% if alerte.niveau == 'danger' %}
+                                <div class="mt-1">
+                                    <span class="badge bg-danger">🚨 {{ alerte.message }}</span>
+                                </div>
+                            {% elseif alerte.niveau == 'warning' %}
+                                <div class="mt-1">
+                                    <span class="badge bg-warning text-dark">⚠ {{ alerte.message }}</span>
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            {% if reservation.status == 'EN_ATTENTE' %}
+                                {% if (alerte.peut_modifier ?? true) %}
+                                    <a href="{{ path('front_reservation_edit', {'id': reservation.id}) }}"
+                                       class="btn btn-sm btn-outline-primary btn-modern">
+                                        ✏ Modifier
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary btn-modern" disabled>
+                                        🔒 Modifier
+                                    </button>
+                                {% endif %}
+
+                                <form method="post"
+                                      action="{{ path('front_reservation_cancel', {'id': reservation.id}) }}"
+                                      class="d-inline ms-1"
+                                      onsubmit="return confirm('Confirmer l\'annulation de cette réservation ?')">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('cancel_reservation_' ~ reservation.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger btn-modern">
+                                        ❌ Annuler
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                {% else %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <h5>Aucune réservation trouvée</h5>
+                                <p>Vous n’avez pas encore effectué de réservation.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

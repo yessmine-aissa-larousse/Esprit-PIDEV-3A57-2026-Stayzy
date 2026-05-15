@@ -1,0 +1,69 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Demande envoyée{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+<div class="container">
+<h1>Confirmation</h1>
+</div>
+</div>
+
+<section class="section">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-8">
+
+<div class="card shadow p-4">
+
+<div class="alert alert-success text-center">
+<h4>✔ Votre demande de visite a été envoyée</h4>
+</div>
+
+<hr>
+
+<div class="mb-3">
+<strong>Date :</strong>
+<div class="border rounded p-2 bg-light">
+{{ visite.dateVisite|date('d/m/Y') }}
+</div>
+</div>
+
+<div class="mb-3">
+<strong>Heure :</strong>
+<div class="border rounded p-2 bg-light">
+{{ visite.heureVisite|date('H:i') }}
+</div>
+</div>
+
+<div class="mb-3">
+<strong>Message :</strong>
+<div class="border rounded p-2 bg-light">
+{{ visite.note }}
+</div>
+</div>
+
+<div class="mb-4">
+<strong>Statut :</strong>
+<div class="border rounded p-2 bg-warning text-dark fw-bold text-center">
+En attente de confirmation
+</div>
+</div>
+
+<div class="text-center d-flex justify-content-center gap-3">
+<a href="{{ path('client_visite_new') }}" class="btn btn-outline-primary">
+Nouvelle demande
+</a>
+
+<a href="{{ path('client_mes_visites') }}" class="btn btn-success">
+Mes visites
+</a>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+</section>
+
+{% endblock %}

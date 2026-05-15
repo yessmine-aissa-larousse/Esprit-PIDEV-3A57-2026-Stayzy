@@ -1,0 +1,120 @@
+<div id="forum-chatbot" class="forum-chatbot">
+    <button type="button" id="forum-chatbot-toggle" class="forum-chatbot-toggle btn btn-primary rounded-circle shadow" title="Assistant Stayzy" aria-label="Ouvrir l'assistant">
+        <i class="bi bi-robot"></i>
+    </button>
+    <div id="forum-chatbot-panel" class="forum-chatbot-panel shadow d-none">
+        <div class="forum-chatbot-header d-flex justify-content-between align-items-center p-2 bg-primary text-white rounded-top">
+            <span><i class="bi bi-robot me-2"></i> Assistant Stayzy</span>
+            <button type="button" class="btn btn-link btn-sm text-white p-0 opacity-75 forum-chatbot-close" aria-label="Fermer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="forum-chatbot-messages p-2" id="chatbot-messages" style="height:300px;overflow-y:auto;background:#f8f9fa;">
+            <div class="forum-msg bot small">
+                👋 Bonjour ! Je suis l'assistant Stayzy.<br>
+                Posez-moi une question sur la plateforme : logements, réservations, utilisateurs, promotions, forum…
+            </div>
+        </div>
+        <div class="forum-chatbot-shortcuts px-2 pb-1 pt-1" style="background:#f8f9fa;border-top:1px solid #dee2e6;">
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="Statistiques globales">📊 Stats</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="Derniers posts du forum">💬 Forum</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="État des réservations">📅 Réservations</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="Promotions actives">🎁 Promos</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="Combien d'utilisateurs inscrits ?">👥 Users</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm chat-quick py-0" style="font-size:11px;" data-q="Logements disponibles">🏠 Logements</button>
+            </div>
+        </div>
+        <div class="forum-chatbot-input p-2 border-top">
+            <form id="forum-chatbot-form" class="d-flex gap-1">
+                <input type="text" id="chatbot-input" class="form-control form-control-sm" placeholder="Votre question…" maxlength="500" autocomplete="off">
+                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-send"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.forum-chatbot { position:fixed; bottom:24px; right:24px; z-index:1050; }
+.forum-chatbot-toggle { width:56px; height:56px; font-size:1.5rem; }
+.forum-chatbot-panel { width:340px; max-width:calc(100vw - 48px); background:#fff; border-radius:12px; position:absolute; bottom:66px; right:0; }
+.forum-msg { margin-bottom:8px; padding:8px 10px; border-radius:10px; font-size:13px; line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+.forum-msg.bot  { background:#e9ecef; color:#333; }
+.forum-msg.user { background:#0d6efd; color:#fff; margin-left:20px; }
+.forum-msg.loading { background:#e9ecef; color:#999; font-style:italic; }
+.forum-msg strong { font-weight:700; }
+</style>
+
+<script>
+(function () {
+    var panel    = document.getElementById('forum-chatbot-panel');
+    var toggle   = document.getElementById('forum-chatbot-toggle');
+    var closeBtn = panel && panel.querySelector('.forum-chatbot-close');
+    var form     = document.getElementById('forum-chatbot-form');
+    var messages = document.getElementById('chatbot-messages');
+    var input    = document.getElementById('chatbot-input');
+
+    function openPanel()   { if (panel) panel.classList.remove('d-none'); input && input.focus(); }
+    function closePanel()  { if (panel) panel.classList.add('d-none'); }
+    function togglePanel() { if (panel) panel.classList.toggle('d-none'); if (!panel.classList.contains('d-none')) input && input.focus(); }
+
+    if (toggle)  toggle.addEventListener('click', togglePanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+    /* quick-question chips */
+    document.querySelectorAll('.chat-quick').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openPanel();
+            sendMessage(this.dataset.q);
+        });
+    });
+
+    /* markdown-lite: **bold** → <strong>, bullet • → keeps as-is */
+    function renderText(text) {
+        return text
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+    }
+
+    function addMsg(text, cls) {
+        var div = document.createElement('div');
+        div.className = 'forum-msg ' + cls;
+        div.innerHTML = renderText(text);
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
+    }
+
+    function sendMessage(msg) {
+        msg = (msg || '').trim();
+        if (!msg) return;
+
+        addMsg(msg, 'user');
+        if (input) input.value = '';
+
+        var loader = addMsg('⏳ Réflexion en cours…', 'loading');
+
+        fetch('{{ path('forum_chat') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            body: 'message=' + encodeURIComponent(msg)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            loader.remove();
+            addMsg(data.reply || 'Désolé, pas de réponse.', 'bot');
+        })
+        .catch(function () {
+            loader.remove();
+            addMsg('❌ Erreur de connexion. Réessayez dans un moment.', 'bot');
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            sendMessage(input ? input.value : '');
+        });
+    }
+}());
+</script>

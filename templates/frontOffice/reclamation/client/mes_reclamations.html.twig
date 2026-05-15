@@ -1,0 +1,96 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}Mes Réclamations{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h3 class="mb-4">Mes Réclamations</h3>
+
+    <div class="row g-4">
+        {% for rec in reclamations %}
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body d-flex flex-column">
+
+                    <div class="d-flex justify-content-between">
+                        <h5>{{ rec.sujet }}</h5>
+
+                        {% if rec.statut == 'EN_ATTENTE' %}
+                            <span class="badge bg-warning text-dark">En attente</span>
+                        {% else %}
+                            <span class="badge bg-success">Traitée</span>
+                        {% endif %}
+                    </div>
+
+                    <small class="text-muted">
+                        {{ rec.dateReclamation|date('d/m/Y H:i') }}
+                    </small>
+
+                    <p class="mt-2">{{ rec.description }}</p>
+                    <div class="d-flex gap-1 mb-2">
+                        <select id="lang-rec-{{ rec.id }}" class="form-select form-select-sm" style="width:90px;">
+                            <option value="en">EN</option>
+                            <option value="fr">FR</option>
+                            <option value="ar">AR</option>
+                            <option value="de">DE</option>
+                            <option value="es">ES</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                onclick="translateText('/reclamation/api/{{ rec.id }}/translate?lang='+document.getElementById('lang-rec-{{ rec.id }}').value,'Description')">
+                            🌍 Traduire
+                        </button>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold">Réponse :</h6>
+
+                    {% if rec.reponses|length > 0 %}
+                        <div class="alert alert-success">
+                            {{ rec.reponses[0].contenu }}
+                            <br>
+                            <small>{{ rec.reponses[0].dateReponse|date('d/m/Y H:i') }}</small>
+                        </div>
+                        <div class="d-flex gap-1 mb-2">
+                            <select id="lang-rep-{{ rec.id }}" class="form-select form-select-sm" style="width:90px;">
+                                <option value="en">EN</option>
+                                <option value="fr">FR</option>
+                                <option value="ar">AR</option>
+                                <option value="de">DE</option>
+                                <option value="es">ES</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="translateText('/reponse/api/{{ rec.reponses[0].id }}/translate?lang='+document.getElementById('lang-rep-{{ rec.id }}').value,'Réponse')">
+                                🌍 Traduire la réponse
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            Aucune réponse pour le moment
+                        </div>
+                    {% endif %}
+
+                    {% if rec.statut == 'EN_ATTENTE' %}
+                    <div class="mt-auto d-flex gap-2">
+                        <a href="{{ path('client_reclamation_edit', {'id': rec.id}) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                        <a href="{{ path('client_reclamation_delete', {'id': rec.id}) }}" class="btn btn-sm btn-outline-danger">Supprimer</a>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-light text-center">
+            Aucune réclamation trouvée
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<div class="d-flex justify-content-center mt-4">
+    {{ knp_pagination_render(reclamations) }}
+</div>
+
+{{ include('_translate_modal.html.twig') }}
+{% endblock %}
+

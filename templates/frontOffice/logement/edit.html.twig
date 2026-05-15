@@ -1,0 +1,505 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier mon logement - Stayzy{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+
+    {# ===================================================
+       API EXTERNE 1 : Leaflet.js — Bibliothèque de carte
+       Chargée depuis internet (CDN), rien à installer
+    =================================================== #}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        #map {
+            height: 350px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 16px;
+        }
+
+        #search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        #search-bar input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        #search-bar button {
+            padding: 8px 16px;
+            background: #ffc107;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        #search-bar button:hover { background: #e0a800; }
+
+        #map-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            color: #856404;
+            margin-bottom: 16px;
+        }
+
+        .auto-filled {
+            border-color: #198754 !important;
+            background-color: #f0fdf4 !important;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0"> Modifier mon logement</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('proprietaire_logement_list') }}">Mes Logements</a></li>
+                <li class="current">Modifier</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 60px 0; background: #f8f9fa;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+
+                {# Messages Flash #}
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show">
+                         {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger alert-dismissible fade show">
+                         {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+
+                <form method="POST" enctype="multipart/form-data">
+
+                    {# Informations de base #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-1-circle"></i> Informations de base</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label">Titre *</label>
+                                    <input type="text" class="form-control" name="titre" value="{{ logement.titre }}" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Catégorie *</label>
+                                    <select class="form-select" name="categorie" required>
+                                        {% for cat in categories %}
+                                            <option value="{{ cat.id }}" {% if logement.categorie and logement.categorie.id == cat.id %}selected{% endif %}>
+                                                {{ cat.nom }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="5">{{ logement.description }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Caractéristiques #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-2-circle"></i> Caractéristiques</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Prix (€) *</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="prix" value="{{ logement.prix }}" step="0.01" required>
+                                        <span class="input-group-text">€</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Superficie (m²) *</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" name="superficie" value="{{ logement.superficie }}" required>
+                                        <span class="input-group-text">m²</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Chambres *</label>
+                                    <input type="number" class="form-control" name="nombreChambres" value="{{ logement.nombreChambres }}" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">Salles de bain *</label>
+                                    <input type="number" class="form-control" name="nombreSalleDeBain" value="{{ logement.nombreSalleDeBain }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ──────────────────────────────────────────────────────
+                       BLOC 3 : Localisation avec carte Leaflet + Nominatim
+                       Les coordonnées existantes sont pré-chargées si disponibles
+                    ────────────────────────────────────────────────────── #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-3-circle"></i> Localisation</h5>
+                        </div>
+                        <div class="card-body">
+
+                            <label class="form-label fw-semibold">
+                                🔍 Rechercher une adresse sur la carte
+                            </label>
+                            <div id="search-bar">
+                                <input type="text"
+                                       id="map-search-input"
+                                       placeholder="Ex: Nabeul, Tunis, 5 rue de la Liberté...">
+                                <button type="button" onclick="rechercherAdresse()">
+                                    <i class="bi bi-search"></i> Rechercher
+                                </button>
+                            </div>
+
+                            <div id="map"></div>
+
+                            <div id="map-info">
+                                💡 <strong>Cliquez sur la carte</strong> ou
+                                <strong>déplacez le marqueur</strong> pour repositionner
+                                votre logement. Les champs ci-dessous se mettent à jour
+                                automatiquement via l'API OpenStreetMap (Nominatim).
+                            </div>
+
+                            {# Champs cachés lat/lng — pré-remplis si déjà enregistrés #}
+                            <input type="hidden" id="latitude"  name="latitude"
+                                   value="{{ logement.adresse.latitude|default('') }}">
+                            <input type="hidden" id="longitude" name="longitude"
+                                   value="{{ logement.adresse.longitude|default('') }}">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="rue" class="form-label">Adresse *</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="rue"
+                                           name="rue"
+                                           value="{{ logement.adresse.rue|default('') }}"
+                                           placeholder="Rempli automatiquement — ou saisir manuellement">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="ville" class="form-label">Ville *</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="ville"
+                                           name="ville"
+                                           value="{{ logement.adresse.ville|default('') }}"
+                                           placeholder="Ville">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="codePostal" class="form-label">Code postal *</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="codePostal"
+                                           name="codePostal"
+                                           value="{{ logement.adresse.codePostal|default('') }}"
+                                           placeholder="Code postal">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="pays" class="form-label">Pays *</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="pays"
+                                           name="pays"
+                                           value="{{ logement.adresse.pays|default('Tunisie') }}">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {# Photos #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-4-circle"></i> Photos</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if logement.photoPrincipale %}
+                                <div class="mb-3">
+                                    <label class="form-label">Photo principale actuelle</label>
+                                    <div>
+                                        <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" onerror="this.src='https://placehold.co/400x300/e8e8e8/999?text=Photo'"
+                                             class="img-thumbnail"
+                                             style="max-width: 200px;">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <label class="form-label">Changer la photo principale</label>
+                                <input type="file" class="form-control" name="photoPrincipale" accept="image/*">
+                            </div>
+
+                            {% if logement.photos|length > 0 %}
+                                <div class="mb-3">
+                                    <label class="form-label">Photos supplémentaires ({{ logement.photos|length }})</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for photo in logement.photos %}
+                                            <div style="position: relative;">
+                                                <img src="{{ asset('uploads/logements/' ~ photo) }}"
+                                                     class="img-thumbnail"
+                                                     style="width: 100px; height: 100px; object-fit: cover;">
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Ajouter des photos</label>
+                                <input type="file" class="form-control" name="photos[]" accept="image/*" multiple>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Équipements #}
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-5-circle"></i> Équipements</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% set amenitesList = ['wifi', 'parking', 'climatisation', 'piscine', 'cuisine', 'lave_linge', 'balcon', 'jardin'] %}
+                                {% set amenitesLabels = {
+                                    'wifi': 'WiFi',
+                                    'parking': 'Parking',
+                                    'climatisation': 'Climatisation',
+                                    'piscine': 'Piscine',
+                                    'cuisine': 'Cuisine équipée',
+                                    'lave_linge': 'Lave-linge',
+                                    'balcon': 'Balcon',
+                                    'jardin': 'Jardin'
+                                } %}
+                                {% for amenite in amenitesList %}
+                                    <div class="col-md-3 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="amenites[]"
+                                                   value="{{ amenite }}" id="{{ amenite }}"
+                                                   {% if logement.amenites and amenite in logement.amenites %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ amenite }}">
+                                                {{ amenitesLabels[amenite] }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input" type="checkbox" name="disponible" value="1"
+                                       id="disponible" {% if logement.disponible %}checked{% endif %}>
+                                <label class="form-check-label" for="disponible">
+                                    Logement disponible à la location
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Boutons #}
+                    <div class="d-flex gap-3 justify-content-end">
+                        <a href="{{ path('proprietaire_logement_list') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+
+    // ============================================================
+    // Récupération des coordonnées existantes du logement
+    // Si lat/lng sont déjà enregistrés → la carte s'ouvre dessus
+    // Sinon → centre par défaut = Tunisie
+    // ============================================================
+    const latExistante = parseFloat('{{ logement.adresse.latitude|default("") }}') || null;
+    const lngExistante = parseFloat('{{ logement.adresse.longitude|default("") }}') || null;
+
+    const centreInitial = (latExistante && lngExistante)
+        ? [latExistante, lngExistante]
+        : [33.8869, 9.5375];
+
+    const zoomInitial = (latExistante && lngExistante) ? 15 : 6;
+
+    // ============================================================
+    // Initialisation de la carte Leaflet
+    // ============================================================
+    const map = L.map('map').setView(centreInitial, zoomInitial);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Marqueur draggable positionné sur le logement existant (ou centre Tunisie)
+    let marker = L.marker(centreInitial, { draggable: true }).addTo(map);
+    marker.bindPopup('📍 Déplacez le marqueur pour mettre à jour la position').openPopup();
+
+
+    // ============================================================
+    // DÉCLENCHEUR 1 — Clic sur la carte
+    // ============================================================
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        appellerNominatimReverse(e.latlng.lat, e.latlng.lng);
+    });
+
+
+    // ============================================================
+    // DÉCLENCHEUR 2 — Drag du marqueur
+    // ============================================================
+    marker.on('dragend', function() {
+        const pos = marker.getLatLng();
+        appellerNominatimReverse(pos.lat, pos.lng);
+    });
+
+
+    // ============================================================
+    // API NOMINATIM — Reverse geocoding (coordonnées → adresse)
+    // ============================================================
+    function appellerNominatimReverse(lat, lng) {
+
+        document.getElementById('latitude').value  = lat.toFixed(6);
+        document.getElementById('longitude').value = lng.toFixed(6);
+
+        const url = 'https://nominatim.openstreetmap.org/reverse'
+                  + '?lat='    + lat
+                  + '&lon='    + lng
+                  + '&format=json'
+                  + '&accept-language=fr';
+
+        fetch(url)
+            .then(function(reponse) { return reponse.json(); })
+            .then(function(donnees) {
+                if (donnees && donnees.address) {
+                    remplirChampsAdresse(donnees.address);
+                }
+            })
+            .catch(function(erreur) {
+                console.error('Erreur appel API Nominatim :', erreur);
+            });
+    }
+
+
+    // ============================================================
+    // REMPLISSAGE AUTOMATIQUE des champs adresse
+    // ============================================================
+    function remplirChampsAdresse(adresse) {
+
+        const rue = [
+            adresse.house_number || '',
+            adresse.road || adresse.pedestrian || adresse.footway || ''
+        ].filter(Boolean).join(' ');
+
+        const ville = adresse.city
+                   || adresse.town
+                   || adresse.village
+                   || adresse.municipality
+                   || '';
+
+        const codePostal = adresse.postcode || '';
+        const pays       = adresse.country  || '';
+
+        remplirChamp('rue',        rue);
+        remplirChamp('ville',      ville);
+        remplirChamp('codePostal', codePostal);
+        remplirChamp('pays',       pays);
+    }
+
+    function remplirChamp(id, valeur) {
+        const champ = document.getElementById(id);
+        if (!champ) return;
+        champ.value = valeur;
+        champ.classList.add('auto-filled');
+        setTimeout(function() { champ.classList.remove('auto-filled'); }, 2000);
+    }
+
+
+    // ============================================================
+    // DÉCLENCHEUR 3 — Recherche par texte (Geocoding direct)
+    // ============================================================
+    function rechercherAdresse() {
+        const texte = document.getElementById('map-search-input').value.trim();
+        if (!texte) return;
+
+        const url = 'https://nominatim.openstreetmap.org/search'
+                  + '?q='      + encodeURIComponent(texte)
+                  + '&format=json'
+                  + '&addressdetails=1'
+                  + '&limit=1'
+                  + '&accept-language=fr';
+
+        fetch(url)
+            .then(function(reponse) { return reponse.json(); })
+            .then(function(resultats) {
+                if (resultats && resultats.length > 0) {
+                    const r   = resultats[0];
+                    const lat = parseFloat(r.lat);
+                    const lng = parseFloat(r.lon);
+
+                    map.setView([lat, lng], 15);
+                    marker.setLatLng([lat, lng]);
+
+                    document.getElementById('latitude').value  = lat.toFixed(6);
+                    document.getElementById('longitude').value = lng.toFixed(6);
+
+                    remplirChampsAdresse(r.address);
+
+                } else {
+                    alert('Adresse introuvable. Essayez un autre terme.');
+                }
+            })
+            .catch(function(erreur) {
+                console.error('Erreur recherche Nominatim :', erreur);
+            });
+    }
+
+    // Lancer la recherche avec la touche Entrée
+    document.getElementById('map-search-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            rechercherAdresse();
+        }
+    });
+
+    </script>
+
+{% endblock %}

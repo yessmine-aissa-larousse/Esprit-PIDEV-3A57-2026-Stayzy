@@ -1,0 +1,45 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Nouveau post - Forum{% endblock %}
+
+{% block body %}
+    <section class="blog-details section">
+        <div class="container" data-aos="fade-up">
+            <div class="section-header">
+                <h2 class="title">Créer un nouveau post</h2>
+                <p>Partagez une discussion avec la communauté.</p>
+            </div>
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+            <div class="mb-3 text-muted">
+                <small><i class="bi bi-person-circle"></i> Publié en tant que <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></small>
+            </div>
+            {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
+            <div class="mb-3">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title) }}
+                {{ form_errors(form.title) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.content) }}
+                {{ form_widget(form.content) }}
+                {{ form_errors(form.content) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.excerpt) }}
+                {{ form_widget(form.excerpt) }}
+                {{ form_errors(form.excerpt) }}
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image) }}
+                {{ form_errors(form.image) }}
+            </div>
+            <button type="submit" class="btn btn-primary">Publier le post</button>
+            <a href="{{ path('forum_index') }}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            {{ form_end(form) }}
+        </div>
+    </section>
+    {% include 'frontOffice/forum/_chatbot.html.twig' %}
+{% endblock %}

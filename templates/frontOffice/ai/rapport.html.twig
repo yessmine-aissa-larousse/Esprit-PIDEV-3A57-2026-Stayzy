@@ -1,0 +1,528 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Rapport IA — Stayzy{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+/* ══ VARIABLES ══ */
+:root {
+    --vert:   #077f46;
+    --vert-l: #f0fdf4;
+    --bleu:   #1e40af;
+    --rouge:  #dc2626;
+    --orange: #d97706;
+    --gris:   #64748b;
+}
+
+/* ══ HEADER RAPPORT ══ */
+.rapport-header {
+    background: linear-gradient(135deg, #077f46 0%, #055c32 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+}
+.rapport-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.07);
+    border-radius: 50%;
+}
+.rapport-header h1 { font-size: 2rem; font-weight: 800; margin: 0; }
+.rapport-header p  { opacity: .85; margin: 6px 0 0; }
+
+/* ══ SCORE GLOBAL ══ */
+.score-global-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    border: 2px solid #e8edf2;
+}
+.score-cercle {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; font-weight: 900;
+    margin: 0 auto 16px;
+    border: 6px solid;
+}
+.score-or     { border-color: #f59e0b; color: #f59e0b; background: #fffbeb; }
+.score-argent { border-color: #94a3b8; color: #94a3b8; background: #f8fafc; }
+.score-bronze { border-color: #b45309; color: #b45309; background: #fef3c7; }
+
+/* ══ CARTE LOGEMENT ══ */
+.logement-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+    border: 1.5px solid #e8edf2;
+    margin-bottom: 28px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+}
+.logement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+}
+.logement-card-header {
+    background: linear-gradient(90deg, #f8fafc, #fff);
+    padding: 20px 24px;
+    border-bottom: 1.5px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.logement-card-body { padding: 24px; }
+
+/* ══ SCORE BADGE ══ */
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: .95rem;
+}
+.score-badge.haut   { background: #dcfce7; color: #166534; }
+.score-badge.moyen  { background: #fef9c3; color: #854d0e; }
+.score-badge.faible { background: #fee2e2; color: #991b1b; }
+
+/* ══ KPI GRID ══ */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.kpi-box {
+    background: #f8fafc;
+    border: 1.5px solid #e8edf2;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+.kpi-box .kpi-val  { font-size: 1.6rem; font-weight: 800; color: #1e293b; }
+.kpi-box .kpi-lbl  { font-size: .72rem; color: #94a3b8; text-transform: uppercase;
+                      letter-spacing: .05em; margin-top: 4px; }
+
+/* ══ PREDICTION BOX ══ */
+.prediction-box {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.prediction-box h6 { color: #1e40af; font-weight: 700; margin-bottom: 8px; }
+.prediction-range  { font-size: 1.8rem; font-weight: 900; color: #1e40af; }
+.tendance-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: .75rem;
+    font-weight: 700;
+}
+.tendance-hausse { background: #dcfce7; color: #166534; }
+.tendance-baisse { background: #fee2e2; color: #991b1b; }
+.tendance-stable { background: #f1f5f9; color: #475569; }
+
+/* ══ RECOMMANDATIONS ══ */
+.reco-item {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border: 1.5px solid transparent;
+}
+.reco-item.haute   { background: #fff7f7; border-color: #fecaca; }
+.reco-item.moyenne { background: #fffbeb; border-color: #fde68a; }
+.reco-item.info    { background: #eff6ff; border-color: #bfdbfe; }
+.reco-item.succes  { background: #f0fdf4; border-color: #bbf7d0; }
+
+.reco-icon {
+    width: 40px; height: 40px; min-width: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+}
+.reco-item.haute   .reco-icon { background: #fecaca; color: #dc2626; }
+.reco-item.moyenne .reco-icon { background: #fde68a; color: #d97706; }
+.reco-item.info    .reco-icon { background: #bfdbfe; color: #1e40af; }
+.reco-item.succes  .reco-icon { background: #bbf7d0; color: #077f46; }
+
+.reco-titre { font-weight: 700; font-size: .9rem; margin-bottom: 4px; }
+.reco-texte { font-size: .84rem; color: #475569; }
+
+/* ══ SAISONNALITE ══ */
+.saison-bar-wrap { margin-bottom: 10px; }
+.saison-label { font-size: .8rem; font-weight: 600; color: #64748b; width: 80px; display: inline-block; }
+.saison-bar-bg {
+    display: inline-block;
+    background: #f1f5f9;
+    border-radius: 50px;
+    width: calc(100% - 120px);
+    height: 10px;
+    vertical-align: middle;
+    overflow: hidden;
+}
+.saison-bar-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #077f46, #34d399);
+}
+.saison-nb { font-size: .78rem; color: #94a3b8; margin-left: 8px; }
+
+/* ══ BTN GENERER ══ */
+.btn-ai {
+    background: linear-gradient(135deg, #077f46, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: all .2s;
+    box-shadow: 0 4px 16px rgba(7,127,70,.3);
+}
+.btn-ai:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(7,127,70,.4); color: #fff; }
+
+/* ══ LOADER ══ */
+#ai-loader {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+}
+.ai-spin {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 5px solid #e5e7eb;
+    border-top-color: #077f46;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+    .rapport-header { padding: 24px; }
+    .rapport-header h1 { font-size: 1.4rem; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ══ BREADCRUMB ══ #}
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Rapport IA</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li><a href="{{ path('proprietaire_logement_list') }}">Mes logements</a></li>
+                <li class="current">Rapport IA</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section" style="padding: 50px 0; background: #f8f9fa;">
+<div class="container">
+
+    {% for msg in app.flashes('warning') %}
+        <div class="alert alert-warning">{{ msg }}</div>
+    {% endfor %}
+
+    {# ══ HEADER ══ #}
+    <div class="rapport-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-robot me-2"></i>Rapport IA — Analyse de vos logements</h1>
+                <p>
+                    {% if rapport %}
+                        Généré le {{ rapport.genere_le }} •
+                        {{ rapport.nb_logements }} logement(s) analysé(s)
+                    {% else %}
+                        Analysez vos logements et obtenez des recommandations personnalisées
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{{ path('ai_rapport') }}" class="btn-ai" id="btn-generer"
+               onclick="lancerAnalyse()">
+                <i class="bi bi-stars"></i>
+                {% if rapport %}Regénérer{% else %}Générer le rapport{% endif %}
+            </a>
+        </div>
+    </div>
+
+    {# ══ LOADER ══ #}
+    <div id="ai-loader">
+        <div class="ai-spin"></div>
+        <h5 style="color:#077f46; font-weight:700;">Analyse IA en cours...</h5>
+        <p class="text-muted">Nos algorithmes analysent vos logements. Patientez quelques secondes.</p>
+    </div>
+
+    {# ══ ERREUR ══ #}
+    {% if erreur %}
+        <div class="alert alert-danger d-flex align-items-center gap-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+            <div>
+                <strong>Erreur IA :</strong> {{ erreur }}
+                <br><small>Vérifiez que Python est bien installé et que des données existent.</small>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if rapport %}
+
+        {# ══ SCORE GLOBAL ══ #}
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="score-global-card h-100">
+                    {% set sg = rapport.score_global %}
+                    <div class="score-cercle {{ sg >= 70 ? 'score-or' : (sg >= 40 ? 'score-argent' : 'score-bronze') }}">
+                        {{ sg }}
+                    </div>
+                    <h5 class="fw-800">Score global</h5>
+                    <p class="text-muted mb-0">
+                        {% if sg >= 70 %}
+                            Excellent portefeuille ! Continuez ainsi.
+                        {% elseif sg >= 40 %}
+                            Des améliorations sont possibles.
+                        {% else %}
+                            Votre portefeuille nécessite des actions.
+                        {% endif %}
+                    </p>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            Prix moyen du marché :
+                            <strong>{{ rapport.prix_moyen_marche }}€/nuit</strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            {# ══ CLASSEMENT RAPIDE ══ #}
+            <div class="col-md-8">
+                <div class="score-global-card h-100">
+                    <h5 class="fw-700 mb-3">
+                        <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                        Classement de vos logements
+                    </h5>
+                    {% for item in rapport.logements %}
+                        {% set score = item.stats.score %}
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <span class="fw-700" style="min-width:24px;color:#94a3b8;">
+                                {{ loop.index }}
+                            </span>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-600 small">{{ item.logement.titre }}</span>
+                                    <span class="fw-700 small">{{ score }}/100</span>
+                                </div>
+                                <div style="background:#f1f5f9;border-radius:50px;height:8px;overflow:hidden;">
+                                    <div style="width:{{ score }}%;height:100%;border-radius:50px;
+                                         background:{{ score >= 70 ? 'linear-gradient(90deg,#077f46,#34d399)' :
+                                                      (score >= 40 ? 'linear-gradient(90deg,#d97706,#fbbf24)' :
+                                                                     'linear-gradient(90deg,#dc2626,#f87171)') }};
+                                         transition:width 1s ease;"></div>
+                                </div>
+                            </div>
+                            <span class="score-badge {{ score >= 70 ? 'haut' : (score >= 40 ? 'moyen' : 'faible') }}">
+                                {{ score >= 70 ? 'Top' : (score >= 40 ? 'Moyen' : 'Faible') }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# ══ DÉTAIL PAR LOGEMENT ══ #}
+        {% for item in rapport.logements %}
+            {% set stats  = item.stats %}
+            {% set pred   = item.prediction %}
+            {% set recos  = item.recommandations %}
+            {% set saison = item.saisonnalite %}
+            {% set score  = stats.score %}
+
+            <div class="logement-card">
+
+                {# ─ En-tête logement ─ #}
+                <div class="logement-card-header">
+                    <div>
+                        <h5 class="mb-0 fw-700">
+                            <i class="bi bi-house-door-fill text-success me-2"></i>
+                            {{ item.logement.titre }}
+                        </h5>
+                        <small class="text-muted">{{ item.logement.prix }}€/nuit</small>
+                    </div>
+                    <span class="score-badge {{ score >= 70 ? 'haut' : (score >= 40 ? 'moyen' : 'faible') }}"
+                          style="font-size:1rem; padding:8px 20px;">
+                        <i class="bi bi-star-fill me-1"></i> {{ score }}/100
+                    </span>
+                </div>
+
+                <div class="logement-card-body">
+                    <div class="row g-4">
+
+                        {# ── COL GAUCHE : KPIs + Prédiction ── #}
+                        <div class="col-lg-5">
+
+                            {# KPIs #}
+                            <h6 class="fw-700 text-muted text-uppercase mb-3" style="font-size:.72rem;letter-spacing:.08em;">
+                                Statistiques
+                            </h6>
+                            <div class="kpi-grid">
+                                <div class="kpi-box">
+                                    <div class="kpi-val text-success">{{ stats.nb_confirmees }}</div>
+                                    <div class="kpi-lbl">Réservations confirmées</div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-val text-danger">{{ stats.nb_annulees }}</div>
+                                    <div class="kpi-lbl">Annulations</div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-val">{{ stats.revenu_total }}€</div>
+                                    <div class="kpi-lbl">Revenus générés</div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-val">{{ stats.duree_moyenne_sejour }}j</div>
+                                    <div class="kpi-lbl">Durée moy. séjour</div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-val {{ stats.taux_annulation > 30 ? 'text-danger' : 'text-success' }}">
+                                        {{ stats.taux_annulation }}%
+                                    </div>
+                                    <div class="kpi-lbl">Taux annulation</div>
+                                </div>
+                                <div class="kpi-box">
+                                    <div class="kpi-val {{ stats.diff_prix_marche > 20 ? 'text-danger' : (stats.diff_prix_marche < -20 ? 'text-primary' : 'text-success') }}">
+                                        {{ stats.diff_prix_marche > 0 ? '+' : '' }}{{ stats.diff_prix_marche }}%
+                                    </div>
+                                    <div class="kpi-lbl">vs marché</div>
+                                </div>
+                            </div>
+
+                            {# Prédiction #}
+                            <div class="prediction-box">
+                                <h6>
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Prédiction — mois prochain
+                                </h6>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="prediction-range">
+                                        {{ pred.min }}–{{ pred.max }}
+                                        <small style="font-size:1rem;font-weight:400;">réservations</small>
+                                    </div>
+                                    {% if pred.tendance is defined %}
+                                        <span class="tendance-badge tendance-{{ pred.tendance }}">
+                                            {% if pred.tendance == 'hausse' %}
+                                                <i class="bi bi-arrow-up-short"></i> En hausse
+                                            {% elseif pred.tendance == 'baisse' %}
+                                                <i class="bi bi-arrow-down-short"></i> En baisse
+                                            {% else %}
+                                                <i class="bi bi-dash"></i> Stable
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {# Saisonnalité #}
+                            <h6 class="fw-700 text-muted text-uppercase mb-3" style="font-size:.72rem;letter-spacing:.08em;">
+                                Saisonnalité
+                            </h6>
+                                {% set max_saison = 0 %}
+                                {% for nom, nb in saison.repartition %}
+                                    {% if nb > max_saison %}{% set max_saison = nb %}{% endif %}
+                                {% endfor %}                            
+                                {% for nom, nb in saison.repartition %}
+                                <div class="saison-bar-wrap">
+                                    <span class="saison-label">{{ nom }}</span>
+                                    <span class="saison-bar-bg">
+                                        <span class="saison-bar-fill"
+                                              style="width:{{ max_saison > 0 ? (nb / max_saison * 100)|round : 0 }}%">
+                                        </span>
+                                    </span>
+                                    <span class="saison-nb">{{ nb }} rés.</span>
+                                </div>
+                            {% endfor %}
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Meilleure saison : <strong class="text-success">{{ saison.meilleure }}</strong> •
+                                    À booster : <strong class="text-danger">{{ saison.pire }}</strong>
+                                </small>
+                            </div>
+
+                        </div>
+
+                        {# ── COL DROITE : Recommandations ── #}
+                        <div class="col-lg-7">
+                            <h6 class="fw-700 text-muted text-uppercase mb-3" style="font-size:.72rem;letter-spacing:.08em;">
+                                <i class="bi bi-lightbulb-fill text-warning me-1"></i>
+                                Recommandations IA
+                            </h6>
+                            {% for reco in recos %}
+                                <div class="reco-item {{ reco.priorite }}">
+                                    <div class="reco-icon">
+                                        <i class="bi {{ reco.icone }}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="reco-titre">{{ reco.titre }}</div>
+                                        <div class="reco-texte">{{ reco.texte }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    {% else %}
+        {# ══ ÉTAT VIDE — pas encore de rapport ══ #}
+        {% if not erreur %}
+            <div class="text-center py-5">
+                <div style="font-size:80px;color:#cbd5e1;">🤖</div>
+                <h4 class="mt-3 fw-700">Prêt à analyser vos logements</h4>
+                <p class="text-muted">Cliquez sur "Générer le rapport" pour obtenir une analyse complète.</p>
+                <a href="{{ path('ai_rapport') }}" class="btn-ai mt-3 d-inline-flex"
+                   onclick="lancerAnalyse()">
+                    <i class="bi bi-stars"></i> Générer mon rapport IA
+                </a>
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+</section>
+{% if rapport %}
+    {{ include('frontOffice/ai/_ai_assistant_section.html.twig') }}
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+function lancerAnalyse() {
+    document.getElementById('ai-loader').style.display = 'block';
+    document.querySelectorAll('.logement-card, .score-global-card').forEach(el => {
+        el.style.display = 'none';
+    });
+}
+</script>
+{% endblock %}

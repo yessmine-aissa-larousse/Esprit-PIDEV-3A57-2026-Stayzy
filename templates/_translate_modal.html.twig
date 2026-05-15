@@ -1,0 +1,48 @@
+{# Include once per page that needs translation.
+   Provides:  window.translateText(apiUrl, label)
+   Example:   translateText('/reclamation/api/3/translate?lang=en', 'Description') #}
+
+<div class="modal fade" id="translateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="translateModalLabel">🌍 Traduction</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="text-center">
+                    <div id="translateSpinner" class="spinner-border text-info d-none mb-2" role="status"
+                         aria-label="Chargement…"></div>
+                </div>
+                <p id="translateOutput" class="mb-0" style="white-space:pre-wrap;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    window.translateText = function (apiUrl, label) {
+        var output  = document.getElementById('translateOutput');
+        var spinner = document.getElementById('translateSpinner');
+        var title   = document.getElementById('translateModalLabel');
+        if (!output || !spinner) return;
+        output.textContent = '';
+        spinner.classList.remove('d-none');
+        if (label && title) title.textContent = '🌍 ' + label;
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('translateModal')
+        ).show();
+        fetch(apiUrl)
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                spinner.classList.add('d-none');
+                output.textContent = d.translated || d.error || '—';
+            })
+            .catch(function () {
+                spinner.classList.add('d-none');
+                output.textContent = 'Erreur de traduction.';
+            });
+    };
+}());
+</script>

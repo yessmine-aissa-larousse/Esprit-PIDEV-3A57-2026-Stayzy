@@ -1,0 +1,112 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Favoris - Stayzy{% endblock %}
+
+{% block body %}
+
+    <div class="page-title light-background">
+        <div class="container d-lg-flex justify-content-between align-items-center">
+            <h1 class="mb-2 mb-lg-0">❤️ Mes Favoris</h1>
+            <nav class="breadcrumbs">
+                <ol>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    <li class="current">Mes Favoris</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <section id="favoris" class="properties section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+            {% if favoris|length == 0 %}
+                <div class="alert alert-info text-center py-5">
+                    <i class="bi bi-heart fs-1 text-muted mb-3"></i>
+                    <h4>Aucun favori pour le moment</h4>
+                    <p class="text-muted">Parcourez nos logements et ajoutez vos coups de cœur !</p>
+                    <a href="{{ path('app_properties') }}" class="btn btn-primary mt-3">
+                        <i class="bi bi-search"></i> Découvrir nos logements
+                    </a>
+                </div>
+            {% else %}
+                <div class="results-header mb-4">
+                    <h5>{{ favoris|length }} Logement{{ favoris|length > 1 ? 's' : '' }} dans vos favoris</h5>
+                </div>
+
+                <div class="row g-4">
+                    {% for logement in favoris %}
+                        <div class="col-lg-4 col-md-6">
+                            <div class="property-item">
+                                <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                                    <div class="property-image-wrapper">
+                                        {% if logement.photoPrincipale %}
+                                            <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" onerror="this.src='https://placehold.co/400x300/e8e8e8/999?text=Photo'" 
+                                                 alt="{{ logement.titre }}" 
+                                                 class="img-fluid">
+                                        {% else %}
+                                            <img src="{{ asset('frontOffice/img/real-estate/property-exterior-2.webp') }}" 
+                                                 alt="{{ logement.titre }}" 
+                                                 class="img-fluid">
+                                        {% endif %}
+                                        
+                                        <div class="property-status">
+                                            <span class="status-badge sale">Disponible</span>
+                                            {% if logement.categorie %}
+                                                <span class="status-badge featured">{{ logement.categorie.nom }}</span>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="property-actions">
+                                            <button class="action-btn favorite-btn active" 
+                                                    data-logement-id="{{ logement.id }}"
+                                                    title="Retirer des favoris">
+                                                <i class="bi bi-heart-fill"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </a>
+                                
+                                <div class="property-details">
+                                    <a href="{{ path('app_property_details', {id: logement.id}) }}" class="property-link">
+                                        <div class="property-header">
+                                            <div class="property-price">{{ logement.prix }}€ <span>/nuit</span></div>
+                                        </div>
+                                        
+                                        <h4 class="property-title">{{ logement.titre }}</h4>
+                                        
+                                        <p class="property-address">
+                                            <i class="bi bi-geo-alt"></i>
+                                            {% if logement.adresse %}
+                                                {{ logement.adresse.ville|default('') }}, 
+                                                {{ logement.adresse.codePostal|default('') }}
+                                            {% else %}
+                                                Adresse non renseignée
+                                            {% endif %}
+                                        </p>
+                                        
+                                        <div class="property-specs">
+                                            <div class="spec-item">
+                                                <i class="bi bi-house-door"></i>
+                                                <span>{{ logement.nombreChambres }} ch</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <i class="bi bi-droplet"></i>
+                                                <span>{{ logement.nombreSalleDeBain }} sdb</span>
+                                            </div>
+                                            <div class="spec-item">
+                                                <i class="bi bi-arrows-angle-expand"></i>
+                                                <span>{{ logement.superficie }} m²</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+    </section>
+
+{% endblock %}

@@ -1,0 +1,457 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mon Profil - Stayzy{% endblock %}
+
+{% block body %}
+
+    {# ── Hero / Breadcrumb ── #}
+    <section style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 60px 0 40px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-1">
+                        <i class="bi bi-person-circle me-2 text-primary"></i>Mon Profil
+                    </h2>
+                    <p class="text-muted mb-0">Gérez vos informations personnelles et vos favoris</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                            <li class="breadcrumb-item active">Mon Profil</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ── Contenu principal ── #}
+    <section style="padding: 50px 0 80px;">
+        <div class="container">
+
+            {# Messages Flash #}
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            <div class="row g-4">
+
+                {# ══════════════════════════════ #}
+                {# COLONNE GAUCHE — Carte identité #}
+                {# ══════════════════════════════ #}
+
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px; position: sticky; top: 90px;">
+                        <div class="card-body text-center p-4">
+
+                            {# Photo + badge statut #}
+
+                            <div class="position-relative d-inline-block mb-3">
+                                {% set initials = app.user.prenom|slice(0,1)|upper ~ app.user.nom|slice(0,1)|upper %}
+                                {% set avatarFallback = 'https://ui-avatars.com/api/?name=' ~ initials ~ '&background=0d6efd&color=fff&size=110' %}
+                                {% if app.user.profilePicture %}
+                                    <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}"
+                                         alt="Photo de profil"
+                                         class="rounded-circle"
+                                         style="width: 110px; height: 110px; object-fit: cover; border: 4px solid #0d6efd;"
+                                         onerror="this.src='{{ avatarFallback }}'">
+                                {% else %}
+                                    <img src="{{ avatarFallback }}"
+                                         alt="{{ initials }}"
+                                         class="rounded-circle"
+                                         style="width: 110px; height: 110px; object-fit: cover; border: 4px solid #0d6efd;">
+                                {% endif %}
+
+                                {% if app.user.isActive %}
+                                    <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success" style="font-size: 10px;">✅ Actif</span>
+                                {% else %}
+                                    <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-danger" style="font-size: 10px;">❌ Inactif</span>
+                                {% endif %}
+                            </div>
+
+                            <h5 class="fw-bold mb-1">{{ app.user.prenom }} {{ app.user.nom }}</h5>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-envelope me-1"></i>{{ app.user.email }}
+                            </p>
+                            {% if app.user.tel %}
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-telephone me-1"></i>{{ app.user.tel }}
+                                </p>
+                            {% endif %}
+                            <span class="badge rounded-pill px-3 py-2"
+                                  style="background: #cfe2ff; color: #084298; font-size: 12px; border: 1px solid #b6d4fe;">
+                                <i class="bi bi-person-circle me-1"></i> Client
+                            </span>
+
+                            <hr class="my-3">
+
+
+                            {# Stats rapides #}
+
+                            <div class="row g-2 text-center">
+                                <div class="col-6">
+                                    <div class="rounded-3 p-2" style="background: #fdf2f8;">
+                                        <div class="fw-bold fs-5 text-danger">{{ app.user.nombreFavoris }}</div>
+                                        <small class="text-muted" style="font-size: 11px;">Favoris</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="rounded-3 p-2" style="background: #fffbeb;">
+                                        <div class="fw-bold fs-5 text-warning">0</div>
+                                        <small class="text-muted" style="font-size: 11px;">Réservations</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Score de confiance #}
+
+                            {% include 'components/trust_score.html.twig' %}
+
+                            <p class="text-muted small mt-3 mb-0">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Membre depuis {{ app.user.createdAt|date('M Y') }}
+                            </p>
+
+
+                            {# ===== FACE ID ===== #}
+                            <hr style="margin: 15px 0;">
+                            <button type="button" onclick="startFaceSave()"
+                                    class="btn w-100"
+                                    style="background: #1565c0; color: white; border-radius: 10px; padding: 12px; border: none;">
+                                <i class="bi bi-camera me-2"></i> Enregistrer mon visage
+                            </button>
+
+                            {% if app.user.faceDescriptor %}
+                                <div class="mt-2 text-center">
+                                    <small style="color: #2e7d32;"><i class="bi bi-check-circle-fill me-1"></i>Visage enregistré ✅</small>
+                                </div>
+                            {% else %}
+                                <div class="mt-2 text-center">
+                                    <small class="text-muted"><i class="bi bi-x-circle me-1"></i>Aucun visage enregistré</small>
+                                </div>
+                            {% endif %}
+                            {# ===== FIN FACE ID ===== #}
+
+                        </div>
+                    </div>
+                </div>
+
+                {# ════════════════════════════════════ #}
+                {# COLONNE DROITE — Formulaire + Favoris #}
+                {# ════════════════════════════════════ #}
+
+                <div class="col-lg-9">
+
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+
+                    {# CARD 1 : Photo de profil #}
+
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-camera text-primary me-2"></i>Photo de profil
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div id="preview">
+                                    <img src="{{ app.user.profilePicture ? asset('uploads/profiles/' ~ app.user.profilePicture) : avatarFallback }}"
+                                         id="profilePreviewImg"
+                                         class="rounded-circle"
+                                         style="width: 72px; height: 72px; object-fit: cover; border: 3px solid #0d6efd;"
+                                         onerror="this.src='{{ avatarFallback }}'">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <input type="file" name="profile_picture" class="form-control"
+                                           accept="image/*" onchange="previewImage(event)"
+                                           style="border-radius: 10px;">
+                                    <small class="text-muted">JPG, PNG — Max 2MB</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {# CARD 2 : Informations personnelles #}
+
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-person-badge text-primary me-2"></i>Informations personnelles
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.prenom, null, {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                                    {{ form_widget(form.prenom, {'attr': {'class': 'form-control', 'style': 'border-radius: 10px;'}}) }}
+                                    {% if form.prenom.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1 small">{{ form_errors(form.prenom) }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.nom, null, {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                                    {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'style': 'border-radius: 10px;'}}) }}
+                                    {% if form.nom.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1 small">{{ form_errors(form.nom) }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.email, null, {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                                    {{ form_widget(form.email, {'attr': {'class': 'form-control', 'style': 'border-radius: 10px;'}}) }}
+                                    {% if form.email.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1 small">{{ form_errors(form.email) }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form_label(form.tel, null, {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                                    {{ form_widget(form.tel, {'attr': {'class': 'form-control', 'placeholder': '+216 XX XXX XXX', 'style': 'border-radius: 10px;'}}) }}
+                                    {% if form.tel.vars.errors|length > 0 %}
+                                        <div class="text-danger mt-1 small">{{ form_errors(form.tel) }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# CARD 3 : Mot de passe #}
+
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white border-bottom px-4 py-3" style="border-radius: 16px 16px 0 0;">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-key text-warning me-2"></i>Changer le mot de passe
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="col-md-8">
+                                {{ form_label(form.password, null, {'label_attr': {'class': 'form-label fw-medium'}}) }}
+                                {{ form_widget(form.password, {'attr': {'class': 'form-control', 'placeholder': 'Laisser vide pour ne pas changer', 'style': 'border-radius: 10px;'}}) }}
+                                <small class="text-muted">Laisser vide si vous ne souhaitez pas changer votre mot de passe</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Boutons d'action #}
+
+                    <div class="d-flex gap-3 mb-5">
+                        <button type="submit" class="btn btn-primary fw-semibold px-4"
+                                style="border-radius: 10px;">
+                            <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{{ path('app_home') }}" class="btn btn-outline-secondary px-4"
+                           style="border-radius: 10px;">
+                            <i class="bi bi-x-circle me-1"></i>Annuler
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+
+                    {# Suggestions Trust Score #}
+                    {% include 'components/trust_suggestions.html.twig' %}
+
+                    {# CARD 4 : Mes favoris #}
+
+                    <div class="card border-0 shadow-sm mt-4" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-4 py-3">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="bi bi-heart-fill text-danger me-2"></i>Mes favoris
+                                <span class="badge bg-danger ms-1">{{ app.user.nombreFavoris }}</span>
+                            </h6>
+                            <a href="{{ path('client_mes_favoris') }}" class="btn btn-danger btn-sm"
+                               style="border-radius: 8px;">
+                                <i class="bi bi-heart me-1"></i>Voir tous mes favoris
+                            </a>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if app.user.favoris|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead style="background: #f8f9fa;">
+                                            <tr>
+                                                <th class="ps-4">Logement</th>
+                                                <th>Prix / nuit</th>
+                                                <th>Localisation</th>
+                                                <th class="pe-4">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for logement in app.user.favoris|slice(0, 5) %}
+                                            <tr>
+                                                <td class="ps-4 fw-semibold">{{ logement.titre }}</td>
+                                                <td>
+                                                    <span class="badge bg-success" style="border-radius: 8px;">
+                                                        {{ logement.prix }} €
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted small">
+                                                    <i class="bi bi-geo-alt text-danger me-1"></i>
+                                                    {{ logement.adresse.ville|default('N/A') }}
+                                                </td>
+                                                <td class="pe-4">
+                                                    <a href="{{ path('app_property_details', {id: logement.id}) }}"
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       style="border-radius: 8px;" target="_blank">
+                                                        <i class="bi bi-eye"></i> Voir
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="px-4 py-3 text-end border-top">
+                                    <a href="{{ path('client_mes_favoris') }}"
+                                       class="btn btn-outline-danger btn-sm" style="border-radius: 8px;">
+                                        Voir tous mes favoris <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-heart" style="font-size: 60px; color: #dee2e6;"></i>
+                                    <h6 class="mt-4 text-muted">Aucun favori pour l'instant</h6>
+                                    <p class="text-muted small mb-4">Parcourez nos logements et ajoutez vos coups de cœur !</p>
+                                    <a href="{{ path('app_properties') }}" class="btn btn-danger px-4"
+                                       style="border-radius: 10px;">
+                                        <i class="bi bi-search me-2"></i>Rechercher un logement
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+                {# fin col droite #}
+
+
+            </div>
+        </div>
+    </section>
+
+    {# ===== MODAL FACE ID ===== #}
+    <div class="modal fade" id="faceRegisterModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Enregistrer mon visage</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopFaceCamera()"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div id="saveStatus" class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer
+                    </div>
+                    <div style="position: relative; display: inline-block;">
+                        <video id="saveVideo" width="300" height="225" autoplay muted
+                               style="border-radius: 12px; border: 3px solid #1565c0;"></video>
+                        <canvas id="saveCanvas" width="300" height="225"
+                                style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <button onclick="captureFace()" class="btn btn-primary" style="border-radius: 10px;">
+                            <i class="bi bi-camera me-2"></i> Capturer mon visage
+                        </button>
+                    </div>
+                    <div id="loadingSave" class="spinner-border text-primary d-none mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# ===== FIN MODAL ===== #}
+
+    <style>
+        .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
+        .breadcrumb-item a:hover { text-decoration: underline; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15); }
+        .table tbody tr:hover { background-color: #fafafa; }
+    </style>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = document.getElementById('profilePreviewImg');
+        if (img) img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ===== FACE SAVE =====
+let saveStream = null;
+
+async function startFaceSave() {
+    const modal = new bootstrap.Modal(document.getElementById('faceRegisterModal'));
+    modal.show();
+
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-camera me-2"></i>Positionnez votre visage et cliquez Capturer';
+
+    saveStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById('saveVideo').srcObject = saveStream;
+}
+
+async function captureFace() {
+    const video = document.getElementById('saveVideo');
+    document.getElementById('loadingSave').classList.remove('d-none');
+    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
+    document.getElementById('saveStatus').innerHTML =
+        '<i class="bi bi-hourglass me-2"></i>Envoi à l\'API...';
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
+
+    const response = await fetch('/face/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageBase64 })
+    });
+
+    const result = await response.json();
+    document.getElementById('loadingSave').classList.add('d-none');
+
+    if (result.success) {
+        document.getElementById('saveStatus').className = 'alert alert-success mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-check-circle-fill me-2"></i>Visage enregistré avec succès!';
+        stopFaceCamera();
+        setTimeout(() => {
+            bootstrap.Modal.getInstance(document.getElementById('faceRegisterModal')).hide();
+            location.reload();
+        }, 1500);
+    } else {
+        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
+        document.getElementById('saveStatus').innerHTML =
+            '<i class="bi bi-x-circle me-2"></i>Erreur: ' + result.error;
+    }
+}
+
+function stopFaceCamera() {
+    if (saveStream) {
+        saveStream.getTracks().forEach(t => t.stop());
+        saveStream = null;
+    }
+}
+
+document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
+// ===== FIN FACE SAVE =====
+</script>
+{% endblock %}

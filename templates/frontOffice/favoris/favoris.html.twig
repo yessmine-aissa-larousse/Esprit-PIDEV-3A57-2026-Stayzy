@@ -1,0 +1,203 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Mes Favoris - Stayzy{% endblock %}
+
+{% block body %}
+
+    {# ── Hero / Breadcrumb ── #}
+    <section class="page-title-section" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 60px 0 40px;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="fw-bold mb-1">
+                        <i class="bi bi-heart-fill text-danger me-2"></i>Mes Favoris
+                    </h2>
+                    <p class="text-muted mb-0">Vos coups de cœur sauvegardés</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-md-end mb-0">
+                            <li class="breadcrumb-item"><a href="{{ path('app_home') }}">Accueil</a></li>
+                            <li class="breadcrumb-item"><a href="{{ path('app_client_profile') }}">Mon Espace</a></li>
+                            <li class="breadcrumb-item active">Mes Favoris</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ── Contenu principal ── #}
+    <section style="padding: 50px 0 80px;">
+        <div class="container">
+
+            {% if favoris|length == 0 %}
+                {# ── État vide ── #}
+                <div class="row justify-content-center">
+                    <div class="col-md-6 text-center py-5">
+                        <i class="bi bi-heart" style="font-size: 90px; color: #dee2e6;"></i>
+                        <h4 class="mt-4 fw-semibold text-dark">Aucun favori pour le moment</h4>
+                        <p class="text-muted mb-4">
+                            Parcourez nos logements et ajoutez vos coups de cœur en cliquant sur
+                            <i class="bi bi-heart text-danger"></i>
+                        </p>
+                        <a href="{{ path('app_properties') }}" class="btn btn-danger btn-lg px-5">
+                            <i class="bi bi-search me-2"></i>Découvrir nos logements
+                        </a>
+                    </div>
+                </div>
+
+            {% else %}
+
+                {# ── Barre de compteur ── #}
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h5 class="fw-semibold mb-1">
+                            <i class="bi bi-heart-fill text-danger me-2"></i>
+                            {{ favoris|length }} logement{{ favoris|length > 1 ? 's' : '' }} dans vos favoris
+                        </h5>
+                        <p class="text-muted mb-0 small">Retrouvez ici tous vos coups de cœur</p>
+                    </div>
+                    <a href="{{ path('app_properties') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-plus-circle me-1"></i>Ajouter d'autres favoris
+                    </a>
+                </div>
+
+                {# ── Grille de cartes ── #}
+                <div class="row g-4">
+                    {% for logement in favoris %}
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;">
+
+                                {# Image #}
+                                <div class="position-relative">
+                                    {% if logement.photoPrincipale %}
+                                        <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" onerror="this.src='https://placehold.co/400x300/e8e8e8/999?text=Photo'"
+                                             class="card-img-top"
+                                             alt="{{ logement.titre }}"
+                                             style="height: 210px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center text-muted"
+                                             style="height: 210px; background: #f0f0f0;">
+                                            <i class="bi bi-image" style="font-size: 60px; opacity: 0.4;"></i>
+                                        </div>
+                                    {% endif %}
+
+                                    {# Badge prix #}
+                                    <span class="position-absolute top-0 start-0 m-3 badge bg-success"
+                                          style="font-size: 13px; border-radius: 8px; padding: 6px 12px;">
+                                        {{ logement.prix }}€<span class="fw-normal opacity-75">/nuit</span>
+                                    </span>
+
+                                    {# Bouton retirer favori #}
+                                    <button class="favorite-btn active position-absolute top-0 end-0 m-3 btn btn-light btn-sm rounded-circle shadow"
+                                            data-logement-id="{{ logement.id }}"
+                                            title="Retirer des favoris"
+                                            style="width: 42px; height: 42px; z-index: 2; position: relative !important;">
+                                        <i class="bi bi-heart-fill text-danger"></i>
+                                    </button>
+
+                                    {# Badge catégorie #}
+                                    {% if logement.categorie %}
+                                        <span class="position-absolute bottom-0 start-0 m-3 badge bg-primary"
+                                              style="border-radius: 8px;">
+                                            {{ logement.categorie.nom }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                {# Corps #}
+                                <div class="card-body px-4 pt-3 pb-2">
+
+                                    <h5 class="card-title fw-semibold mb-1" style="font-size: 1rem;">
+                                        <a href="{{ path('app_property_details', {id: logement.id}) }}"
+                                           class="text-decoration-none text-dark stretched-link">
+                                            {{ logement.titre }}
+                                        </a>
+                                    </h5>
+
+                                    <p class="text-muted small mb-3">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        {% if logement.adresse %}
+
+    {{ logement.adresse.ville|default('') }}
+    {% if logement.adresse.codePostal is defined and logement.adresse.codePostal %}
+        ({{ logement.adresse.codePostal }})
+    {% endif %}
+{% else %}
+    Localisation non renseignée
+{% endif %}
+
+                                    </p>
+
+                                    {# Caractéristiques #}
+                                    <div class="d-flex gap-2 flex-wrap mb-3">
+                                        <span class="badge bg-light text-dark border" style="border-radius: 8px;">
+                                            <i class="bi bi-door-closed me-1"></i>{{ logement.nombreChambres }} ch
+                                        </span>
+                                        <span class="badge bg-light text-dark border" style="border-radius: 8px;">
+                                            <i class="bi bi-droplet me-1"></i>{{ logement.nombreSalleDeBain }} sdb
+                                        </span>
+                                        <span class="badge bg-light text-dark border" style="border-radius: 8px;">
+                                            <i class="bi bi-arrows-angle-expand me-1"></i>{{ logement.superficie }} m²
+                                        </span>
+                                    </div>
+
+                                    {# Description courte #}
+                                    {% if logement.description %}
+                                        <p class="text-muted small mb-0"
+                                           style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            {{ logement.description }}
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                                {# Pied #}
+                                <div class="card-footer bg-white border-0 px-4 pb-4 pt-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar-heart me-1 text-danger"></i>
+                                            Ajouté le {{ "now"|date('d/m/Y') }}
+                                        </small>
+                                        <a href="{{ path('app_property_details', {id: logement.id}) }}"
+                                           class="btn btn-sm btn-outline-danger"
+                                           style="border-radius: 8px; position: relative; z-index: 2;">
+                                            <i class="bi bi-eye me-1"></i>Voir
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {# ── Astuce ── #}
+                <div class="alert d-flex align-items-start gap-3 mt-5 border-0"
+                     style="background: #e8f4fd; border-radius: 14px; padding: 20px 24px;">
+                    <i class="bi bi-info-circle-fill text-primary mt-1" style="font-size: 22px; flex-shrink: 0;"></i>
+                    <div>
+                        <strong>💡 Astuce</strong>
+                        <p class="mb-0 text-muted mt-1">
+                            Vos favoris sont sauvegardés automatiquement.
+                            Cliquez sur <i class="bi bi-heart-fill text-danger"></i> pour retirer un logement de vos favoris.
+                            Vous pouvez ajouter autant de favoris que vous le souhaitez !
+                        </p>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        </div>
+    </section>
+
+    <style>
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
+        }
+        .breadcrumb-item a { color: #0d6efd; text-decoration: none; }
+        .breadcrumb-item a:hover { text-decoration: underline; }
+    </style>
+
+{% endblock %}

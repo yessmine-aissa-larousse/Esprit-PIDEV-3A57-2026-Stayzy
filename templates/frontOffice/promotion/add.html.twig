@@ -1,0 +1,372 @@
+{% extends 'frontOffice/base.html.twig' %}
+{% block title %}{{ titre }} — Stayzy{% endblock %}
+
+{% block stylesheets %}{{ parent() }}
+<style>
+:root {
+    --green:      #077f46;
+    --green-dark: #055c32;
+    --green-soft: #e8f5ee;
+    --red:        #e53935;
+    --red-soft:   #fff0f0;
+    --border:     #e5e7eb;
+    --bg:         #f7f8fa;
+    --white:      #ffffff;
+    --radius:     16px;
+    --shadow:     0 8px 40px rgba(0,0,0,.10);
+}
+.page-title { display: none !important; }
+
+/* ── Header ── */
+.form-header {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #fff; padding: 36px 0 80px;
+    position: relative; overflow: hidden;
+}
+.form-header::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: rgba(255,255,255,.06);
+}
+.form-header::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -40px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: rgba(255,255,255,.04);
+}
+.form-header .breadcrumb-bar {
+    font-size: .82rem; opacity: .75; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px; position: relative; z-index: 1;
+}
+.form-header .breadcrumb-bar a { color: #fff; text-decoration: none; }
+.form-header h1 { font-size: 1.7rem; font-weight: 700; margin: 0; position: relative; z-index: 1; }
+
+/* ── Carte flottante centrée qui chevauche le header ── */
+.form-outer {
+    margin-top: -56px;
+    padding-bottom: 60px;
+    background: var(--bg);
+    min-height: 60vh;
+}
+.form-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 36px 40px;
+    max-width: 720px;
+    margin: 0 auto;
+    position: relative; z-index: 2;
+}
+
+/* ── Séparateur section ── */
+.form-section-title {
+    font-size: .78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--green); margin: 24px 0 14px;
+    display: flex; align-items: center; gap: 8px;
+}
+.form-section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--green-soft);
+}
+
+/* ── Labels & inputs ── */
+.form-label { font-weight: 600; font-size: .88rem; margin-bottom: 5px; color: #374151; }
+.form-control, .form-select {
+    border-radius: 10px; border: 1.5px solid var(--border);
+    padding: 11px 14px; font-size: .9rem;
+    transition: border-color .15s, box-shadow .15s;
+    background: #fafafa;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(7,127,70,.08);
+    background: var(--white);
+}
+.form-text { font-size: .78rem; color: #6b7280; margin-top: 4px; }
+.invalid-feedback { font-size: .8rem; }
+
+/* ── Pourcentage avec affichage inline ── */
+.pct-wrapper { position: relative; }
+.pct-display {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-weight: 800; font-size: 1.15rem; color: var(--red); pointer-events: none;
+}
+
+/* ── Preview dynamique ── */
+.promo-preview {
+    background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+}
+.preview-left .preview-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #92400e; margin-bottom: 8px;
+}
+.preview-prix-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.preview-original { text-decoration: line-through; color: #9ca3af; font-size: .95rem; }
+.preview-reduit { font-size: 1.8rem; font-weight: 800; color: var(--green); line-height: 1; }
+.preview-economie {
+    background: var(--red-soft); color: var(--red);
+    font-size: .78rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 50px;
+}
+.preview-right { margin-left: auto; text-align: center; }
+.preview-badge-big {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--red); color: #fff;
+    font-size: 1.1rem; font-weight: 800; line-height: 1.1;
+    box-shadow: 0 4px 14px rgba(229,57,53,.35);
+}
+
+/* ── Checkbox stylisée ── */
+.toggle-check { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.toggle-check input[type=checkbox] {
+    width: 44px; height: 24px;
+    appearance: none; border-radius: 50px;
+    background: #d1d5db; border: none; cursor: pointer;
+    position: relative; transition: background .2s;
+    flex-shrink: 0;
+}
+.toggle-check input[type=checkbox]:checked { background: var(--green); }
+.toggle-check input[type=checkbox]::after {
+    content: ''; position: absolute;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px;
+    transition: transform .2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.toggle-check input[type=checkbox]:checked::after { transform: translateX(20px); }
+.toggle-label { font-weight: 600; font-size: .9rem; color: #374151; }
+
+/* ── Boutons ── */
+.form-actions { display: flex; gap: 12px; align-items: center; padding-top: 8px; }
+.btn-submit {
+    background: var(--green); color: #fff;
+    border: none; border-radius: 11px;
+    padding: 13px 32px; font-weight: 700; font-size: .95rem;
+    cursor: pointer; transition: background .18s, transform .15s, box-shadow .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(7,127,70,.3);
+}
+.btn-submit:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(7,127,70,.4); }
+
+.btn-cancel {
+    background: var(--white); color: #374151;
+    border: 1.5px solid var(--border);
+    border-radius: 11px; padding: 13px 24px;
+    font-weight: 600; font-size: .95rem;
+    text-decoration: none; cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-cancel:hover { border-color: #374151; color: #111; }
+
+@media (max-width: 575px) {
+    .form-card { padding: 24px 18px; }
+    .promo-preview { flex-direction: column; gap: 12px; }
+    .preview-right { margin-left: 0; }
+    .form-actions { flex-direction: column; }
+    .btn-submit, .btn-cancel { width: 100%; justify-content: center; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# Header #}
+<div class="form-header">
+    <div class="container">
+        <div class="breadcrumb-bar">
+            <a href="{{ path('proprietaire_logement_list') }}">Mes logements</a>
+            <i class="bi bi-chevron-right"></i>
+            <a href="{{ path('promotion_list', {logementId: logement.id}) }}">Promotions</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>{{ titre }}</span>
+        </div>
+        <h1><i class="bi bi-tag-fill me-2"></i>{{ titre }}</h1>
+    </div>
+</div>
+
+{# Carte flottante #}
+<div class="form-outer">
+    <div class="container">
+        <div class="form-card">
+
+            {# Preview dynamique #}
+            <div class="promo-preview">
+                <div class="preview-left">
+                    <div class="preview-label">👁️ Aperçu en temps réel</div>
+                    <div class="preview-prix-row">
+                        <span class="preview-original">{{ logement.prix }}€/nuit</span>
+                        <span class="preview-reduit" id="preview-reduit">{{ logement.prix }}€</span>
+                        <span class="preview-economie" id="preview-economie">-0€</span>
+                    </div>
+                </div>
+                <div class="preview-right">
+                    <div class="preview-badge-big" id="preview-badge">0%</div>
+                </div>
+            </div>
+
+            {{ form_start(form, {attr: {novalidate: 'novalidate', class: ''}}) }}
+
+            {# Section : Informations #}
+            <div class="form-section-title"><i class="bi bi-info-circle"></i> Informations</div>
+
+            <div class="mb-3">
+                {{ form_label(form.titre, null, {label_attr: {class: 'form-label'}}) }}
+                {{ form_widget(form.titre, {attr: {placeholder: 'Ex: Offre spéciale été, Flash Sale...'}}) }}
+                {{ form_errors(form.titre) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.pourcentage, null, {label_attr: {class: 'form-label'}}) }}
+                <div class="pct-wrapper">
+                    {{ form_widget(form.pourcentage, {attr: {
+                        'data-pct-input': 'true',
+                        min: 1, max: 99,
+                        placeholder: 'Ex: 20',
+                        style: 'padding-right: 56px;'
+                    }}) }}
+                    <span class="pct-display" id="pct-display">{{ promotion ? promotion.pourcentage ~ '%' : '0%' }}</span>
+                </div>
+                {{ form_errors(form.pourcentage) }}
+            </div>
+
+            {# Section : Période #}
+            <div class="form-section-title"><i class="bi bi-calendar-range"></i> Période</div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    {{ form_label(form.dateDebut, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.dateDebut) }}
+                    {{ form_errors(form.dateDebut) }}
+                </div>
+                <div class="col-md-6">
+                    {{ form_label(form.dateFin, null, {label_attr: {class: 'form-label'}}) }}
+                    {{ form_widget(form.dateFin) }}
+                    {{ form_errors(form.dateFin) }}
+                </div>
+            </div>
+
+            {# Section : Options #}
+            <div class="form-section-title"><i class="bi bi-sliders"></i> Options</div>
+
+            <div class="mb-3">
+                {{ form_label(form.codePromo, null, {label_attr: {class: 'form-label'}}) }}
+                {{ form_widget(form.codePromo, {attr: {
+                    placeholder: 'Ex: STAYZY20',
+                    style: 'text-transform:uppercase; font-family:monospace; font-weight:700; letter-spacing:.05em;'
+                }}) }}
+                <div class="form-text"><i class="bi bi-info-circle me-1"></i>{{ form_help(form.codePromo) }}</div>
+                {{ form_errors(form.codePromo) }}
+            </div>
+
+            <div class="mb-4">
+                <label class="toggle-check">
+                    {{ form_widget(form.active) }}
+                    <span class="toggle-label">Activer cette promotion immédiatement</span>
+                </label>
+            </div>
+
+            {# Boutons #}
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-check-lg"></i>
+                    {{ promotion ? 'Enregistrer les modifications' : 'Créer la promotion' }}
+                </button>
+                <a href="{{ path('promotion_list', {logementId: logement.id}) }}" class="btn-cancel">
+                    <i class="bi bi-x-lg"></i> Annuler
+                </a>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}{{ parent() }}
+<script>
+const prixBase        = {{ logement.prix }};
+const pctInput        = document.getElementById('pourcentage-input');
+const pctDisplay      = document.getElementById('pct-display');
+const previewReduit   = document.getElementById('preview-reduit');
+const previewEconomie = document.getElementById('preview-economie');
+const previewBadge    = document.getElementById('preview-badge');
+
+function updatePreview() {
+    const pct      = parseInt(pctInput.value) || 0;
+    const reduit   = (prixBase * (1 - pct / 100)).toFixed(2);
+    const economie = (prixBase * pct / 100).toFixed(2);
+
+    pctDisplay.textContent      = pct + '%';
+    previewReduit.textContent   = reduit + '€';
+    previewEconomie.textContent = '-' + economie + '€';
+    previewBadge.textContent    = '-' + pct + '%';
+
+    // Couleur du cercle selon réduction
+    const badge = document.getElementById('preview-badge');
+    if (pct >= 40)      badge.style.background = '#c62828';
+    else if (pct >= 20) badge.style.background = '#e53935';
+    else                badge.style.background = '#ef5350';
+}
+
+pctInput?.addEventListener('input', updatePreview);
+updatePreview();
+
+// Uppercase code promo
+const codeInput = document.querySelector('input[name*="codePromo"]');
+codeInput?.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+document.addEventListener('DOMContentLoaded', function () {
+
+    const prixBase        = {{ logement.prix }};
+    // ✅ On cherche par data-attribute au lieu de getElementById
+    const pctInput        = document.querySelector('[data-pct-input="true"]');
+    const pctDisplay      = document.getElementById('pct-display');
+    const previewReduit   = document.getElementById('preview-reduit');
+    const previewEconomie = document.getElementById('preview-economie');
+    const previewBadge    = document.getElementById('preview-badge');
+
+    function updatePreview() {
+        // ✅ Garde-fou : si l'élément n'existe pas, on sort
+        if (!pctInput) return;
+
+        const pct      = parseInt(pctInput.value) || 0;
+        const reduit   = (prixBase * (1 - pct / 100)).toFixed(2);
+        const economie = (prixBase * pct / 100).toFixed(2);
+
+        if (pctDisplay)      pctDisplay.textContent      = pct + '%';
+        if (previewReduit)   previewReduit.textContent   = reduit + '€';
+        if (previewEconomie) previewEconomie.textContent = '-' + economie + '€';
+        if (previewBadge) {
+            previewBadge.textContent = '-' + pct + '%';
+            if (pct >= 40)      previewBadge.style.background = '#c62828';
+            else if (pct >= 20) previewBadge.style.background = '#e53935';
+            else                previewBadge.style.background = '#ef5350';
+        }
+    }
+
+    if (pctInput) {
+        pctInput.addEventListener('input', updatePreview);
+    }
+
+    updatePreview();
+
+    // Uppercase code promo
+    const codeInput = document.querySelector('input[name*="codePromo"]');
+    if (codeInput) {
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+
+});
+
+</script>
+{% endblock %}

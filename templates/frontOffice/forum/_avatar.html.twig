@@ -1,0 +1,32 @@
+{#
+  Renders a user avatar.
+  Variables:
+    author  (string) — the author name stored on the post/comment
+    size    (int)    — pixel size (default 40)
+    class   (string) — extra CSS classes
+#}
+{% set _size  = size|default(40) %}
+{% set _class = class|default('rounded-circle') %}
+{% set _fallback = 'https://ui-avatars.com/api/?name=' ~ author|url_encode ~ '&background=random&size=' ~ _size %}
+
+{% if app.user and (app.user.prenom ~ ' ' ~ app.user.nom)|trim == author %}
+    {# Logged-in user is the author — show their real profile picture #}
+    {% if app.user.profilePicture %}
+        <img src="{{ asset('uploads/profiles/' ~ app.user.profilePicture) }}"
+             alt="{{ author }}" width="{{ _size }}" height="{{ _size }}"
+             class="{{ _class }}" style="object-fit:cover;"
+             onerror="this.src='{{ _fallback }}'">
+    {% elseif app.user.imageUrl %}
+        <img src="{{ app.user.imageUrl }}"
+             alt="{{ author }}" width="{{ _size }}" height="{{ _size }}"
+             class="{{ _class }}" style="object-fit:cover;"
+             onerror="this.src='{{ _fallback }}'">
+    {% else %}
+        <img src="{{ _fallback }}" alt="{{ author }}"
+             width="{{ _size }}" height="{{ _size }}" class="{{ _class }}">
+    {% endif %}
+{% else %}
+    {# Other user — generate initials avatar #}
+    <img src="{{ _fallback }}" alt="{{ author }}"
+         width="{{ _size }}" height="{{ _size }}" class="{{ _class }}">
+{% endif %}

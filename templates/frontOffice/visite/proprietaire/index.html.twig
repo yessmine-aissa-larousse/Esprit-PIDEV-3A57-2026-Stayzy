@@ -1,0 +1,183 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Demandes reçues{% endblock %}
+
+{% block body %}
+
+<section class="container mt-5 mb-5">
+
+    <h2 class="mb-4 fw-bold">📅 Demandes de visites reçues</h2>
+
+    {# ================= OUTILS ================= #}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body row g-3 align-items-center">
+
+            <!-- Recherche -->
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control"
+                       placeholder="🔎 Rechercher client ou logement...">
+            </div>
+
+            <!-- Filtre statut -->
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select">
+                    <option value="">Tous les statuts</option>
+                    <option value="EN_ATTENTE">En attente</option>
+                    <option value="ACCEPTEE">Acceptée</option>
+                    <option value="REFUSEE">Refusée</option>
+                </select>
+            </div>
+
+            <!-- Reset -->
+            <div class="col-md-2">
+                <button id="resetBtn" class="btn btn-outline-secondary w-100">
+                    Reset
+                </button>
+            </div>
+
+            <div class="col-md-3 text-end">
+                <span id="counter" class="text-muted"></span>
+            </div>
+
+        </div>
+    </div>
+
+    {# ================= TABLE ================= #}
+    <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+
+            <table class="table table-hover align-middle" id="visiteTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="sortable">#</th>
+                        <th class="sortable">Client</th>
+                        <th class="sortable">Logement</th>
+                        <th class="sortable">Date visite</th>
+                        <th class="sortable">Statut</th>
+                        <th width="220">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for v in visites %}
+                    <tr data-statut="{{ v.statut }}">
+                        <td>{{ v.id }}</td>
+
+                        <td>
+                            {{ v.client.nom ?? ('User #' ~ v.client.id) }}
+                        </td>
+
+                        <td>
+                            {{ v.logement.titre ?? ('Logement #' ~ v.logement.id) }}
+                        </td>
+
+                        <td data-date="{{ v.dateVisite|date('U') }}">
+                            {{ v.dateVisite|date('d/m/Y H:i') }}
+                        </td>
+
+                        <td>
+                            {% if v.statut == 'EN_ATTENTE' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% elseif v.statut == 'ACCEPTEE' %}
+                                <span class="badge bg-success">Acceptée</span>
+                            {% else %}
+                                <span class="badge bg-danger">Refusée</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if v.statut == 'EN_ATTENTE' %}
+                                <a href="{{ path('prop_visite_accepter', {'id': v.id}) }}"
+                                   class="btn btn-sm btn-success">
+                                    ✔ Accepter
+                                </a>
+
+                                <a href="{{ path('prop_visite_refuser', {'id': v.id}) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Refuser cette visite ?')">
+                                    ✖ Refuser
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Déjà traité</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Aucune visite trouvée
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</section>
+
+{# ================= JS FILTER + TRI ================= #}
+<script>
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const rows = document.querySelectorAll("#visiteTable tbody tr");
+const counter = document.getElementById("counter");
+
+function filterTable() {
+    let visible = 0;
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const search = searchInput.value.toLowerCase();
+        const statut = row.dataset.statut;
+
+        let show = true;
+
+        if (search && !text.includes(search)) show = false;
+        if (statusFilter.value && statut !== statusFilter.value) show = false;
+
+        row.style.display = show ? "" : "none";
+        if (show) visible++;
+    });
+
+    counter.innerText = visible + " résultat(s)";
+}
+
+searchInput.addEventListener("keyup", filterTable);
+statusFilter.addEventListener("change", filterTable);
+
+document.getElementById("resetBtn").onclick = () => {
+    searchInput.value="";
+    statusFilter.value="";
+    filterTable();
+};
+
+filterTable();
+
+// ===== TRI =====
+document.querySelectorAll(".sortable").forEach((header, index) => {
+    header.addEventListener("click", () => {
+        const tbody = document.querySelector("#visiteTable tbody");
+        const rowsArray = Array.from(tbody.querySelectorAll("tr"));
+        const asc = header.classList.toggle("asc");
+
+        rowsArray.sort((a, b) => {
+            let A = a.children[index].innerText.trim();
+            let B = b.children[index].innerText.trim();
+
+            if(!isNaN(A) && !isNaN(B)) return asc ? A-B : B-A;
+            return asc ? A.localeCompare(B) : B.localeCompare(A);
+        });
+
+        tbody.append(...rowsArray);
+    });
+});
+</script>
+
+<style>
+.sortable { cursor:pointer }
+.sortable:hover { background:#f1f1f1 }
+</style>
+
+{% endblock %}

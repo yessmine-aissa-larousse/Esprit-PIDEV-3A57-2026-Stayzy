@@ -1,0 +1,165 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}{{ post.title }} - Forum{% endblock %}
+
+{% block body %}
+    <!-- Blog Details Section -->
+    <section class="blog-details section">
+        <div class="container" data-aos="fade-up">
+            <article>
+                <div class="article-header">
+                    <h1 class="title">{{ post.title }}</h1>
+                    <div class="article-meta">
+                        <div class="author">
+                            <div class="author-img">
+                                {% include 'frontOffice/forum/_avatar.html.twig' with {author: post.author, size: 60} %}
+                            </div>
+                            <div class="author-info">
+                                <h4>{{ post.author }}</h4>
+                                <span>Auteur</span>
+                            </div>
+                        </div>
+                        <div class="post-info">
+                            <span><i class="bi bi-calendar3"></i> {{ post.createdAt|date('d M Y') }}</span>
+                            <span><i class="bi bi-chat-dots"></i> {{ post.commentsCount }} commentaire{{ post.commentsCount > 1 ? 's' : '' }}</span>
+                            <span class="avis-wrap d-flex gap-2 align-items-center">
+                                <form method="post" action="{{ path('forum_post_avis', {id: post.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="J'aime">
+                                        <i class="bi bi-hand-thumbs-up"></i> {{ post.avisCount }}
+                                    </button>
+                                </form>
+                                <form method="post" action="{{ path('forum_post_dislike', {id: post.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="Je n'aime pas">
+                                        <i class="bi bi-hand-thumbs-down"></i> {{ post.dislikeCount }}
+                                    </button>
+                                </form>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="article-actions mt-3" id="post-actions" style="display:none;">
+                        <a href="{{ path('forum_post_edit', {id: post.id}) }}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <form method="post" action="{{ path('forum_post_delete', {id: post.id}) }}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_post' ~ post.id) }}">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="article-wrapper">
+                    {% if post.image and post.image starts with '/uploads/' %}
+                        <div class="article-image mb-4">
+                            <img src="{{ post.image }}" alt="{{ post.title }}" class="img-fluid rounded" />
+                        </div>
+                    {% endif %}
+                    <div class="article-content">
+                        <div class="content-section">
+                            {% if post.excerpt %}
+                                <p class="lead">{{ post.excerpt }}</p>
+                            {% endif %}
+                            <div class="content-body">
+                                {{ post.content|nl2br }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Comments Section -->
+            <div class="blog-comments mt-5">
+                <div class="comments-header">
+                    <h3 class="title">Commentaires</h3>
+                    <div class="comments-stats">
+                        <span class="count">{{ post.commentsCount }}</span>
+                        <span class="label">commentaires</span>
+                    </div>
+                </div>
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success">{{ message }}</div>
+                {% endfor %}
+                {% for message in app.flashes('error') %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+
+                <!-- Comment Form -->
+                <div class="blog-comment-form mb-5">
+                    <div class="form-header">
+                        <h3>Laisser un commentaire</h3>
+                        <p>Votre adresse email ne sera pas publiée.</p>
+                    </div>
+                    <div class="mb-2 text-muted">
+                        <small><i class="bi bi-person-circle"></i> Commentaire en tant que <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></small>
+                    </div>
+                    {{ form_start(form, {attr: {class: 'comment-form', enctype: 'multipart/form-data'}}) }}
+                    <div class="input-group mb-3">
+                        {{ form_label(form.content) }}
+                        {{ form_widget(form.content, {attr: {placeholder: 'Votre commentaire...'}}) }}
+                        {{ form_errors(form.content) }}
+                    </div>
+                    <div class="input-group mb-3">
+                        {{ form_label(form.image) }}
+                        {{ form_widget(form.image, {attr: {class: 'form-control'}}) }}
+                        {{ form_errors(form.image) }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier le commentaire</button>
+                    {{ form_end(form) }}
+                </div>
+
+                <!-- Comments List -->
+                <div class="comments-container">
+                    {% for comment in root_comments %}
+                        {% include 'frontOffice/forum/_comment_thread.html.twig' with { comment: comment, post: post, current_author: app.user ? (app.user.prenom ~ ' ' ~ app.user.nom) : '' } %}
+                    {% else %}
+                        <p class="text-muted">Aucun commentaire pour le moment. Soyez le premier à réagir !</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        {% if app.user %}
+        const currentUserName = '{{ (app.user.prenom ~ ' ' ~ app.user.nom)|trim }}';
+
+        // Show edit/delete buttons for content owned by the logged-in user
+        function updateActionButtons() {
+            const postAuthor = '{{ post.author }}'.trim();
+            const postActionsDiv = document.getElementById('post-actions');
+            if (currentUserName && currentUserName.toLowerCase() === postAuthor.toLowerCase() && postActionsDiv) {
+                postActionsDiv.style.display = 'block';
+            }
+            document.querySelectorAll('[data-comment-author]').forEach(function(block) {
+                const commentAuthor = (block.getAttribute('data-comment-author') || '').trim();
+                const actionsDiv = block.querySelector('.comment-actions-container');
+                if (currentUserName && currentUserName.toLowerCase() === commentAuthor.toLowerCase() && actionsDiv) {
+                    actionsDiv.classList.remove('d-none');
+                    actionsDiv.style.display = 'inline-block';
+                }
+            });
+        }
+        {% endif %}
+
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if app.user %}updateActionButtons();{% endif %}
+
+            // Toggle reply forms
+            document.querySelectorAll('.reply-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var wrap = document.getElementById('reply-form-' + this.getAttribute('data-comment-id'));
+                    if (wrap) wrap.classList.toggle('d-none');
+                });
+            });
+        });
+        
+        // Re-update buttons when the page becomes visible (back from another tab/app)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateActionButtons();
+            }
+        });
+    </script>
+    {% include 'frontOffice/forum/_chatbot.html.twig' %}
+{% endblock %}

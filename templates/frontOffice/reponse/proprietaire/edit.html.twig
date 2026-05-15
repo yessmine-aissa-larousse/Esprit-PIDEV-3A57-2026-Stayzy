@@ -1,0 +1,115 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Modifier Réponse{% endblock %}
+
+{% block body %}
+
+<!-- Page Title -->
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">Modifier ma réponse</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="current">Modifier Réponse</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="section">
+<div class="container">
+
+```
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Réponse #{{ reponse.id }}</h4>
+            </div>
+
+            <div class="card-body">
+
+                {% if reponse.reclamation %}
+                <div class="p-3 mb-3 bg-light rounded border">
+                    <p class="mb-1 fw-semibold text-muted small">Réclamation #{{ reponse.reclamation.id }} — {{ reponse.reclamation.sujet }}</p>
+                    <p class="mb-2 small" style="white-space:pre-wrap;">{{ reponse.reclamation.description }}</p>
+                    <div class="d-flex gap-1">
+                        <select id="lang-rec-edit" class="form-select form-select-sm" style="width:90px;">
+                            <option value="en">EN</option>
+                            <option value="fr">FR</option>
+                            <option value="ar">AR</option>
+                            <option value="de">DE</option>
+                            <option value="es">ES</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                onclick="translateText('/reclamation/api/{{ reponse.reclamation.id }}/translate?lang='+document.getElementById('lang-rec-edit').value,'Réclamation')">
+                            🌍 Traduire la réclamation
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+
+                {{ form_start(form) }}
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        Contenu de la réponse
+                    </label>
+
+                    {{ form_widget(form.contenu, {
+                        'attr': {
+                            'class': 'form-control',
+                            'rows': 6,
+                            'placeholder': 'Modifier votre réponse ici...'
+                        }
+                    }) }}
+
+                    <div class="text-danger small mt-1">
+                        {{ form_errors(form.contenu) }}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-1 mb-3">
+                    <select id="lang-rep-edit" class="form-select form-select-sm" style="width:90px;">
+                        <option value="en">EN</option>
+                        <option value="fr">FR</option>
+                        <option value="ar">AR</option>
+                        <option value="de">DE</option>
+                        <option value="es">ES</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            onclick="translateText('/reponse/api/{{ reponse.id }}/translate?lang='+document.getElementById('lang-rep-edit').value,'Ma réponse actuelle')">
+                        🌍 Traduire ma réponse
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+
+                    <a href="{{ app.request.headers.get('referer') }}"
+                       class="btn btn-outline-secondary">
+                       ← Retour
+                    </a>
+
+                    <button type="submit" class="btn btn-success px-4">
+                        ✔ Enregistrer
+                    </button>
+
+                </div>
+
+                {{ form_end(form) }}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+```
+
+</div>
+</section>
+
+{{ include('_translate_modal.html.twig') }}
+{% endblock %}

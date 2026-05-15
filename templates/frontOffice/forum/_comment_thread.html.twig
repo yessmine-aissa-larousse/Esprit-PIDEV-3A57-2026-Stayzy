@@ -1,0 +1,74 @@
+<div class="comment-thread{% if comment.parent %} ms-4 mt-3{% endif %}" id="comment-{{ comment.id }}" data-comment-author="{{ comment.author }}">
+    <div class="comment-box">
+        <div class="comment-wrapper">
+            <div class="avatar-wrapper">
+                {% include 'frontOffice/forum/_avatar.html.twig' with {author: comment.author, size: 40} %}
+            </div>
+            <div class="comment-content">
+                <div class="comment-header d-flex justify-content-between align-items-start flex-wrap">
+                    <div class="user-info">
+                        <h4>{{ comment.author }}</h4>
+                        <span class="time-badge">
+                            <i class="bi bi-clock"></i> {{ comment.createdAt|date('d M Y à H:i') }}
+                        </span>
+                    </div>
+                    <div class="comment-actions d-flex align-items-center gap-2">
+                        <form method="post" action="{{ path('forum_comment_avis', {id: comment.id}) }}" class="d-inline">
+                            <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="J'aime">
+                                <i class="bi bi-hand-thumbs-up"></i> {{ comment.avisCount }}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('forum_comment_dislike', {id: comment.id}) }}" class="d-inline">
+                            <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none" title="Je n'aime pas">
+                                <i class="bi bi-hand-thumbs-down"></i> {{ comment.dislikeCount }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="comment-body">
+                    {% if comment.image and comment.image starts with '/uploads/' %}
+                        <div class="comment-image mb-2">
+                            <img src="{{ comment.image }}" alt="Image du commentaire" class="img-fluid rounded" style="max-width: 100%; max-height: 300px;" />
+                        </div>
+                    {% endif %}
+                    <p>{{ comment.content|nl2br }}</p>
+                </div>
+                <div class="reply-form-toggle mt-2 d-flex gap-2">
+                    {% if app.user %}
+                        <button type="button" class="btn btn-sm btn-outline-secondary reply-btn" data-comment-id="{{ comment.id }}" data-author="{{ comment.author }}">Répondre</button>
+                    {% endif %}
+                    <div class="comment-actions-container" style="display: none;">
+                        <a href="{{ path('forum_comment_edit', {id: comment.id}) }}" class="btn btn-sm btn-outline-warning" title="Modifier"><i class="bi bi-pencil"></i> Modifier</a>
+                        <form method="post" action="{{ path('forum_comment_delete', {id: comment.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_comment' ~ comment.id) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i> Supprimer</button>
+                        </form>
+                    </div>
+                </div>
+                {% if app.user %}
+                <div class="reply-form-wrapper d-none mt-2" id="reply-form-{{ comment.id }}">
+                    <form method="post" action="{{ path('forum_post_show', {id: post.id}) }}" class="border-start border-3 border-secondary ps-3" enctype="multipart/form-data">
+                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                        <input type="hidden" name="comment_type[_token]" value="{{ csrf_token('comment_type') }}">
+                        <div class="mb-2 text-muted">
+                            <small><i class="bi bi-person-circle"></i> Répondre en tant que <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></small>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Réponse</label>
+                            <textarea name="comment_type[content]" class="form-control" rows="3" required placeholder="Votre réponse..." minlength="3" maxlength="2000"></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Image (optionnel)</label>
+                            <input type="file" name="comment_type[image]" class="form-control" accept="image/jpeg,image/png,image/gif,image/webp">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Envoyer la réponse</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% for reply in comment.replies %}
+        {% include 'frontOffice/forum/_comment_thread.html.twig' with { comment: reply, post: post, current_author: app.user ? (app.user.prenom ~ ' ' ~ app.user.nom) : '' } %}
+    {% endfor %}
+</div>

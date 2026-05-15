@@ -1,0 +1,138 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Comparateur - Stayzy{% endblock %}
+
+{% block body %}
+
+<div class="page-title light-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">📊 Comparateur de logements</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                <li class="current">Comparateur</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section class="comparateur section">
+    <div class="container">
+        
+        <div class="text-end mb-3">
+            <button onclick="clearComparateur()" class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> Vider le comparateur
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 200px">Critère</th>
+                        {% for logement in logements %}
+                            <th class="text-center">
+                                <div class="position-relative">
+                                    {% if logement.photoPrincipale %}
+                                        <img src="{{ asset('uploads/logements/' ~ logement.photoPrincipale) }}" onerror="this.src='https://placehold.co/400x300/e8e8e8/999?text=Photo'" 
+                                             class="img-fluid mb-2" 
+                                             style="max-height: 150px; object-fit: cover;">
+                                    {% endif %}
+                                    <h5>{{ logement.titre }}</h5>
+                                    <button class="btn btn-sm btn-outline-danger compare-btn active" 
+                                            data-logement-id="{{ logement.id }}">
+                                        <i class="bi bi-x"></i> Retirer
+                                    </button>
+                                </div>
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Prix /nuit</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center"><strong class="text-primary">{{ logement.prix }}€</strong></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Superficie</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">{{ logement.superficie }} m²</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Chambres</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">{{ logement.nombreChambres }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Salles de bain</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">{{ logement.nombreSalleDeBain }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Type</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">{{ logement.categorie ? logement.categorie.nom : '-' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Adresse</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">
+                                <small>
+                                    {{ logement.adresse.ville|default('') }}<br>
+                                    {{ logement.adresse.codePostal|default('') }}
+                                </small>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Équipements</strong></td>
+                        {% for logement in logements %}
+                            <td>
+                                {% if logement.amenites %}
+                                    <ul class="list-unstyled small">
+                                        {% for amenite in logement.amenites|slice(0, 5) %}
+                                            <li><i class="bi bi-check text-success"></i> {{ amenite }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <small class="text-muted">Non renseigné</small>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td><strong>Actions</strong></td>
+                        {% for logement in logements %}
+                            <td class="text-center">
+                                <a href="{{ path('app_property_details', {id: logement.id}) }}" 
+                                   class="btn btn-primary btn-sm mb-2">
+                                    <i class="bi bi-eye"></i> Voir
+                                </a>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ path('app_properties') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Retour aux logements
+            </a>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('frontOffice/js/comparateur.js') }}"></script>
+{% endblock %}

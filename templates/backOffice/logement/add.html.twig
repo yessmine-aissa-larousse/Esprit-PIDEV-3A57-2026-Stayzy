@@ -1,0 +1,239 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Ajouter un logement{% endblock %}
+
+{% block admin_content %}
+    {# App Content Header #}
+    <div class="app-content-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h3 class="mb-0">Ajouter un logement</h3>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-end">
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="#">Logements</a></li>
+                        <li class="breadcrumb-item active">Ajouter</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# App Content #}
+    <div class="app-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+
+                    {# Messages Flash #}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+
+                        {# CARD 1 : Informations de base #}
+                        <div class="card card-primary card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Informations de base</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            {{ form_label(form.titre) }}
+                                            {{ form_widget(form.titre) }}
+                                            {% if form.titre.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.titre) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            {{ form_label(form.categorie) }}
+                                            {{ form_widget(form.categorie) }}
+                                            {% if form.categorie.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.categorie) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.description) }}
+                                    {{ form_widget(form.description) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 2 : Caractéristiques #}
+                        <div class="card card-success card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Caractéristiques</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            {{ form_label(form.prix) }}
+                                            <div class="input-group">
+                                                {{ form_widget(form.prix) }}
+                                                <span class="input-group-text">€</span>
+                                            </div>
+                                            {% if form.prix.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.prix) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            {{ form_label(form.superficie) }}
+                                            <div class="input-group">
+                                                {{ form_widget(form.superficie) }}
+                                                <span class="input-group-text">m²</span>
+                                            </div>
+                                            {% if form.superficie.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.superficie) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            {{ form_label(form.nombreChambres) }}
+                                            {{ form_widget(form.nombreChambres) }}
+                                            {% if form.nombreChambres.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.nombreChambres) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            {{ form_label(form.nombreSalleDeBain) }}
+                                            {{ form_widget(form.nombreSalleDeBain) }}
+                                            {% if form.nombreSalleDeBain.vars.errors|length > 0 %}
+                                                <div class="text-danger mt-1">
+                                                    {{ form_errors(form.nombreSalleDeBain) }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 3 : Adresse #}
+                        {#
+                           L'adresse est un champ JSON dans l'entité (pas des propriétés séparées).
+                           Le Form Type ne peut pas la gérer directement → on garde du HTML pur
+                           pour cette section
+                        #}
+                        <div class="card card-warning card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Adresse</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="rue" class="form-label">Rue *</label>
+                                            <input type="text" class="form-control" id="rue" name="rue"
+                                                   placeholder="123 Avenue des Champs-Élysées">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="ville" class="form-label">Ville *</label>
+                                            <input type="text" class="form-control" id="ville" name="ville"
+                                                   placeholder="Paris">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="codePostal" class="form-label">Code postal *</label>
+                                            <input type="text" class="form-control" id="codePostal" name="codePostal"
+                                                   placeholder="75008">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="pays" class="form-label">Pays *</label>
+                                            <input type="text" class="form-control" id="pays" name="pays"
+                                                   value="France">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 4 : Photos #}
+                        <div class="card card-danger card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Photos du logement</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{ form_label(form.photoPrincipale) }}
+                                    {{ form_widget(form.photoPrincipale) }}
+                                    <div class="form-text">{{ form_help(form.photoPrincipale) }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    {{ form_label(form.photos) }}
+                                    {{ form_widget(form.photos) }}
+                                    <div class="form-text">{{ form_help(form.photos) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# CARD 5 : Aménités et Disponibilité #}
+                        <div class="card card-info card-outline mb-4">
+                            <div class="card-header">
+                                <div class="card-title">Aménités et Disponibilité</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{ form_label(form.amenites) }}
+                                    <div class="row">
+                                        {{ form_widget(form.amenites) }}
+                                    </div>
+                                </div>
+
+                                <div class="form-check">
+                                    {{ form_widget(form.disponible) }}
+                                    {{ form_label(form.disponible) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Boutons d'action #}
+                        <div class="card">
+                            <div class="card-footer">
+                                {{ form_widget(form.save) }}
+                                <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Annuler
+                                </a>
+                            </div>
+                        </div>
+                    {{ form_end(form) }}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

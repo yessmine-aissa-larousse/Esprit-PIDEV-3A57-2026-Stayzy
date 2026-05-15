@@ -1,0 +1,94 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Réclamation envoyée{% endblock %}
+
+{% block body %}
+
+<!-- Page Title -->
+<div class="page-title light-background">
+    <div class="container">
+        <h1>Confirmation</h1>
+    </div>
+</div>
+
+<section class="section">
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-8">
+
+<div class="card shadow p-4">
+
+    <div class="alert alert-success text-center">
+        <h4>✔ Votre réclamation a été envoyée avec succès</h4>
+    </div>
+
+    <hr>
+
+    <div class="mb-3">
+        <strong>Sujet :</strong>
+        <div class="border rounded p-2 bg-light">
+            {{ reclamation.sujet }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <strong>Description :</strong>
+        <div class="border rounded p-2 bg-light" style="white-space: pre-line;">
+            {{ reclamation.description }}
+        </div>
+        <div class="d-flex gap-1 mt-2">
+            <select id="lang-show" class="form-select form-select-sm" style="width:90px;">
+                <option value="en">EN</option>
+                <option value="fr">FR</option>
+                <option value="ar">AR</option>
+                <option value="de">DE</option>
+                <option value="es">ES</option>
+            </select>
+            <button type="button" class="btn btn-sm btn-outline-info"
+                    onclick="translateText('/reclamation/api/{{ reclamation.id }}/translate?lang='+document.getElementById('lang-show').value,'Description')">
+                🌍 Traduire
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <strong>Date :</strong>
+        <div class="border rounded p-2 bg-light">
+            {{ reclamation.dateReclamation|date('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <strong>Statut :</strong>
+
+        {% if reclamation.statut == 'EN_ATTENTE' %}
+            <div class="border rounded p-2 bg-warning text-dark fw-bold text-center">
+                En attente de traitement
+            </div>
+        {% else %}
+            <div class="border rounded p-2 bg-success text-white fw-bold text-center">
+                Traitée
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="text-center d-flex justify-content-center gap-3">
+
+        <a href="{{ path('client_reclamation_new') }}" class="btn btn-outline-primary">
+            Nouvelle réclamation
+        </a>
+
+        <a href="{{ path('client_mes_reclamations') }}" class="btn btn-success">
+            Voir mes réclamations
+        </a>
+
+    </div>
+
+</div>
+</div>
+</div>
+</div>
+</section>
+
+{{ include('_translate_modal.html.twig') }}
+{% endblock %}

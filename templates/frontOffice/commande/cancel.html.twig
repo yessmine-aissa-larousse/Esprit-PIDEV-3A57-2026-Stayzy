@@ -1,0 +1,42 @@
+{% extends 'frontOffice/base.html.twig' %}
+
+{% block title %}Paiement annulé{% endblock %}
+
+{% block body %}
+<style>
+    .cancel-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fdeaea, #ffffff);
+    }
+    .cancel-card {
+        background: #ffffff;
+        padding: 50px 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+        animation: fadeIn 0.6s ease-in-out;
+    }
+    .cancel-icon { font-size: 70px; color: #dc3545; margin-bottom: 20px; }
+    .cancel-title { font-weight: bold; color: #dc3545; margin-bottom: 15px; }
+    .cancel-text { color: #555; margin-bottom: 30px; }
+    .btn-cancel-custom { padding: 12px 25px; border-radius: 30px; font-weight: 600; transition: 0.3s; }
+    .btn-cancel-custom:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(220,53,69,0.3); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="cancel-container">
+    <div class="cancel-card">
+        <div class="cancel-icon">✖</div>
+        <h2 class="cancel-title">Paiement annulé</h2>
+        <p class="cancel-text">Votre commande n'a pas été réglée. Vous pouvez réessayer à tout moment.</p>
+        <a href="{{ path('commande_list') }}" class="btn btn-outline-danger btn-cancel-custom">
+            Retour à mes commandes
+        </a>
+    </div>
+</div>
+{% endblock %}

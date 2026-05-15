@@ -1,0 +1,94 @@
+{% extends 'backOffice/base_admin.html.twig' %}
+
+{% block title %}Modifier la réponse{% endblock %}
+
+{% block admin_content %}
+
+<div class="container-fluid mt-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card card-warning card-outline shadow-sm">
+
+                <div class="card-header">
+                    <h3 class="card-title">Modifier la réponse — Réclamation #{{ reponse.reclamation.id }}</h3>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="p-3 mb-4 bg-light rounded border">
+                        <p class="mb-1 fw-semibold">{{ reponse.reclamation.sujet }}</p>
+                        <p class="mb-2 text-muted" style="white-space:pre-wrap;">{{ reponse.reclamation.description }}</p>
+                        <div class="d-flex gap-1">
+                            <select id="lang-rec-admin-edit" class="form-select form-select-sm" style="width:100px;">
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="ar">العربية</option>
+                                <option value="de">Deutsch</option>
+                                <option value="es">Español</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-info"
+                                    onclick="translateText('/reclamation/api/{{ reponse.reclamation.id }}/translate?lang='+document.getElementById('lang-rec-admin-edit').value,'Description réclamation')">
+                                🌍 Traduire la réclamation
+                            </button>
+                        </div>
+                    </div>
+
+                    {{ form_start(form) }}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Contenu</label>
+
+                        {{ form_widget(form.contenu, {
+                            'attr': {
+                                'class': 'form-control',
+                                'rows': 6
+                            }
+                        }) }}
+
+                        <div class="text-danger small mt-1">
+                            {{ form_errors(form.contenu) }}
+                        </div>
+
+                        <div class="d-flex gap-1 mt-2">
+                            <select id="lang-rep-admin-edit" class="form-select form-select-sm" style="width:100px;">
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="ar">العربية</option>
+                                <option value="de">Deutsch</option>
+                                <option value="es">Español</option>
+                            </select>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="translateText('/reponse/api/{{ reponse.id }}/translate?lang='+document.getElementById('lang-rep-admin-edit').value,'Ma réponse actuelle')">
+                                🌍 Traduire ma réponse
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+
+                        <a href="{{ path('admin_reclamations') }}"
+                           class="btn btn-outline-secondary">
+                            Annuler
+                        </a>
+
+                        <button class="btn btn-warning px-4">
+                            Modifier
+                        </button>
+
+                    </div>
+
+                    {{ form_end(form) }}
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{{ include('_translate_modal.html.twig') }}
+{% endblock %}
