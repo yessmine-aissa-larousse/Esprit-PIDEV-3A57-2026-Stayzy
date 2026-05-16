@@ -80,6 +80,9 @@ class FaceAuthController extends AbstractController
 
             $savedDescriptor = json_decode($user->getFaceDescriptor(), true);
 
+            // Skip if stored descriptor is not a valid array (old format, corrupt data, etc.)
+            if (!is_array($savedDescriptor) || count($savedDescriptor) === 0) continue;
+
             $compareResponse = $this->callFlask('/compare-faces', [
                 'descriptor1' => $liveDescriptor,
                 'descriptor2' => $savedDescriptor
@@ -133,10 +136,16 @@ class FaceAuthController extends AbstractController
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // fail fast if Flask is not running
         $response = curl_exec($ch);
+        $error    = curl_error($ch);
         curl_close($ch);
 
-        return json_decode($response, true) ?? ['success' => false];
+        if ($response === false) {
+            return ['success' => false, 'error' => 'Flask unreachable: ' . $error];
+        }
+
+        return json_decode($response, true) ?? ['success' => false, 'error' => 'Invalid JSON from Flask'];
     }
 }

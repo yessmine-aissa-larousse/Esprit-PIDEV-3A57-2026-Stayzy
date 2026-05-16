@@ -348,35 +348,58 @@
         </div>
     </section>
 
-    {# ===== MODAL FACE ID ===== #}
-    <div class="modal fade" id="faceRegisterModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 16px;">
-                <div class="modal-header" style="background: #1565c0; color: white; border-radius: 16px 16px 0 0;">
-                    <h5 class="modal-title"><i class="bi bi-camera me-2"></i>Enregistrer mon visage</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopFaceCamera()"></button>
-                </div>
-                <div class="modal-body text-center p-4">
-                    <div id="saveStatus" class="alert alert-info mb-3">
-                        <i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer
-                    </div>
-                    <div style="position: relative; display: inline-block;">
-                        <video id="saveVideo" width="300" height="225" autoplay muted
-                               style="border-radius: 12px; border: 3px solid #1565c0;"></video>
-                        <canvas id="saveCanvas" width="300" height="225"
-                                style="position: absolute; top: 0; left: 0; border-radius: 12px;"></canvas>
-                    </div>
-                    <div class="mt-3">
-                        <button onclick="captureFace()" class="btn btn-primary" style="border-radius: 10px;">
-                            <i class="bi bi-camera me-2"></i> Capturer mon visage
-                        </button>
-                    </div>
-                    <div id="loadingSave" class="spinner-border text-primary d-none mt-2"></div>
-                </div>
+    {# ===== OVERLAY CAMÉRA — fixe, indépendant de Bootstrap ===== #}
+    <div id="faceBackdrop" onclick="stopFaceCamera()"
+         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
+                z-index:9998; cursor:pointer;"></div>
+
+    <div id="faceWindow"
+         style="display:none; position:fixed; top:50%; left:50%;
+                transform:translate(-50%,-50%); z-index:9999;
+                background:#fff; border-radius:18px;
+                box-shadow:0 24px 64px rgba(0,0,0,0.45);
+                width:420px; max-width:95vw; overflow:hidden;">
+        <div style="background:#1565c0; padding:16px 20px;
+                    display:flex; align-items:center; justify-content:space-between;">
+            <span style="color:#fff; font-weight:600; font-size:15px;">
+                <i class="bi bi-camera me-2"></i>Enregistrer mon visage
+            </span>
+            <button onclick="stopFaceCamera()" type="button"
+                    style="background:none; border:none; color:#fff; font-size:22px;
+                           line-height:1; cursor:pointer;" aria-label="Fermer">&times;</button>
+        </div>
+        <div style="padding:20px; text-align:center;">
+            <div id="saveStatus"
+                 style="background:#e3f2fd; border:1px solid #90caf9; border-radius:10px;
+                        padding:10px 14px; font-size:14px; margin-bottom:16px; color:#0d47a1;">
+                <i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer
+            </div>
+            <div style="position:relative; display:inline-block;">
+                <video id="saveVideo" autoplay muted playsinline width="360" height="270"
+                       style="border-radius:12px; border:3px solid #1565c0;
+                              display:block; background:#000;"></video>
+                <canvas id="saveCanvas" width="360" height="270"
+                        style="position:absolute; top:0; left:0;
+                               border-radius:12px; pointer-events:none;"></canvas>
+            </div>
+            <div style="margin-top:14px; display:flex; gap:10px; justify-content:center;">
+                <button onclick="captureFace()" type="button"
+                        style="background:#1565c0; color:#fff; border:none; border-radius:8px;
+                               padding:10px 24px; cursor:pointer; font-size:14px; font-weight:600;">
+                    <i class="bi bi-camera me-1"></i> Capturer
+                </button>
+                <button onclick="stopFaceCamera()" type="button"
+                        style="background:#f5f5f5; border:1px solid #ccc; border-radius:8px;
+                               padding:10px 20px; cursor:pointer; font-size:14px; color:#555;">
+                    <i class="bi bi-x-circle me-1"></i> Fermer
+                </button>
+            </div>
+            <div id="loadingSave" style="display:none; margin-top:12px;">
+                <div class="spinner-border text-primary" role="status"></div>
             </div>
         </div>
     </div>
-    {# ===== FIN MODAL ===== #}
+    {# ===== FIN OVERLAY CAMÉRA ===== #}
 {% endblock %}
 
 {% block javascripts %}
@@ -393,55 +416,20 @@ function previewImage(event) {
     reader.readAsDataURL(file);
 }
 
-// ===== FACE SAVE =====
+// ===== FACE SAVE — overlay fixe (sans Bootstrap modal) =====
 let saveStream = null;
 
 async function startFaceSave() {
-    const modal = new bootstrap.Modal(document.getElementById('faceRegisterModal'));
-    modal.show();
+    document.getElementById('faceBackdrop').style.display = 'block';
+    document.getElementById('faceWindow').style.display   = 'block';
+    setSaveStatus('info', '<i class="bi bi-camera me-2"></i>Activation de la caméra…');
 
-    document.getElementById('saveStatus').innerHTML =
-        '<i class="bi bi-camera me-2"></i>Positionnez votre visage et cliquez Capturer';
-
-    saveStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    document.getElementById('saveVideo').srcObject = saveStream;
-}
-
-async function captureFace() {
-    const video = document.getElementById('saveVideo');
-    document.getElementById('loadingSave').classList.remove('d-none');
-    document.getElementById('saveStatus').className = 'alert alert-info mb-3';
-    document.getElementById('saveStatus').innerHTML =
-        '<i class="bi bi-hourglass me-2"></i>Envoi à l\'API...';
-
-    const canvas = document.createElement('canvas');
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    const imageBase64 = canvas.toDataURL('image/jpeg').split(',')[1];
-
-    const response = await fetch('/face/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageBase64 })
-    });
-
-    const result = await response.json();
-    document.getElementById('loadingSave').classList.add('d-none');
-
-    if (result.success) {
-        document.getElementById('saveStatus').className = 'alert alert-success mb-3';
-        document.getElementById('saveStatus').innerHTML =
-            '<i class="bi bi-check-circle-fill me-2"></i>Visage enregistré avec succès!';
-        stopFaceCamera();
-        setTimeout(() => {
-            bootstrap.Modal.getInstance(document.getElementById('faceRegisterModal')).hide();
-            location.reload();
-        }, 1500);
-    } else {
-        document.getElementById('saveStatus').className = 'alert alert-danger mb-3';
-        document.getElementById('saveStatus').innerHTML =
-            '<i class="bi bi-x-circle me-2"></i>Erreur: ' + result.error;
+    try {
+        saveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        document.getElementById('saveVideo').srcObject = saveStream;
+        setSaveStatus('info', '<i class="bi bi-info-circle me-2"></i>Positionnez votre visage et cliquez Capturer');
+    } catch (err) {
+        setSaveStatus('danger', '<i class="bi bi-x-circle me-2"></i>Caméra inaccessible : ' + err.message);
     }
 }
 
@@ -450,9 +438,59 @@ function stopFaceCamera() {
         saveStream.getTracks().forEach(t => t.stop());
         saveStream = null;
     }
+    document.getElementById('saveVideo').srcObject = null;
+    document.getElementById('faceBackdrop').style.display = 'none';
+    document.getElementById('faceWindow').style.display   = 'none';
+    document.getElementById('loadingSave').style.display  = 'none';
 }
 
-document.getElementById('faceRegisterModal')?.addEventListener('hidden.bs.modal', stopFaceCamera);
+function setSaveStatus(type, html) {
+    const el = document.getElementById('saveStatus');
+    const colours = { info:'#e3f2fd', success:'#e8f5e9', danger:'#ffebee', warning:'#fff8e1' };
+    const borders  = { info:'#90caf9', success:'#a5d6a7', danger:'#ef9a9a', warning:'#ffe082' };
+    const texts    = { info:'#0d47a1', success:'#1b5e20', danger:'#b71c1c', warning:'#e65100' };
+    el.style.background  = colours[type] || colours.info;
+    el.style.borderColor = borders[type] || borders.info;
+    el.style.color       = texts[type]   || texts.info;
+    el.innerHTML = html;
+}
+
+async function captureFace() {
+    const video = document.getElementById('saveVideo');
+    if (!video.videoWidth) {
+        setSaveStatus('warning', '<i class="bi bi-hourglass me-2"></i>Caméra pas encore prête, réessayez.');
+        return;
+    }
+    document.getElementById('loadingSave').style.display = 'block';
+    setSaveStatus('info', '<i class="bi bi-hourglass me-2"></i>Envoi à l\'API…');
+
+    const snap = document.createElement('canvas');
+    snap.width  = video.videoWidth;
+    snap.height = video.videoHeight;
+    snap.getContext('2d').drawImage(video, 0, 0);
+    const imageBase64 = snap.toDataURL('image/jpeg').split(',')[1];
+
+    try {
+        const response = await fetch('/face/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageBase64 })
+        });
+        const result = await response.json();
+        document.getElementById('loadingSave').style.display = 'none';
+
+        if (result.success) {
+            setSaveStatus('success', '<i class="bi bi-check-circle-fill me-2"></i>Visage enregistré avec succès !');
+            stopFaceCamera();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            setSaveStatus('danger', '<i class="bi bi-x-circle me-2"></i>Erreur : ' + result.error);
+        }
+    } catch {
+        document.getElementById('loadingSave').style.display = 'none';
+        setSaveStatus('danger', '<i class="bi bi-wifi-off me-2"></i>Erreur réseau. Réessayez.');
+    }
+}
 // ===== FIN FACE SAVE =====
 </script>
 {% endblock %}

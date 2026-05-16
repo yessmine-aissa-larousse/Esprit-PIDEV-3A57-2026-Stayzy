@@ -1,0 +1,20 @@
+# ── Face recognition ──────────────────────────────────────────────────────────
+# DeepFace handles model downloads, face detection, and embedding internally.
+# It installs tensorflow automatically — no separate facenet-pytorch needed.
+# Supports Python 3.13 + macOS M4 out of the box.
+deepface>=0.0.93
+
+# tf-keras is required by retina-face (a deepface dependency) when running
+# alongside TensorFlow 2.x — without it the import fails at startup.
+tf-keras
+
+# ── Web server ────────────────────────────────────────────────────────────────
+flask>=3.0.0
+
+# ── Image processing ──────────────────────────────────────────────────────────
+# headless variant — no GUI libs needed for a server process
+opencv-python-headless>=4.9.0
+
+# ── Numerics ──────────────────────────────────────────────────────────────────
+# numpy 2.x has cp313 pre-built wheels (1.26.x does not)
+numpy>=2.0.0
